@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talkia - Free Expressions & Voice Social Network</title>
+    <title>Talkia - The Kingdom of Free Expressions</title>
     <!-- Google Fonts & Font Awesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
-            --bg-light: #F3F4F6;
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --bg-light: #F8FAFC;
             --card-bg: #FFFFFF;
-            --text-main: #1F2937;
-            --text-muted: #6B7280;
-            --border: #E5E7EB;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
             --radius: 12px;
         }
 
@@ -29,7 +29,34 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-main); transition: 0.3s; }
+        body { background-color: var(--bg-light); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+
+        /* Fullscreen Auth Page */
+        .auth-container {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 20px; background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(15,23,42,0.05) 100%);
+        }
+        .auth-card {
+            background: var(--card-bg); width: 100%; max-width: 440px; border-radius: 16px;
+            padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .auth-logo { font-size: 32px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .auth-subtitle { text-align: center; font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
+
+        .tab-buttons { display: flex; background: var(--bg-light); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-group input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); font-size: 14px; transition: 0.2s; }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .btn-full { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-full:hover { background: var(--primary-hover); }
+
+        /* Main App Interface (Hidden initially) */
+        #appInterface { display: none; }
 
         /* Navigation Bar */
         header {
@@ -38,8 +65,8 @@
             padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
         }
         .logo { font-size: 24px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .lang-select { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; }
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        .lang-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 13px; }
         .btn-icon { background: none; border: none; font-size: 18px; color: var(--text-main); cursor: pointer; padding: 8px; border-radius: 50%; }
         .btn-icon:hover { background: var(--bg-light); }
 
@@ -49,115 +76,186 @@
         /* Create Post Card */
         .post-box { background: var(--card-bg); border-radius: var(--radius); padding: 15px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .post-input { width: 100%; border: none; outline: none; background: transparent; color: var(--text-main); font-size: 15px; resize: none; min-height: 70px; }
-        .post-options { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); pt-3; margin-top: 10px; padding-top: 10px; }
+        .post-options { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
         .opt-btn { background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .opt-btn:hover { color: var(--primary); }
-        .btn-post { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; }
-        .btn-post:hover { background: var(--primary-hover); }
 
         /* Feed Post Card */
         .feed-post { background: var(--card-bg); border-radius: var(--radius); padding: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
         .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        .user-details h4 { font-size: 15px; }
+        .user-details h4 { font-size: 15px; display: flex; align-items: center; gap: 6px; }
         .user-details p { font-size: 12px; color: var(--text-muted); }
         .post-content { font-size: 14px; line-height: 1.5; margin-bottom: 15px; }
         .post-actions { display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding-top: 10px; }
 
-        /* Audio Player Bar */
-        .voice-bar { background: var(--bg-light); padding: 10px; border-radius: 20px; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-
-        /* Modal Overlay */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
-        .modal-body { background: var(--card-bg); width: 90%; max-width: 400px; border-radius: var(--radius); padding: 20px; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .input-group { margin-bottom: 12px; }
-        .input-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); }
+        .modal-body { background: var(--card-bg); width: 100%; max-width: 450px; border-radius: var(--radius); padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
-        .anon-badge { background: #E0E7FF; color: var(--primary); font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .setting-item span { font-weight: 600; }
+        .anon-badge { background: #DBEAFE; color: var(--primary); font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
     </style>
 </head>
-<body>
+<body onload="initApp()">
 
-    <!-- Header Navigation -->
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-comments"></i> Talkia
-        </div>
-        <div class="nav-actions">
-            <!-- Multi-Language Dropdown -->
-            <select class="lang-select" id="langSelect" onchange="changeLanguage()">
-                <option value="en">English</option>
-                <option value="bn">বাংলা</option>
-                <option value="hi">हिन्दी</option>
-                <option value="ar">العربية</option>
-            </select>
-            <button class="btn-icon" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
-            <button class="btn-icon" onclick="openModal('visitorsModal')"><i class="fa-solid fa-eye"></i></button>
-            <button class="btn-icon" onclick="openModal('settingsModal')"><i class="fa-solid fa-gear"></i></button>
-            <button class="btn-post" onclick="openModal('authModal')" id="loginBtnText">Login</button>
-        </div>
-    </header>
+    <!-- 1. AUTH SCREEN (Landed First) -->
+    <div class="auth-container" id="authPage">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="fa-solid fa-comments"></i> Talkia</div>
+            <p class="auth-subtitle" id="txtAuthSub">The Kingdom of Free Expressions & Voice</p>
 
-    <!-- Main Content Area -->
-    <div class="container">
-
-        <!-- Create Post Container -->
-        <div class="post-box">
-            <textarea class="post-input" id="postInput" placeholder="What's on your mind? Share your vibe..."></textarea>
-            
-            <div class="post-options">
-                <button class="opt-btn" onclick="triggerVoice()"><i class="fa-solid fa-microphone" style="color: #EF4444;"></i> <span id="txtVoice">Voice Note</span></button>
-                <label class="opt-btn" style="cursor: pointer;">
-                    <input type="checkbox" id="anonCheck"> <i class="fa-solid fa-user-secret"></i> <span id="txtAnon">Anonymous</span>
-                </label>
-                <button class="btn-post" onclick="addPost()" id="txtPostBtn">Post</button>
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="btnTabLogin" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" id="btnTabRegister" onclick="switchTab('register')">Register</button>
             </div>
-        </div>
 
-        <!-- Newsfeed Stream -->
-        <div id="feedStream">
-            <!-- Sample Feed Item 1 -->
-            <div class="feed-post">
-                <div class="user-info">
-                    <div class="avatar">A</div>
-                    <div class="user-details">
-                        <h4>Ariful Haque <span class="anon-badge">Pro</span></h4>
-                        <p>10 mins ago • Pure Timeline</p>
+            <!-- Login Form -->
+            <form id="formLogin" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label id="lblLoginUser">Email or Phone Number</label>
+                    <input type="text" id="loginId" placeholder="e.g. name@mail.com or +123456789" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblLoginPass">Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-full" id="txtLoginBtn">Login to Talkia</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="formRegister" style="display: none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label id="lblRegName">Full Name</label>
+                    <input type="text" id="regName" placeholder="e.g. Ariful Haque" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegContact">Email or Mobile Number</label>
+                    <input type="text" id="regContact" placeholder="e.g. user@gmail.com or +8801700000000" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegUsername">Username (@username)</label>
+                    <input type="text" id="regUsername" placeholder="e.g. ariful8830" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegPass">Password</label>
+                    <input type="password" id="regPass" placeholder="Create a strong password" required>
+                </div>
+                <button type="submit" class="btn-full" id="txtRegBtn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP INTERFACE -->
+    <div id="appInterface">
+        <!-- Header Navigation -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-comments"></i> Talkia
+            </div>
+            <div class="nav-actions">
+                <!-- Multi-Language Dropdown -->
+                <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="bn">বাংলা</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ar">العربية</option>
+                </select>
+                <button class="btn-icon" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+                <button class="btn-icon" onclick="openModal('visitorsModal')"><i class="fa-solid fa-eye" title="Profile Visitors"></i></button>
+                <button class="btn-icon" onclick="openModal('settingsModal')"><i class="fa-solid fa-gear" title="Settings & Privacy"></i></button>
+                <button class="btn-icon" onclick="logout()"><i class="fa-solid fa-right-from-bracket" title="Logout"></i></button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="container">
+            <!-- Create Post Container -->
+            <div class="post-box">
+                <textarea class="post-input" id="postInput" placeholder="What's on your mind? Share your vibe..."></textarea>
+                
+                <div class="post-options">
+                    <button class="opt-btn" onclick="triggerVoice()"><i class="fa-solid fa-microphone" style="color: #EF4444;"></i> <span id="txtVoice">Voice Note</span></button>
+                    <label class="opt-btn" style="cursor: pointer;">
+                        <input type="checkbox" id="anonCheck"> <i class="fa-solid fa-user-secret"></i> <span id="txtAnon">Anonymous</span>
+                    </label>
+                    <button class="btn-full" style="width: auto; padding: 8px 20px; margin-top: 0;" onclick="addPost()" id="txtPostBtn">Post</button>
+                </div>
+            </div>
+
+            <!-- Newsfeed Stream -->
+            <div id="feedStream">
+                <div class="feed-post">
+                    <div class="user-info">
+                        <div class="avatar">A</div>
+                        <div class="user-details">
+                            <h4>Ariful Haque <span class="anon-badge">Pro</span></h4>
+                            <p>10 mins ago • Pure Timeline</p>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        Welcome to <b>Talkia</b>! Share your thoughts with voice notes or stay anonymous. The land of free expressions! 🎉
+                    </div>
+                    <div class="post-actions">
+                        <button class="opt-btn"><i class="fa-regular fa-heart"></i> Like</button>
+                        <button class="opt-btn"><i class="fa-regular fa-comment"></i> Comment</button>
+                        <button class="opt-btn"><i class="fa-solid fa-share"></i> Share</button>
                     </div>
                 </div>
-                <div class="post-content">
-                    Welcome to <b>Talkia</b>! Share your thoughts with voice notes or stay anonymous. The land of free expressions! 🎉
-                </div>
-                <div class="post-actions">
-                    <button class="opt-btn"><i class="fa-regular fa-heart"></i> Like</button>
-                    <button class="opt-btn"><i class="fa-regular fa-comment"></i> Comment</button>
-                    <button class="opt-btn"><i class="fa-solid fa-share"></i> Share</button>
-                </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Login/Signup Modal -->
-    <div class="modal" id="authModal">
+    <!-- 3. SETTINGS & PRIVACY MODAL -->
+    <div class="modal" id="settingsModal">
         <div class="modal-body">
             <div class="modal-header">
-                <h3 id="txtAuthTitle">Login to Talkia</h3>
-                <button class="btn-icon" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+                <h3 id="txtSettingsTitle"><i class="fa-solid fa-shield-halved"></i> Settings & Privacy</h3>
+                <button class="btn-icon" onclick="closeModal('settingsModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="input-group">
-                <input type="email" placeholder="Email Address">
+            
+            <div class="setting-item">
+                <div>
+                    <span>Private Profile Mode</span>
+                    <p style="font-size: 12px; color: var(--text-muted);">Only approved friends can see your posts</p>
+                </div>
+                <input type="checkbox" checked>
             </div>
-            <div class="input-group">
-                <input type="password" placeholder="Password">
+
+            <div class="setting-item">
+                <div>
+                    <span>Two-Factor Authentication (2FA)</span>
+                    <p style="font-size: 12px; color: var(--text-muted);">Extra security layer using phone/email</p>
+                </div>
+                <input type="checkbox">
             </div>
-            <button class="btn-post" style="width: 100%; margin-top: 10px;" onclick="closeModal('authModal')">Continue</button>
+
+            <div class="setting-item">
+                <div>
+                    <span>Voice Comments</span>
+                    <p style="font-size: 12px; color: var(--text-muted);">Allow people to reply with voice notes</p>
+                </div>
+                <input type="checkbox" checked>
+            </div>
+
+            <div class="setting-item">
+                <div>
+                    <span>Hide Like Counts</span>
+                    <p style="font-size: 12px; color: var(--text-muted);">Keep your engagement stats private</p>
+                </div>
+                <input type="checkbox">
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn-full" style="background: #EF4444;" onclick="logout()">Logout Account</button>
+            </div>
         </div>
     </div>
 
-    <!-- Profile Visitors Modal -->
+    <!-- 4. PROFILE VISITORS MODAL -->
     <div class="modal" id="visitorsModal">
         <div class="modal-body">
             <div class="modal-header">
@@ -166,117 +264,94 @@
             </div>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">People who checked your profile recently:</p>
             <ul style="list-style: none; padding: 0;">
-                <li style="padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-                    <span><b>Alex Rivera</b></span> <small style="color: var(--text-muted);">2m ago</small>
+                <li style="padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+                    <span><b>Alex Rivera</b> (@alex)</span> <small style="color: var(--text-muted);">2m ago</small>
                 </li>
-                <li style="padding: 8px 0; display: flex; justify-content: space-between;">
+                <li style="padding: 10px 0; display: flex; justify-content: space-between;">
                     <span><b>Anonymous User</b></span> <small style="color: var(--text-muted);">1h ago</small>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- Settings & Privacy Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-body">
-            <div class="modal-header">
-                <h3 id="txtSettingsTitle">Settings & Privacy ⚙️</h3>
-                <button class="btn-icon" onclick="closeModal('settingsModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <label><input type="checkbox"> Hide Like Counts</label>
-                <label><input type="checkbox" checked> Private Profile Mode</label>
-                <label><input type="checkbox" checked> Enable Voice Comments</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Interactions & Multi-Language Logic -->
+    <!-- JS Logic -->
     <script>
-        // Language Dictionary
-        const i18n = {
-            en: {
-                placeholder: "What's on your mind? Share your vibe...",
-                voice: "Voice Note",
-                anon: "Anonymous",
-                post: "Post",
-                login: "Login",
-                authTitle: "Login to Talkia",
-                settingsTitle: "Settings & Privacy ⚙️"
-            },
-            bn: {
-                placeholder: "আপনার মনে কী আছে? ভয়েস বা টেক্সটে শেয়ার করুন...",
-                voice: "ভয়েস নোট",
-                anon: "বেনামী (অ্যাননিমাস)",
-                post: "পোস্ট করুন",
-                login: "লগইন",
-                authTitle: "টকিয়াতে লগইন করুন",
-                settingsTitle: "সেটিংস এবং প্রাইভেসি ⚙️"
-            },
-            hi: {
-                placeholder: "आपके मन में क्या है? अपनी बात साझा करें...",
-                voice: "वॉइस नोट",
-                anon: "गुमनाम",
-                post: "पोस्ट करें",
-                login: "लॉग इन",
-                authTitle: "Talkia में लॉगिन करें",
-                settingsTitle: "সেটিংস और गोपनीयता ⚙️"
-            },
-            ar: {
-                placeholder: "ما الذي يفكر فيه عقلك؟ شارك صوتك...",
-                voice: "ملاحظة صوتية",
-                anon: "مجهول",
-                post: "نشر",
-                login: "تسجيل الدخول",
-                authTitle: "تسجيل الدخول إلى Talkia",
-                settingsTitle: "الإعدادات والخصوصية ⚙️"
-            }
-        };
+        let currentUser = null;
 
-        // Multi-language Changer
-        function changeLanguage() {
-            const lang = document.getElementById('langSelect').value;
-            document.getElementById('postInput').placeholder = i18n[lang].placeholder;
-            document.getElementById('txtVoice').innerText = i18n[lang].voice;
-            document.getElementById('txtAnon').innerText = i18n[lang].anon;
-            document.getElementById('txtPostBtn').innerText = i18n[lang].post;
-            document.getElementById('loginBtnText').innerText = i18n[lang].login;
-            document.getElementById('txtAuthTitle').innerText = i18n[lang].authTitle;
-            document.getElementById('txtSettingsTitle').innerText = i18n[lang].settingsTitle;
-
-            // Handle RTL for Arabic
-            if(lang === 'ar') {
-                document.body.style.direction = 'rtl';
-            } else {
-                document.body.style.direction = 'ltr';
+        function initApp() {
+            const saved = localStorage.getItem('talkia_user');
+            if(saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('authPage').style.display = 'none';
+                document.getElementById('appInterface').style.display = 'block';
             }
         }
 
-        // Dark/Light Theme Toggle
+        function switchTab(tab) {
+            if(tab === 'login') {
+                document.getElementById('btnTabLogin').classList.add('active');
+                document.getElementById('btnTabRegister').classList.remove('active');
+                document.getElementById('formLogin').style.display = 'block';
+                document.getElementById('formRegister').style.display = 'none';
+            } else {
+                document.getElementById('btnTabRegister').classList.add('active');
+                document.getElementById('btnTabLogin').classList.remove('active');
+                document.getElementById('formRegister').style.display = 'block';
+                document.getElementById('formLogin').style.display = 'none';
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const username = document.getElementById('regUsername').value;
+            const contact = document.getElementById('regContact').value;
+
+            currentUser = { name, username, contact };
+            localStorage.setItem('talkia_user', JSON.stringify(currentUser));
+            
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('appInterface').style.display = 'block';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const contact = document.getElementById('loginId').value;
+            currentUser = { name: "Ariful Haque", username: "ariful8830", contact };
+            localStorage.setItem('talkia_user', JSON.stringify(currentUser));
+            
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('appInterface').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('talkia_user');
+            location.reload();
+        }
+
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');
         }
 
-        // Modal Controls
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // Dynamic Post Creation
         function addPost() {
             const text = document.getElementById('postInput').value;
             const isAnon = document.getElementById('anonCheck').checked;
 
-            if(!text.trim()) return alert("Please enter some text!");
+            if(!text.trim()) return alert("Please write something!");
 
-            const authorName = isAnon ? "Anonymous Secret" : "Ariful Haque";
-            const badge = isAnon ? '<span class="anon-badge">Anon</span>' : '';
+            const authorName = isAnon ? "Anonymous Secret" : currentUser.name;
+            const authorTag = isAnon ? '<span class="anon-badge">Anon</span>' : `@${currentUser.username}`;
+            const avatarLetter = isAnon ? '🕵️' : currentUser.name.charAt(0).toUpperCase();
 
             const postHTML = `
                 <div class="feed-post">
                     <div class="user-info">
-                        <div class="avatar">${isAnon ? '🕵️' : 'A'}</div>
+                        <div class="avatar">${avatarLetter}</div>
                         <div class="user-details">
-                            <h4>${authorName} ${badge}</h4>
+                            <h4>${authorName} ${authorTag}</h4>
                             <p>Just now • Pure Timeline</p>
                         </div>
                     </div>
@@ -295,7 +370,16 @@
         }
 
         function triggerVoice() {
-            alert("🎙️ Voice recorder activated! Speak your mind...");
+            alert("🎙️ Voice recorder activated! Recording your voice note...");
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById('langSelect').value;
+            if(lang === 'ar') {
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.style.direction = 'ltr';
+            }
         }
     </script>
 </body>
