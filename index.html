@@ -33,12 +33,18 @@
 
         /* Fullscreen Auth Page */
         .auth-container {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(15,23,42,0.05) 100%);
+            position: relative;
         }
+        
+        .auth-top-bar {
+            position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;
+        }
+
         .auth-card {
             background: var(--card-bg); width: 100%; max-width: 440px; border-radius: 16px;
-            padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 40px;
         }
         .auth-logo { font-size: 32px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .auth-subtitle { text-align: center; font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
@@ -104,6 +110,17 @@
 
     <!-- 1. AUTH SCREEN (Landed First) -->
     <div class="auth-container" id="authPage">
+        <!-- Top Bar with Language Selector -->
+        <div class="auth-top-bar">
+            <select class="lang-select" id="authLangSelect" onchange="changeLanguage('auth')">
+                <option value="en">🌐 English</option>
+                <option value="bn">🌐 বাংলা</option>
+                <option value="hi">🌐 हिन्दी</option>
+                <option value="ar">🌐 العربية</option>
+            </select>
+            <button class="btn-icon" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+        </div>
+
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-comments"></i> Talkia</div>
             <p class="auth-subtitle" id="txtAuthSub">The Kingdom of Free Expressions & Voice</p>
@@ -158,7 +175,7 @@
             </div>
             <div class="nav-actions">
                 <!-- Multi-Language Dropdown -->
-                <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+                <select class="lang-select" id="appLangSelect" onchange="changeLanguage('app')">
                     <option value="en">English</option>
                     <option value="bn">বাংলা</option>
                     <option value="hi">हिन्दी</option>
@@ -200,9 +217,9 @@
                         Welcome to <b>Talkia</b>! Share your thoughts with voice notes or stay anonymous. The land of free expressions! 🎉
                     </div>
                     <div class="post-actions">
-                        <button class="opt-btn"><i class="fa-regular fa-heart"></i> Like</button>
-                        <button class="opt-btn"><i class="fa-regular fa-comment"></i> Comment</button>
-                        <button class="opt-btn"><i class="fa-solid fa-share"></i> Share</button>
+                        <button class="opt-btn" id="txtLike"><i class="fa-regular fa-heart"></i> Like</button>
+                        <button class="opt-btn" id="txtComment"><i class="fa-regular fa-comment"></i> Comment</button>
+                        <button class="opt-btn" id="txtShare"><i class="fa-solid fa-share"></i> Share</button>
                     </div>
                 </div>
             </div>
@@ -219,38 +236,38 @@
             
             <div class="setting-item">
                 <div>
-                    <span>Private Profile Mode</span>
-                    <p style="font-size: 12px; color: var(--text-muted);">Only approved friends can see your posts</p>
+                    <span id="stgPrivate">Private Profile Mode</span>
+                    <p style="font-size: 12px; color: var(--text-muted);" id="stgPrivateSub">Only approved friends can see your posts</p>
                 </div>
                 <input type="checkbox" checked>
             </div>
 
             <div class="setting-item">
                 <div>
-                    <span>Two-Factor Authentication (2FA)</span>
-                    <p style="font-size: 12px; color: var(--text-muted);">Extra security layer using phone/email</p>
+                    <span id="stg2fa">Two-Factor Authentication (2FA)</span>
+                    <p style="font-size: 12px; color: var(--text-muted);" id="stg2faSub">Extra security layer using phone/email</p>
                 </div>
                 <input type="checkbox">
             </div>
 
             <div class="setting-item">
                 <div>
-                    <span>Voice Comments</span>
-                    <p style="font-size: 12px; color: var(--text-muted);">Allow people to reply with voice notes</p>
+                    <span id="stgVoice">Voice Comments</span>
+                    <p style="font-size: 12px; color: var(--text-muted);" id="stgVoiceSub">Allow people to reply with voice notes</p>
                 </div>
                 <input type="checkbox" checked>
             </div>
 
             <div class="setting-item">
                 <div>
-                    <span>Hide Like Counts</span>
-                    <p style="font-size: 12px; color: var(--text-muted);">Keep your engagement stats private</p>
+                    <span id="stgLikes">Hide Like Counts</span>
+                    <p style="font-size: 12px; color: var(--text-muted);" id="stgLikesSub">Keep your engagement stats private</p>
                 </div>
                 <input type="checkbox">
             </div>
 
             <div style="margin-top: 15px;">
-                <button class="btn-full" style="background: #EF4444;" onclick="logout()">Logout Account</button>
+                <button class="btn-full" style="background: #EF4444;" onclick="logout()" id="btnLogoutStg">Logout Account</button>
             </div>
         </div>
     </div>
@@ -274,8 +291,131 @@
         </div>
     </div>
 
-    <!-- JS Logic -->
+    <!-- JS Logic & Language Translations -->
     <script>
+        const i18n = {
+            en: {
+                sub: "The Kingdom of Free Expressions & Voice",
+                tabLogin: "Login",
+                tabReg: "Register",
+                lblLoginUser: "Email or Phone Number",
+                lblLoginPass: "Password",
+                btnLogin: "Login to Talkia",
+                lblRegName: "Full Name",
+                lblRegContact: "Email or Mobile Number",
+                lblRegUser: "Username (@username)",
+                lblRegPass: "Password",
+                btnReg: "Create Account",
+                postPlaceholder: "What's on your mind? Share your vibe...",
+                voiceNote: "Voice Note",
+                anon: "Anonymous",
+                btnPost: "Post",
+                like: "Like",
+                comment: "Comment",
+                share: "Share",
+                stgTitle: "Settings & Privacy",
+                stgPrivate: "Private Profile Mode",
+                stgPrivateSub: "Only approved friends can see your posts",
+                stg2fa: "Two-Factor Authentication (2FA)",
+                stg2faSub: "Extra security layer using phone/email",
+                stgVoice: "Voice Comments",
+                stgVoiceSub: "Allow people to reply with voice notes",
+                stgLikes: "Hide Like Counts",
+                stgLikesSub: "Keep your engagement stats private",
+                btnLogout: "Logout Account"
+            },
+            bn: {
+                sub: "মুক্ত মনের আড্ডা, ভয়েস পোস্ট এবং সোশ্যাল মিডিয়া",
+                tabLogin: "লগইন",
+                tabReg: "রেজিস্টার",
+                lblLoginUser: "ইমেইল বা মোবাইল নম্বর",
+                lblLoginPass: "পাসওয়ার্ড",
+                btnLogin: "টকিয়াতে প্রবেশ করুন",
+                lblRegName: "আপনার পুরো নাম",
+                lblRegContact: "ইমেইল অথবা মোবাইল নম্বর",
+                lblRegUser: "ইউজারনেম (@username)",
+                lblRegPass: "পাসওয়ার্ড",
+                btnReg: "অ্যাকাউন্ট তৈরি করুন",
+                postPlaceholder: "আপনার মনে কী আছে? ভয়েস বা টেক্সটে শেয়ার করুন...",
+                voiceNote: "ভয়েস নোট",
+                anon: "বেনামী (অ্যাননিমাস)",
+                btnPost: "পোস্ট করুন",
+                like: "লাইক",
+                comment: "কমেন্ট",
+                share: "শেয়ার",
+                stgTitle: "সেটিংস এবং প্রাইভেসি",
+                stgPrivate: "প্রাইভেট প্রোফাইল মোড",
+                stgPrivateSub: "শুধুমাত্র অনুমোদিত বন্ধুরা আপনার পোস্ট দেখবে",
+                stg2fa: "টু-ফ্যাক্টর নিরাপত্তা (2FA)",
+                stg2faSub: "মোবাইল/ইমেলের মাধ্যমে বাড়তি নিরাপত্তা",
+                stgVoice: "ভয়েস কমেন্ট",
+                stgVoiceSub: "ভয়েস নোটে কমেন্টের উত্তর দেওয়ার সুযোগ",
+                stgLikes: "লাইকের সংখ্যা গোপন রাখুন",
+                stgLikesSub: "পোস্টের লাইক সংখ্যা হাইড করে রাখুন",
+                btnLogout: "লগআউট করুন"
+            },
+            hi: {
+                sub: "मुक्त विचारों और आवाज का अपना सोशल मीडिया",
+                tabLogin: "लॉग इन",
+                tabReg: "रजिस्टर",
+                lblLoginUser: "ईमेल या फोन नंबर",
+                lblLoginPass: "पासवर्ड",
+                btnLogin: "Talkia में प्रवेश करें",
+                lblRegName: "पूरा नाम",
+                lblRegContact: "ईमेल या मोबाइल नंबर",
+                lblRegUser: "यूज़रनेम (@username)",
+                lblRegPass: "पासवर्ड",
+                btnReg: "अकाउंट बनाएं",
+                postPlaceholder: "आपके मन में क्या है? अपनी बात साझा करें...",
+                voiceNote: "वॉइस नोट",
+                anon: "गुमनाम",
+                btnPost: "पोस्ट करें",
+                like: "लाइक",
+                comment: "कमेंट",
+                share: "शेयर",
+                stgTitle: "सेटिंग्स और गोपनीयता",
+                stgPrivate: "प्राइवेट प्रोफाइल मोड",
+                stgPrivateSub: "केवल स्वीकृत मित्र ही आपकी पोस्ट देख सकते हैं",
+                stg2fa: "टू-फैक्टर सुरक्षा (2FA)",
+                stg2faSub: "फोन/ईमेल के माध्यम से अतिरिक्त सुरक्षा",
+                stgVoice: "वॉइस कमेंट",
+                stgVoiceSub: "वॉइस नोट से कमेंट का जवाब दें",
+                stgLikes: "लाइक छुपाएं",
+                stgLikesSub: "अपनी पोस्ट की लाइक संख्या छुपाएं",
+                btnLogout: "लॉगआउट करें"
+            },
+            ar: {
+                sub: "مملكة التعبير الحر والمنشورات الصوتية",
+                tabLogin: "تسجيل الدخول",
+                tabReg: "إنشاء حساب",
+                lblLoginUser: "البريد الإلكتروني أو رقم الهاتف",
+                lblLoginPass: "كلمة المرور",
+                btnLogin: "الدخول إلى Talkia",
+                lblRegName: "الاسم الكامل",
+                lblRegContact: "البريد الإلكتروني أو رقم الهاتف",
+                lblRegUser: "اسم المستخدم (@username)",
+                lblRegPass: "كلمة المرور",
+                btnReg: "إنشاء حساب جدید",
+                postPlaceholder: "ما الذي يفكر فيه عقلك؟ شارك بصوتك...",
+                voiceNote: "ملاحظة صوتية",
+                anon: "مجهول",
+                btnPost: "نشر",
+                like: "إعجاب",
+                comment: "تعليق",
+                share: "مشاركة",
+                stgTitle: "الإعدادات والخصوصية",
+                stgPrivate: "وضع الملف الشخصي الخاص",
+                stgPrivateSub: "يمكن للأصدقاء المعتمدين فقط رؤية منشوراتك",
+                stg2fa: "المصادقة الثنائية (2FA)",
+                stg2faSub: "طبقة أمان إضافية باستخدام الهاتف/البريد",
+                stgVoice: "التعليقات الصوتية",
+                stgVoiceSub: "السماح للأشخاص بالرد بملاحظات صوتية",
+                stgLikes: "إخفاء عدد الإعجابات",
+                stgLikesSub: "الحفاظ على خصوصية إحصائياتك",
+                btnLogout: "تسجيل الخروج"
+            }
+        };
+
         let currentUser = null;
 
         function initApp() {
@@ -284,6 +424,57 @@
                 currentUser = JSON.parse(saved);
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appInterface').style.display = 'block';
+            }
+        }
+
+        function changeLanguage(source) {
+            const lang = source === 'auth' ? document.getElementById('authLangSelect').value : document.getElementById('appLangSelect').value;
+            
+            // Sync selectors
+            document.getElementById('authLangSelect').value = lang;
+            document.getElementById('appLangSelect').value = lang;
+
+            const t = i18n[lang];
+
+            // Update Auth UI
+            document.getElementById('txtAuthSub').innerText = t.sub;
+            document.getElementById('btnTabLogin').innerText = t.tabLogin;
+            document.getElementById('btnTabRegister').innerText = t.tabReg;
+            document.getElementById('lblLoginUser').innerText = t.lblLoginUser;
+            document.getElementById('lblLoginPass').innerText = t.lblLoginPass;
+            document.getElementById('txtLoginBtn').innerText = t.btnLogin;
+            document.getElementById('lblRegName').innerText = t.lblRegName;
+            document.getElementById('lblRegContact').innerText = t.lblRegContact;
+            document.getElementById('lblRegUsername').innerText = t.lblRegUser;
+            document.getElementById('lblRegPass').innerText = t.lblRegPass;
+            document.getElementById('txtRegBtn').innerText = t.btnReg;
+
+            // Update App UI
+            document.getElementById('postInput').placeholder = t.postPlaceholder;
+            document.getElementById('txtVoice').innerText = t.voiceNote;
+            document.getElementById('txtAnon').innerText = t.anon;
+            document.getElementById('txtPostBtn').innerText = t.btnPost;
+            document.getElementById('txtLike').innerHTML = `<i class="fa-regular fa-heart"></i> ${t.like}`;
+            document.getElementById('txtComment').innerHTML = `<i class="fa-regular fa-comment"></i> ${t.comment}`;
+            document.getElementById('txtShare').innerHTML = `<i class="fa-solid fa-share"></i> ${t.share}`;
+
+            // Update Settings
+            document.getElementById('txtSettingsTitle').innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${t.stgTitle}`;
+            document.getElementById('stgPrivate').innerText = t.stgPrivate;
+            document.getElementById('stgPrivateSub').innerText = t.stgPrivateSub;
+            document.getElementById('stg2fa').innerText = t.stg2fa;
+            document.getElementById('stg2faSub').innerText = t.stg2faSub;
+            document.getElementById('stgVoice').innerText = t.stgVoice;
+            document.getElementById('stgVoiceSub').innerText = t.stgVoiceSub;
+            document.getElementById('stgLikes').innerText = t.stgLikes;
+            document.getElementById('stgLikesSub').innerText = t.stgLikesSub;
+            document.getElementById('btnLogoutStg').innerText = t.btnLogout;
+
+            // RTL Handling for Arabic
+            if(lang === 'ar') {
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.style.direction = 'ltr';
             }
         }
 
@@ -371,15 +562,6 @@
 
         function triggerVoice() {
             alert("🎙️ Voice recorder activated! Recording your voice note...");
-        }
-
-        function changeLanguage() {
-            const lang = document.getElementById('langSelect').value;
-            if(lang === 'ar') {
-                document.body.style.direction = 'rtl';
-            } else {
-                document.body.style.direction = 'ltr';
-            }
         }
     </script>
 </body>
