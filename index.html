@@ -98,7 +98,7 @@
         .comment-input-box { display: flex; gap: 8px; margin-bottom: 8px; }
         .comment-input-box input { flex: 1; padding: 8px 12px; border-radius: 18px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); outline: none; font-size: 13px; }
         .comment-input-box button { padding: 6px 14px; border-radius: 18px; border: none; background: var(--primary); color: white; font-weight: 600; cursor: pointer; }
-        .comment-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .comment-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
         .comment-item { background: var(--input-bg); padding: 8px 12px; border-radius: 10px; font-size: 13px; }
         .comment-item b { color: var(--primary); display: block; }
 
@@ -136,7 +136,7 @@
     <!-- AUTH SCREEN -->
     <div class="auth-container" id="authPage">
         <div class="auth-top-bar">
-            <select class="lang-select-box" id="authLangSelect" onchange="changeLanguage()">
+            <select class="lang-select-box" id="authLangSelect" onchange="changeLanguage(this.value)">
                 <option value="en">English (US)</option>
                 <option value="bn">বাংলা</option>
                 <option value="hi">हिन्दी</option>
@@ -147,13 +147,13 @@
 
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-comments"></i> Talkia</div>
-            <p class="auth-subtitle">The Kingdom of Free Expressions & Voice</p>
+            <p class="auth-subtitle" id="txtAuthSub">The Kingdom of Free Expressions & Voice</p>
 
             <form id="formLogin" style="width: 100%;" onsubmit="triggerOTP(event, 'login')">
                 <div class="form-group"><input type="text" id="loginId" placeholder="Mobile number or email" required></div>
                 <div class="form-group"><input type="password" id="loginPass" placeholder="Password" required></div>
                 <button type="submit" class="btn-full">Log in</button>
-                <a class="forgot-link" onclick="alert('Password reset instructions sent!');">Forgot password?</a>
+                <a class="forgot-link" onclick="alert('Password reset instructions sent via Demo System.');">Forgot password?</a>
                 <button type="button" class="btn-outline" onclick="toggleAuthForm('register')">Create new account</button>
             </form>
 
@@ -174,7 +174,7 @@
         <div class="modal-body" style="text-align: center;">
             <i class="fa-solid fa-shield-halved" style="font-size: 36px; color: var(--primary); margin-bottom: 10px;"></i>
             <h3>Enter OTP Code</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px 0;">Use demo code: <b>1234</b></p>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px 0;">Strict Demo OTP Verification: Enter <b>1234</b></p>
             <div class="form-group"><input type="text" id="otpInput" maxlength="4" placeholder="1234" style="text-align: center; font-size: 18px; letter-spacing: 8px;" required></div>
             <button class="btn-full" onclick="verifyOTP()">Verify Code</button>
         </div>
@@ -203,36 +203,7 @@
                 </div>
 
                 <div id="feedStream">
-                    <div class="feed-post" id="post-demo">
-                        <div class="user-info">
-                            <div class="avatar">T</div>
-                            <div class="user-details">
-                                <h4>Talkia Official <span class="anon-badge">Pro</span></h4>
-                                <p>Just now • Public</p>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            Welcome to <b>Talkia</b>! The Kingdom of Free Expressions & Voice. Share your thoughts freely! 🎉
-                        </div>
-                        <div class="post-actions">
-                            <button class="opt-btn" id="like-btn-demo" onclick="toggleLike('demo')">
-                                <i class="fa-regular fa-heart"></i> <span id="like-text-demo">Like</span> (<span id="like-count-demo">5</span>)
-                            </button>
-                            <button class="opt-btn" onclick="toggleCommentBox('demo')">
-                                <i class="fa-regular fa-comment"></i> Comment
-                            </button>
-                            <button class="opt-btn" onclick="sharePost('Welcome to Talkia!')">
-                                <i class="fa-solid fa-share"></i> Share
-                            </button>
-                        </div>
-                        <div class="comment-section" id="comment-sec-demo">
-                            <div class="comment-input-box">
-                                <input type="text" id="comment-in-demo" placeholder="Write a comment...">
-                                <button onclick="postComment('demo')">Send</button>
-                            </div>
-                            <ul class="comment-list" id="comment-list-demo"></ul>
-                        </div>
-                    </div>
+                    <!-- Dynamic posts loaded via localStorage -->
                 </div>
             </div>
         </div>
@@ -242,11 +213,9 @@
             <div class="container" style="text-align: center; padding-top: 40px;">
                 <i class="fa-solid fa-microphone-lines" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
                 <h3>Talkia Voice Reels</h3>
-                <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">Listen to voice notes and audio expressions.</p>
-                <div class="post-box" style="margin-top: 20px; text-align: left;">
-                    <h4><b>Voice Clip #1</b> • Community Member</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">"Assalamu Alaikum, welcome to our voice platform..."</p>
-                    <button class="btn-full" style="padding: 10px; font-size: 14px;" onclick="playVoiceNote(this)"><i class="fa-solid fa-play"></i> Play Voice Note (0:45)</button>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">Listen to verified voice notes and audio expressions.</p>
+                <div id="reelsStream" style="margin-top: 20px; text-align: left;">
+                    <!-- Real voice posts will appear here automatically -->
                 </div>
             </div>
         </div>
@@ -280,7 +249,7 @@
                 <div class="post-box" style="margin-top: 15px; display: flex; gap: 12px; align-items: center;">
                     <i class="fa-solid fa-heart" style="font-size: 24px; color: #E41E3F;"></i>
                     <div>
-                        <p style="font-size: 14px;"><b>Rafiqul Islam</b> and others liked your post.</p>
+                        <p style="font-size: 14px;"><b>Rafiqul Islam</b> liked your recent expression.</p>
                         <small style="color: var(--text-muted);">2 hours ago</small>
                     </div>
                 </div>
@@ -294,7 +263,7 @@
                 <div class="profile-info-container">
                     <div class="profile-avatar-wrap" id="profileAvatarText">U</div>
                     <h2 class="profile-name" id="profileDisplayName">User Name <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 16px;" title="Verified"></i></h2>
-                    <p class="profile-stats">0 followers • 0 following • 0 posts</p>
+                    <p class="profile-stats">0 followers • 0 following • <span id="userPostCount">0</span> posts</p>
                     <p class="profile-bio" id="profileBioText">Add your bio here...</p>
                     
                     <div class="profile-actions-flex">
@@ -322,7 +291,7 @@
         </nav>
     </div>
 
-    <!-- MODALS: CREATE POST -->
+    <!-- MODALS: CREATE POST (WITH REAL MICROPHONE RECORDING) -->
     <div class="modal" id="createModal">
         <div class="modal-body">
             <div class="modal-header">
@@ -331,11 +300,11 @@
             </div>
             <textarea class="post-input" id="newPostText" placeholder="What's on your mind?" style="min-height: 120px; margin-bottom: 12px; width: 100%; border: 1px solid var(--border); padding: 10px; border-radius: 8px; background: var(--input-bg); color: var(--text-main);"></textarea>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
                 <label class="opt-btn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;">
                     <input type="checkbox" id="modalAnonCheck"> <i class="fa-solid fa-user-secret"></i> Anonymous
                 </label>
-                <button class="opt-btn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="recordVoicePost()">
+                <button class="opt-btn" id="micRecordBtn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="toggleRealVoiceRecording()">
                     <i class="fa-solid fa-microphone" style="color: #E41E3F;"></i> <span id="voiceBtnText">Record Voice</span>
                 </button>
             </div>
@@ -351,10 +320,10 @@
                 <button class="btn-icon" onclick="closeModal('searchModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="form-group" style="display: flex; gap: 8px;">
-                <input type="text" id="searchInput" placeholder="Search friends, posts, or tags..." onkeypress="if(event.key === 'Enter') runSearch(this.value)">
+                <input type="text" id="searchInput" placeholder="Search posts or content..." onkeypress="if(event.key === 'Enter') runSearch(this.value)">
                 <button class="btn-full" style="width: 80px; margin-top: 0;" onclick="runSearch(document.getElementById('searchInput').value)">Go</button>
             </div>
-            <div id="searchResults" style="font-size: 14px; color: var(--text-muted); margin-top: 10px;">Type something and click Go or Press Enter...</div>
+            <div id="searchResults" style="font-size: 14px; color: var(--text-muted); margin-top: 10px;">Type something and click Go...</div>
         </div>
     </div>
 
@@ -393,7 +362,7 @@
             
             <div class="setting-item" style="cursor: default;">
                 <span>Language / ভাষা</span>
-                <select class="lang-select-box" id="appLangSelect" onchange="changeLanguage()">
+                <select class="lang-select-box" id="appLangSelect" onchange="changeLanguage(this.value)">
                     <option value="en">English</option>
                     <option value="bn">বাংলা</option>
                     <option value="hi">हिन्दी</option>
@@ -419,10 +388,10 @@
         </div>
         <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
             <div class="form-group"><label>Bio</label><input type="text" id="editBioInput" placeholder="Write your bio..."></div>
-            <div class="form-group"><label>Current Location</label><input type="text" id="editLocInput" placeholder="e.g. Doha, Qatar"></div>
-            <div class="form-group"><label>Hometown</label><input type="text" id="editHometownInput" placeholder="e.g. Noakhali, Bangladesh"></div>
-            <div class="form-group"><label>Work</label><input type="text" id="editWorkInput" placeholder="e.g. Electrical Foreman"></div>
-            <div class="form-group"><label>Education</label><input type="text" id="editEduInput" placeholder="e.g. Sompara College"></div>
+            <div class="form-group"><label>Current Location</label><input type="text" id="editLocInput" placeholder="Enter your current city/country"></div>
+            <div class="form-group"><label>Hometown</label><input type="text" id="editHometownInput" placeholder="Enter your hometown"></div>
+            <div class="form-group"><label>Work</label><input type="text" id="editWorkInput" placeholder="Enter your occupation"></div>
+            <div class="form-group"><label>Education</label><input type="text" id="editEduInput" placeholder="Enter your school/college"></div>
             <button class="btn-full" onclick="saveProfileChanges()">Save Profile Details</button>
         </div>
     </div>
@@ -454,23 +423,38 @@
             <h3>Activity Log</h3>
         </div>
         <ul id="activityList" style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            <li class="post-box" style="margin: 0;">✨ Welcome to Talkia! Account initialized.</li>
+            <li class="post-box" style="margin: 0;">✨ Welcome to Talkia! Persistent engine active.</li>
         </ul>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC (ROBUST PERSISTENT ENGINE) -->
     <script>
         let currentUser = null;
         let pendingUser = null;
-        let isVoiceRecorded = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedAudioUrl = null;
 
         function initApp() {
+            // Restore theme preference
+            const savedTheme = localStorage.getItem('talkia_theme');
+            if(savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+
+            // Restore language preference
+            const savedLang = localStorage.getItem('talkia_lang') || 'en';
+            document.getElementById('authLangSelect').value = savedLang;
+            document.getElementById('appLangSelect').value = savedLang;
+            changeLanguage(savedLang, false);
+
             const saved = localStorage.getItem('talkia_user');
             if(saved) {
                 currentUser = JSON.parse(saved);
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appInterface').style.display = 'block';
                 loadUserData();
+                renderPosts();
             }
             const lastView = localStorage.getItem('talkia_active_view') || 'Home';
             switchView(lastView, false);
@@ -492,25 +476,26 @@
                 const name = document.getElementById('regName').value;
                 const username = document.getElementById('regUsername').value;
                 const contact = document.getElementById('regContact').value;
-                pendingUser = { name, username, contact, bio: "Talkia User", location: "", hometown: "", work: "", education: "" };
+                pendingUser = { name, username, contact, bio: "", location: "", hometown: "", work: "", education: "" };
             } else {
                 const contact = document.getElementById('loginId').value;
-                pendingUser = { name: "Talkia User", username: "user", contact, bio: "Talkia User", location: "", hometown: "", work: "", education: "" };
+                pendingUser = { name: "Talkia User", username: "user", contact, bio: "", location: "", hometown: "", work: "", education: "" };
             }
             openModal('otpModal');
         }
 
         function verifyOTP() {
-            const code = document.getElementById('otpInput').value;
-            if(code === "1234" || code.length === 4) {
+            const code = document.getElementById('otpInput').value.trim();
+            if(code === "1234") {
                 currentUser = pendingUser;
                 localStorage.setItem('talkia_user', JSON.stringify(currentUser));
                 closeModal('otpModal');
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appInterface').style.display = 'block';
                 loadUserData();
+                renderPosts();
             } else {
-                alert("Invalid OTP! Please enter 1234.");
+                alert("❌ Strict verification failed! Please enter correct demo OTP code: 1234");
             }
         }
 
@@ -519,7 +504,7 @@
                 const initial = currentUser.name.charAt(0).toUpperCase();
                 document.getElementById('headerAvatar').innerText = initial;
                 document.getElementById('profileAvatarText').innerText = initial;
-                document.getElementById('profileDisplayName').innerHTML = `${currentUser.name} <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>`;
+                document.getElementById('profileDisplayName').innerHTML = `${escapeHTML(currentUser.name)} <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>`;
                 document.getElementById('profileBioText').innerText = currentUser.bio || "Add your bio here...";
                 document.getElementById('locText').innerText = currentUser.location || "Not specified";
                 document.getElementById('hometownText').innerText = currentUser.hometown || "Not specified";
@@ -563,67 +548,275 @@
             if(save) {
                 localStorage.setItem('talkia_active_view', viewName);
             }
+            if(viewName === 'Reels') {
+                renderReels();
+            }
             window.scrollTo(0, 0);
         }
 
-        function toggleLike(id) {
-            const btn = document.getElementById(`like-btn-${id}`);
-            const countSpan = document.getElementById(`like-count-${id}`);
-            let count = parseInt(countSpan.innerText);
+        // --- REAL MICROPHONE RECORDING ENGINE ---
+        async function toggleRealVoiceRecording() {
+            const btnText = document.getElementById('voiceBtnText');
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                return alert("Audio recording is not supported in this browser.");
+            }
 
-            if(btn.classList.contains('liked')) {
-                btn.classList.remove('liked');
-                btn.querySelector('i').className = "fa-regular fa-heart";
-                countSpan.innerText = count - 1;
-            } else {
-                btn.classList.add('liked');
-                btn.querySelector('i').className = "fa-solid fa-heart";
-                countSpan.innerText = count + 1;
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        recordedAudioUrl = URL.createObjectURL(audioBlob);
+                        btnText.innerText = "Voice Recorded ✓ (Ready)";
+                        alert("🎙️ Real microphone audio recorded successfully!");
+                    };
+
+                    mediaRecorder.start();
+                    btnText.innerText = "Recording... (Click to Stop)";
+                } catch (err) {
+                    alert("Microphone permission denied or unavailable.");
+                }
+            } else if (mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
             }
         }
 
-        function toggleCommentBox(id) {
-            const sec = document.getElementById(`comment-sec-${id}`);
+        // --- PERSISTENT POSTS & COMMENTS ENGINE ---
+        function getPosts() {
+            const posts = localStorage.getItem('talkia_posts');
+            if(posts) return JSON.parse(posts);
+            return [
+                {
+                    id: 'demo-1',
+                    name: 'Talkia Official',
+                    username: 'talkia',
+                    avatar: 'T',
+                    time: 'Just now',
+                    content: 'Welcome to Talkia! The Kingdom of Free Expressions & Voice. Share your thoughts freely! 🎉',
+                    audioUrl: null,
+                    likes: 5,
+                    likedByMe: false,
+                    comments: [{name: 'Rafiqul Islam', text: 'Amazing platform!'}]
+                }
+            ];
+        }
+
+        function savePosts(posts) {
+            localStorage.setItem('talkia_posts', JSON.stringify(posts));
+        }
+
+        function renderPosts() {
+            const posts = getPosts();
+            const feed = document.getElementById('feedStream');
+            let html = '';
+            let myPostCount = 0;
+
+            posts.forEach(p => {
+                if(currentUser && p.name === currentUser.name) myPostCount++;
+                let audioHtml = p.audioUrl ? `<div style="margin: 8px 0; padding: 10px; background: var(--input-bg); border-radius: 8px;"><audio controls style="width:100%;"><source src="${p.audioUrl}" type="audio/mp3">Your browser does not support audio.</audio></div>` : '';
+                
+                let commentItems = '';
+                if(p.comments && p.comments.length > 0) {
+                    p.comments.forEach(c => {
+                        commentItems += `<li class="comment-item"><b>${escapeHTML(c.name)}</b> ${escapeHTML(c.text)}</li>`;
+                    });
+                }
+
+                html += `
+                    <div class="feed-post" id="post-${p.id}">
+                        <div class="user-info">
+                            <div class="avatar">${p.avatar}</div>
+                            <div class="user-details">
+                                <h4>${escapeHTML(p.name)} ${p.name.includes('Anonymous') ? '<span class="anon-badge">Anon</span>' : '<span class="anon-badge">Pro</span>'}</h4>
+                                <p>${p.time} • Public</p>
+                            </div>
+                        </div>
+                        <div class="post-content">${escapeHTML(p.content)}</div>
+                        ${audioHtml}
+                        <div class="post-actions">
+                            <button class="opt-btn ${p.likedByMe ? 'liked' : ''}" onclick="toggleLike('${p.id}')">
+                                <i class="${p.likedByMe ? 'fa-solid' : 'fa-regular'} fa-heart"></i> Like (<span id="like-count-${p.id}">${p.likes}</span>)
+                            </button>
+                            <button class="opt-btn" onclick="toggleCommentBox('${p.id}')">
+                                <i class="fa-regular fa-comment"></i> Comment (${p.comments ? p.comments.length : 0})
+                            </button>
+                            <button class="opt-btn" onclick="sharePost('${p.content.replace(/'/g, "\\'")}')">
+                                <i class="fa-solid fa-share"></i> Share
+                            </button>
+                        </div>
+                        <div class="comment-section" id="comment-sec-${p.id}" style="display:none;">
+                            <div class="comment-input-box">
+                                <input type="text" id="comment-in-${p.id}" placeholder="Write a comment..." onkeypress="if(event.key==='Enter') postComment('${p.id}')">
+                                <button onclick="postComment('${p.id}')">Send</button>
+                            </div>
+                            <ul class="comment-list" id="comment-list-${p.id}">${commentItems}</ul>
+                        </div>
+                    </div>
+                `;
+            });
+
+            feed.innerHTML = html;
+            if(document.getElementById('userPostCount')) {
+                document.getElementById('userPostCount').innerText = myPostCount;
+            }
+        }
+
+        function renderReels() {
+            const posts = getPosts();
+            const reelsStream = document.getElementById('reelsStream');
+            let reelsHtml = '';
+            let count = 0;
+
+            posts.forEach(p => {
+                if(p.audioUrl) {
+                    count++;
+                    reelsHtml += `
+                        <div class="post-box">
+                            <h4><b>Voice Reel #${count}</b> • ${escapeHTML(p.name)}</h4>
+                            <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">"${escapeHTML(p.content)}"</p>
+                            <audio controls style="width:100%; margin-top: 6px;"><source src="${p.audioUrl}" type="audio/mp3">Your browser does not support audio.</audio>
+                        </div>
+                    `;
+                }
+            });
+
+            if(count === 0) {
+                reelsHtml = '<p style="color: var(--text-muted); font-size: 14px;">No voice reels recorded yet. Create a post with voice recording!</p>';
+            }
+            reelsStream.innerHTML = reelsHtml;
+        }
+
+        function toggleLike(postId) {
+            let posts = getPosts();
+            posts = posts.map(p => {
+                if(p.id === postId) {
+                    if(p.likedByMe) {
+                        p.likes -= 1;
+                        p.likedByMe = false;
+                    } else {
+                        p.likes += 1;
+                        p.likedByMe = true;
+                    }
+                }
+                return p;
+            });
+            savePosts(posts);
+            renderPosts();
+        }
+
+        function toggleCommentBox(postId) {
+            const sec = document.getElementById(`comment-sec-${postId}`);
             sec.style.display = sec.style.display === 'block' ? 'none' : 'block';
         }
 
-        function postComment(id) {
-            const input = document.getElementById(`comment-in-${id}`);
+        function postComment(postId) {
+            const input = document.getElementById(`comment-in-${postId}`);
             const text = input.value.trim();
             if(!text) return;
 
-            const list = document.getElementById(`comment-list-${id}`);
-            const li = document.createElement('li');
-            li.className = 'comment-item';
-            li.innerHTML = `<b>${currentUser ? currentUser.name : "User"}</b> ${text}`;
-            list.appendChild(li);
-            input.value = '';
+            let posts = getPosts();
+            posts = posts.map(p => {
+                if(p.id === postId) {
+                    if(!p.comments) p.comments = [];
+                    p.comments.push({ name: currentUser ? currentUser.name : "User", text: text });
+                }
+                return p;
+            });
+            savePosts(posts);
+            renderPosts();
+            document.getElementById(`comment-sec-${postId}`).style.display = 'block';
         }
 
-        function recordVoicePost() {
-            isVoiceRecorded = true;
-            document.getElementById('voiceBtnText').innerText = "Voice Recorded (0:15) ✓";
-            alert("🎙️ Voice note successfully recorded!");
+        function createNewPost() {
+            const text = document.getElementById('newPostText').value.trim();
+            const isAnon = document.getElementById('modalAnonCheck').checked;
+
+            if(!text && !recordedAudioUrl) return alert("Please write something or record a voice note!");
+
+            const newPost = {
+                id: 'post-' + Date.now(),
+                name: isAnon ? "Anonymous Secret" : (currentUser ? currentUser.name : "User"),
+                username: isAnon ? "anon" : (currentUser ? currentUser.username : "user"),
+                avatar: isAnon ? '🕵️' : (currentUser ? currentUser.name.charAt(0).toUpperCase() : 'U'),
+                time: 'Just now',
+                content: text || (isAnon ? "Voice expression (Anonymous)" : "Voice expression"),
+                audioUrl: recordedAudioUrl,
+                likes: 0,
+                likedByMe: false,
+                comments: []
+            };
+
+            let posts = getPosts();
+            posts.unshift(newPost);
+            savePosts(posts);
+
+            // Reset modal
+            document.getElementById('newPostText').value = '';
+            document.getElementById('modalAnonCheck').checked = false;
+            recordedAudioUrl = null;
+            document.getElementById('voiceBtnText').innerText = "Record Voice";
+            mediaRecorder = null;
+
+            closeModal('createModal');
+            renderPosts();
+            switchView('Home');
         }
 
-        function playVoiceNote(btn) {
-            btn.innerHTML = '<i class="fa-solid fa-pause"></i> Playing Voice Note...';
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fa-solid fa-play"></i> Play Voice Note (0:45)';
-            }, 3000);
+        function runSearch(query) {
+            const res = document.getElementById('searchResults');
+            if(!query.trim()) {
+                res.innerHTML = "Type something to search...";
+                return;
+            }
+            const posts = getPosts();
+            const matches = posts.filter(p => p.content.toLowerCase().includes(query.toLowerCase()) || p.name.toLowerCase().includes(query.toLowerCase()));
+            
+            if(matches.length > 0) {
+                res.innerHTML = `🔍 Found ${matches.length} matching post(s) for "<b>${escapeHTML(query)}</b>"`;
+            } else {
+                res.innerHTML = `🔍 No matching results found for "<b>${escapeHTML(query)}</b>"`;
+            }
+        }
+
+        function changeLanguage(lang, save = true) {
+            if(save) localStorage.setItem('talkia_lang', lang);
+            document.getElementById('authLangSelect').value = lang;
+            document.getElementById('appLangSelect').value = lang;
+
+            if(lang === 'ar') {
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.style.direction = 'ltr';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            if(document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('talkia_theme', 'dark');
+            } else {
+                localStorage.setItem('talkia_theme', 'light');
+            }
         }
 
         function sharePost(text) {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text);
-                alert("🔗 Post content & link copied!");
+                alert("🔗 Post text copied to clipboard!");
             } else {
-                alert("Share link generated!");
+                alert("Post content shared successfully!");
             }
         }
 
         function shareProfileLink() {
-            const profileUrl = `https://talkia.app/profile/${currentUser ? currentUser.username : 'user'}`;
+            const profileUrl = window.location.href.split('#')[0] + `#profile-${currentUser ? currentUser.username : 'user'}`;
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(profileUrl);
             }
@@ -643,83 +836,18 @@
             }
         }
 
-        function createNewPost() {
-            const text = document.getElementById('newPostText').value;
-            const isAnon = document.getElementById('modalAnonCheck').checked;
-
-            if(!text.trim() && !isVoiceRecorded) return alert("Please write something or attach a voice note!");
-
-            const postId = Date.now();
-            const authorName = isAnon ? "Anonymous Secret" : currentUser.name;
-            const authorTag = isAnon ? '<span class="anon-badge">Anon</span>' : `@${currentUser.username || 'user'}`;
-            const avatarLetter = isAnon ? '🕵️' : currentUser.name.charAt(0).toUpperCase();
-
-            let voiceBadgeHTML = isVoiceRecorded ? '<div style="margin: 8px 0; padding: 10px; background: var(--input-bg); border-radius: 8px;"><button class="btn-full" style="padding: 6px; font-size: 13px;" onclick="playVoiceNote(this)"><i class="fa-solid fa-play"></i> Play Attached Voice Note (0:15)</button></div>' : '';
-
-            const postHTML = `
-                <div class="feed-post" id="post-${postId}">
-                    <div class="user-info">
-                        <div class="avatar">${avatarLetter}</div>
-                        <div class="user-details">
-                            <h4>${authorName} ${authorTag}</h4>
-                            <p>Just now • Public</p>
-                        </div>
-                    </div>
-                    <div class="post-content">${text}</div>
-                    ${voiceBadgeHTML}
-                    <div class="post-actions">
-                        <button class="opt-btn" id="like-btn-${postId}" onclick="toggleLike('${postId}')">
-                            <i class="fa-regular fa-heart"></i> <span id="like-text-${postId}">Like</span> (<span id="like-count-${postId}">0</span>)
-                        </button>
-                        <button class="opt-btn" onclick="toggleCommentBox('${postId}')">
-                            <i class="fa-regular fa-comment"></i> Comment
-                        </button>
-                        <button class="opt-btn" onclick="sharePost('${text}')">
-                            <i class="fa-solid fa-share"></i> Share
-                        </button>
-                    </div>
-                    <div class="comment-section" id="comment-sec-${postId}">
-                        <div class="comment-input-box">
-                            <input type="text" id="comment-in-${postId}" placeholder="Write a comment...">
-                            <button onclick="postComment('${postId}')">Send</button>
-                        </div>
-                        <ul class="comment-list" id="comment-list-${postId}"></ul>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('feedStream').insertAdjacentHTML('afterbegin', postHTML);
-            document.getElementById('newPostText').value = '';
-            document.getElementById('modalAnonCheck').checked = false;
-            isVoiceRecorded = false;
-            document.getElementById('voiceBtnText').innerText = "Record Voice";
-            closeModal('createModal');
-            switchView('Home');
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
 
-        function runSearch(query) {
-            const res = document.getElementById('searchResults');
-            if(!query.trim()) {
-                res.innerHTML = "Type something to search...";
-                return;
-            }
-            res.innerHTML = `🔍 Search Results for: "<b>${query}</b>"<br><small style="color:var(--primary);">Found matching posts, voice reels & community members.</small>`;
+        function logout() { 
+            localStorage.removeItem('talkia_user'); 
+            localStorage.removeItem('talkia_active_view'); 
+            location.reload(); 
         }
 
-        function changeLanguage() {
-            const lang = document.getElementById('authLangSelect').value || document.getElementById('appLangSelect').value;
-            document.getElementById('authLangSelect').value = lang;
-            document.getElementById('appLangSelect').value = lang;
-            if(lang === 'ar') {
-                document.body.style.direction = 'rtl';
-            } else {
-                document.body.style.direction = 'ltr';
-            }
-            alert(`Language switched to: ${lang.toUpperCase()}`);
-        }
-
-        function logout() { localStorage.removeItem('talkia_user'); localStorage.removeItem('talkia_active_view'); location.reload(); }
-        function toggleTheme() { document.body.classList.toggle('dark-theme'); }
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         function openPanel(id) { document.getElementById(id).classList.add('active'); }
