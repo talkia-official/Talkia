@@ -31,35 +31,36 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-main); transition: background-color 0.3s, color 0.3s; min-height: 100vh; }
 
-        /* Fullscreen Auth Page - Perfect Centering & Full Scale */
+        /* Fullscreen Mobile Responsive Auth Layout */
         .auth-container {
             min-height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 24px; background: linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(15,23,42,0.08) 100%);
+            padding: 16px; background: linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(15,23,42,0.08) 100%);
             position: fixed; top: 0; left: 0; z-index: 1000; overflow-y: auto;
         }
         
         .auth-top-bar {
-            position: absolute; top: 24px; right: 24px; display: flex; gap: 12px; align-items: center;
+            position: absolute; top: 16px; right: 16px; display: flex; gap: 10px; align-items: center; z-index: 10;
         }
 
+        /* Full Width Auth Card for Mobile */
         .auth-card {
-            background: var(--card-bg); width: 100%; max-width: 520px; border-radius: 24px;
-            padding: 40px 35px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin: auto;
+            background: var(--card-bg); width: 100%; max-width: 650px; border-radius: 20px;
+            padding: 35px 22px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            margin: auto; margin-top: 50px;
         }
         .auth-logo { font-size: 38px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .auth-subtitle { text-align: center; font-size: 15px; color: var(--text-muted); margin-bottom: 30px; }
+        .auth-subtitle { text-align: center; font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
 
-        .tab-buttons { display: flex; background: var(--bg-light); border-radius: 14px; padding: 6px; margin-bottom: 24px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 13px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 10px; transition: 0.2s; font-size: 15px; }
+        .tab-buttons { display: flex; background: var(--bg-light); border-radius: 12px; padding: 5px; margin-bottom: 22px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 14px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 16px; }
         .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
-        .form-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); font-size: 15px; transition: 0.2s; }
+        .form-group input { width: 100%; padding: 15px 16px; border-radius: 12px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); font-size: 15px; transition: 0.2s; }
         .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.12); }
 
-        .btn-full { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-full { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .btn-full:hover { background: var(--primary-hover); }
 
         /* Main App Interface (Hidden initially) */
@@ -69,7 +70,7 @@
         header {
             position: sticky; top: 0; z-index: 100;
             background: var(--card-bg); border-bottom: 1px solid var(--border);
-            padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
         }
         .logo { font-size: 26px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         .nav-actions { display: flex; align-items: center; gap: 12px; }
@@ -109,7 +110,7 @@
 </head>
 <body onload="initApp()">
 
-    <!-- 1. AUTH SCREEN (Landed First - Fullscreen Centered) -->
+    <!-- 1. AUTH SCREEN (Landed First - Fullscreen Responsive) -->
     <div class="auth-container" id="authPage">
         <!-- Top Bar with Language Selector -->
         <div class="auth-top-bar">
