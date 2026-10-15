@@ -13,17 +13,17 @@
         body{margin:0;background:var(--bg-light);color:var(--text-main);min-height:100vh;padding-bottom:76px}
         button,input,textarea,select{font:inherit}
         button{cursor:pointer}
-        .auth-container{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 24px 30px;background:var(--card-bg);position:fixed;inset:0;z-index:5000;overflow:auto}
+        .auth-container{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 24px 30px;background:var(--card-bg);position:fixed;inset:0;z-index:5000;overflow-y:auto}
         .auth-top-bar{width:100%;max-width:450px;display:flex;justify-content:flex-end;gap:10px}
-        .auth-card{width:100%;max-width:420px;margin:auto 0}
+        .auth-card{width:100%;max-width:420px;margin:auto 0;position:relative;z-index:5001}
         .auth-logo{font-size:38px;font-weight:800;color:var(--primary);text-align:center;margin-bottom:6px}
         .auth-subtitle{text-align:center;font-size:14px;color:var(--text-muted);margin-bottom:30px}
         .form-group{margin-bottom:14px;width:100%}
         .form-group input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--border);outline:none;background:var(--input-bg);color:var(--text-main);font-size:15px}
-        .btn-full{width:100%;padding:14px;background:var(--primary);color:white;border:0;border-radius:25px;font-weight:700;margin-top:6px}
+        .btn-full{width:100%;padding:14px;background:var(--primary);color:white;border:0;border-radius:25px;font-weight:700;margin-top:6px;cursor:pointer}
         .btn-full:disabled{opacity:.6}
         .forgot-link{display:block;text-align:center;font-size:14px;color:var(--text-main);font-weight:600;margin:16px 0 25px;cursor:pointer}
-        .btn-outline{width:100%;padding:13px;background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:25px;font-weight:700}
+        .btn-outline{width:100%;padding:13px;background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:25px;font-weight:700;cursor:pointer}
         #appInterface{display:none}
         header{position:sticky;top:0;z-index:100;background:var(--card-bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
         .logo{font-size:24px;font-weight:800;color:var(--primary);cursor:pointer}
@@ -102,9 +102,9 @@
             <div class="form-group">
                 <input type="password" id="loginPass" placeholder="Password (6+ characters)" required>
             </div>
-            <button class="btn-full" id="loginBtn">Log in</button>
-            <a class="forgot-link" onclick="resetPassword()">Forgot password?</a>
-            <button type="button" class="btn-outline" onclick="toggleAuthForm('register')">Create new account</button>
+            <button class="btn-full" id="loginBtn" type="submit">Log in</button>
+            <a class="forgot-link" onclick="window.resetPassword()">Forgot password?</a>
+            <button type="button" class="btn-outline" onclick="document.getElementById('formLogin').style.display='none'; document.getElementById('formRegister').style.display='block';">Create new account</button>
             <p class="status-line" id="loginStatus"></p>
         </form>
 
@@ -121,8 +121,8 @@
             <div class="form-group">
                 <input type="password" id="regPass" placeholder="Password (at least 6 characters)" minlength="6" required>
             </div>
-            <button class="btn-full" id="registerBtn">Sign Up</button>
-            <a class="forgot-link" onclick="toggleAuthForm('login')">Already have an account? Log in</a>
+            <button class="btn-full" id="registerBtn" type="submit">Sign Up</button>
+            <a class="forgot-link" onclick="document.getElementById('formRegister').style.display='none'; document.getElementById('formLogin').style.display='block';">Already have an account? Log in</a>
             <p class="status-line" id="registerStatus"></p>
         </form>
     </div>
@@ -350,18 +350,13 @@ function activity(t) {
     while ($('activityList').children.length > 30) $('activityList').lastChild.remove();
 }
 
-// Fixed toggleAuthForm to globally work seamlessly with button clicks
 window.toggleAuthForm = function(m) {
-    const loginForm = $('formLogin');
-    const registerForm = $('formRegister');
-    if (loginForm && registerForm) {
-        if (m === 'login') {
-            loginForm.style.display = 'block';
-            registerForm.style.display = 'none';
-        } else {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-        }
+    if (m === 'login') {
+        document.getElementById('formLogin').style.display = 'block';
+        document.getElementById('formRegister').style.display = 'none';
+    } else {
+        document.getElementById('formLogin').style.display = 'none';
+        document.getElementById('formRegister').style.display = 'block';
     }
 };
 
@@ -397,10 +392,13 @@ window.changeLanguage = l => {
 
 window.resetPassword = async () => {
     const email = me?.email || $('loginId').value.trim();
-    if (!email) return alert('Enter your email address first.');
+    if (!email) {
+        alert('Please enter your email address in the box first.');
+        return;
+    }
     try {
         await sendPasswordResetEmail(auth, email);
-        alert('Password reset email sent. Check inbox and spam.');
+        alert('Password reset email sent! Please check your inbox or spam folder.');
         activity('Requested password reset');
     } catch (e) {
         alert(err(e));
@@ -712,7 +710,7 @@ window.respondRequest = async (id, yes) => {
 };
 
 function renderNotifs() {
-    $('notificationsList').innerHTML = notifs.length ? notifs.map(n => `<div class="post-box" style="display:flex;justify-content:space-between;gap:8px"><span>${esc(n.message || 'Notification')}</span>${!n.read ? `<button class="small-btn" onclick="markRead('${esc(n.id)}')">Mark read</button>` : ''}</div>`).join('') : '<div class="empty-state">No notifications yet.</div>';
+    $('notificationsList').innerHTML = notifs.length ? notifs.map(n => `<div class="post-box" style="display:flex;justify-content:space-between;gap:8px"><span>${esc(n.message || 'Notification')}</span>${!n.read ? `<button class="small-btn" onclick="markRead('${esc(n.id)}')">Mark read</button>`: ''}</div>`).join('') : '<div class="empty-state">No notifications yet.</div>';
 }
 
 window.markRead = async id => {
