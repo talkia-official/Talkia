@@ -50,7 +50,7 @@
 
         .btn-full { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 25px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 6px; }
         .btn-full:hover { background: var(--primary-hover); }
-        .forgot-link { display: block; text-align: center; font-size: 14px; color: var(--text-main); font-weight: 600; text-decoration: none; margin-top: 16px; margin-bottom: 25px; }
+        .forgot-link { display: block; text-align: center; font-size: 14px; color: var(--text-main); font-weight: 600; text-decoration: none; margin-top: 16px; margin-bottom: 25px; cursor: pointer; }
         .btn-outline { width: 100%; padding: 14px; background: transparent; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 25px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; }
 
         /* MAIN APP INTERFACE */
@@ -127,7 +127,6 @@
         .anon-badge { background: #DBEAFE; color: var(--primary); font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
         .lang-select-box { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 14px; outline: none; }
         
-        /* Functional Sub-view Panels */
         .sub-panel { display: none; position: fixed; inset: 0; background: var(--card-bg); z-index: 4500; padding: 16px; overflow-y: auto; }
         .sub-panel.active { display: block; }
     </style>
@@ -148,13 +147,13 @@
 
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-comments"></i> Talkia</div>
-            <p class="auth-subtitle" id="txtAuthSub">The Kingdom of Free Expressions & Voice</p>
+            <p class="auth-subtitle">The Kingdom of Free Expressions & Voice</p>
 
             <form id="formLogin" style="width: 100%;" onsubmit="triggerOTP(event, 'login')">
                 <div class="form-group"><input type="text" id="loginId" placeholder="Mobile number or email" required></div>
                 <div class="form-group"><input type="password" id="loginPass" placeholder="Password" required></div>
-                <button type="submit" class="btn-full" id="txtLoginBtn">Log in</button>
-                <a href="#" class="forgot-link" onclick="alert('Password reset instructions sent!'); return false;">Forgot password?</a>
+                <button type="submit" class="btn-full">Log in</button>
+                <a class="forgot-link" onclick="alert('Password reset instructions sent!');">Forgot password?</a>
                 <button type="button" class="btn-outline" onclick="toggleAuthForm('register')">Create new account</button>
             </form>
 
@@ -163,8 +162,8 @@
                 <div class="form-group"><input type="text" id="regContact" placeholder="Mobile number or email" required></div>
                 <div class="form-group"><input type="text" id="regUsername" placeholder="Username (@username)" required></div>
                 <div class="form-group"><input type="password" id="regPass" placeholder="New password" required></div>
-                <button type="submit" class="btn-full" id="txtRegBtn">Sign Up</button>
-                <a href="#" class="forgot-link" onclick="toggleAuthForm('login'); return false;">Already have an account? Log in</a>
+                <button type="submit" class="btn-full">Sign Up</button>
+                <a class="forgot-link" onclick="toggleAuthForm('login');">Already have an account? Log in</a>
             </form>
         </div>
         <div style="font-size: 12px; color: var(--text-muted); text-align: center;">Talkia Corporation © 2026</div>
@@ -197,7 +196,7 @@
             <div class="container">
                 <div class="post-box">
                     <div class="post-input-trigger" onclick="openModal('createModal')">
-                        <div class="avatar" id="headerAvatar">A</div>
+                        <div class="avatar" id="headerAvatar">U</div>
                         <input type="text" placeholder="What's on your mind?">
                         <i class="fa-solid fa-images" style="font-size: 20px; color: #45BD62;"></i>
                     </div>
@@ -206,10 +205,10 @@
                 <div id="feedStream">
                     <div class="feed-post" id="post-demo">
                         <div class="user-info">
-                            <div class="avatar">A</div>
+                            <div class="avatar">T</div>
                             <div class="user-details">
-                                <h4>Ariful Haque <span class="anon-badge">Pro</span></h4>
-                                <p>10 mins ago • Public</p>
+                                <h4>Talkia Official <span class="anon-badge">Pro</span></h4>
+                                <p>Just now • Public</p>
                             </div>
                         </div>
                         <div class="post-content">
@@ -217,23 +216,21 @@
                         </div>
                         <div class="post-actions">
                             <button class="opt-btn" id="like-btn-demo" onclick="toggleLike('demo')">
-                                <i class="fa-regular fa-heart"></i> <span id="like-text-demo">Like</span> (<span id="like-count-demo">12</span>)
+                                <i class="fa-regular fa-heart"></i> <span id="like-text-demo">Like</span> (<span id="like-count-demo">5</span>)
                             </button>
                             <button class="opt-btn" onclick="toggleCommentBox('demo')">
                                 <i class="fa-regular fa-comment"></i> Comment
                             </button>
-                            <button class="opt-btn" onclick="sharePost('Welcome to Talkia! The Kingdom of Free Expressions.')">
+                            <button class="opt-btn" onclick="sharePost('Welcome to Talkia!')">
                                 <i class="fa-solid fa-share"></i> Share
                             </button>
                         </div>
-                        <div class="comment-section" id="comment-sec-demo" style="display: block;">
+                        <div class="comment-section" id="comment-sec-demo">
                             <div class="comment-input-box">
                                 <input type="text" id="comment-in-demo" placeholder="Write a comment...">
                                 <button onclick="postComment('demo')">Send</button>
                             </div>
-                            <ul class="comment-list" id="comment-list-demo">
-                                <li class="comment-item"><b>Alex Rivera</b> Great platform! Excited for voice notes.</li>
-                            </ul>
+                            <ul class="comment-list" id="comment-list-demo"></ul>
                         </div>
                     </div>
                 </div>
@@ -247,8 +244,8 @@
                 <h3>Talkia Voice Reels</h3>
                 <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">Listen to voice notes and audio expressions.</p>
                 <div class="post-box" style="margin-top: 20px; text-align: left;">
-                    <h4><b>Voice Clip #1</b> • Ariful Haque</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">"Assalamu Alaikum, welcome to our new voice platform..."</p>
+                    <h4><b>Voice Clip #1</b> • Community Member</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">"Assalamu Alaikum, welcome to our voice platform..."</p>
                     <button class="btn-full" style="padding: 10px; font-size: 14px;" onclick="playVoiceNote(this)"><i class="fa-solid fa-play"></i> Play Voice Note (0:45)</button>
                 </div>
             </div>
@@ -257,14 +254,14 @@
         <!-- VIEW 3: FRIENDS / REQUESTS -->
         <div class="view-section" id="viewFriends">
             <div class="container">
-                <h3>Friend Requests (268)</h3>
+                <h3>Friend Requests</h3>
                 <div id="friendRequestsList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
                     <div class="post-box" style="display: flex; align-items: center; justify-content: space-between; margin: 0;" id="req-1">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="avatar" style="background: #3B82F6;">M</div>
+                            <div class="avatar" style="background: #3B82F6;">R</div>
                             <div>
-                                <h4 style="font-size: 15px;">Md Rasel Hossain</h4>
-                                <p style="font-size: 12px; color: var(--text-muted);">80 mutual friends</p>
+                                <h4 style="font-size: 15px;">Rafiqul Islam</h4>
+                                <p style="font-size: 12px; color: var(--text-muted);">12 mutual friends</p>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -283,15 +280,8 @@
                 <div class="post-box" style="margin-top: 15px; display: flex; gap: 12px; align-items: center;">
                     <i class="fa-solid fa-heart" style="font-size: 24px; color: #E41E3F;"></i>
                     <div>
-                        <p style="font-size: 14px;"><b>Kazi Farhad</b> and 14 others liked your post.</p>
+                        <p style="font-size: 14px;"><b>Rafiqul Islam</b> and others liked your post.</p>
                         <small style="color: var(--text-muted);">2 hours ago</small>
-                    </div>
-                </div>
-                <div class="post-box" style="margin-top: 10px; display: flex; gap: 12px; align-items: center;">
-                    <i class="fa-solid fa-user-group" style="font-size: 24px; color: var(--primary);"></i>
-                    <div>
-                        <p style="font-size: 14px;"><b>Md Rasel Hossain</b> sent you a friend request.</p>
-                        <small style="color: var(--text-muted);">5 hours ago</small>
                     </div>
                 </div>
             </div>
@@ -302,21 +292,21 @@
             <div class="profile-header-bg">
                 <div class="cover-photo"></div>
                 <div class="profile-info-container">
-                    <div class="profile-avatar-wrap" id="profileAvatarText">A</div>
-                    <h2 class="profile-name" id="profileDisplayName">Ariful Haque Al Mamun <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 16px;" title="Verified"></i></h2>
-                    <p class="profile-stats">2.1K followers • 2.9K following • 1.4K posts</p>
-                    <p class="profile-bio">জীবন জীবনের গতিতে চলতেছে 🍁</p>
+                    <div class="profile-avatar-wrap" id="profileAvatarText">U</div>
+                    <h2 class="profile-name" id="profileDisplayName">User Name <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 16px;" title="Verified"></i></h2>
+                    <p class="profile-stats">0 followers • 0 following • 0 posts</p>
+                    <p class="profile-bio" id="profileBioText">Add your bio here...</p>
                     
                     <div class="profile-actions-flex">
                         <button class="btn-primary-pro" onclick="openModal('createModal')">+ Create</button>
-                        <button class="btn-secondary-pro" onclick="openModal('settingsModal')"><i class="fa-solid fa-gear"></i> Settings</button>
+                        <button class="btn-secondary-pro" onclick="openPanel('editProfilePanel')"><i class="fa-solid fa-pen"></i> Edit Profile</button>
                     </div>
 
-                    <div class="profile-details-box">
-                        <div><i class="fa-solid fa-location-dot"></i> Lives in <b>Doha, Qatar</b></div>
-                        <div><i class="fa-solid fa-house"></i> From <b>Noakhali, Bangladesh</b></div>
-                        <div><i class="fa-solid fa-briefcase"></i> Electrical Foreman at <b>Doha, Qatar</b></div>
-                        <div><i class="fa-solid fa-graduation-cap"></i> Studied at <b>Sompara College</b></div>
+                    <div class="profile-details-box" id="profileDetailsBox">
+                        <div><i class="fa-solid fa-location-dot"></i> Lives in <b id="locText">Not specified</b></div>
+                        <div><i class="fa-solid fa-house"></i> From <b id="hometownText">Not specified</b></div>
+                        <div><i class="fa-solid fa-briefcase"></i> Work at <b id="workText">Not specified</b></div>
+                        <div><i class="fa-solid fa-graduation-cap"></i> Studied at <b id="eduText">Not specified</b></div>
                     </div>
                 </div>
             </div>
@@ -326,8 +316,8 @@
         <nav class="bottom-nav">
             <button class="b-nav-item active" id="navHome" onclick="switchView('Home')"><i class="fa-solid fa-house"></i></button>
             <button class="b-nav-item" id="navReels" onclick="switchView('Reels')"><i class="fa-solid fa-microphone-lines"></i></button>
-            <button class="b-nav-item" id="navFriends" onclick="switchView('Friends')"><i class="fa-solid fa-user-group"></i><span class="b-nav-badge">268</span></button>
-            <button class="b-nav-item" id="navNotifs" onclick="switchView('Notifs')"><i class="fa-solid fa-bell"></i><span class="b-nav-badge">57</span></button>
+            <button class="b-nav-item" id="navFriends" onclick="switchView('Friends')"><i class="fa-solid fa-user-group"></i><span class="b-nav-badge">1</span></button>
+            <button class="b-nav-item" id="navNotifs" onclick="switchView('Notifs')"><i class="fa-solid fa-bell"></i><span class="b-nav-badge">1</span></button>
             <button class="b-nav-item" id="navProfile" onclick="switchView('Profile')"><i class="fa-solid fa-user"></i></button>
         </nav>
     </div>
@@ -360,8 +350,11 @@
                 <span>Search Talkia</span>
                 <button class="btn-icon" onclick="closeModal('searchModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="form-group"><input type="text" id="searchInput" placeholder="Search friends, posts, or tags..." onkeyup="runSearch(this.value)"></div>
-            <div id="searchResults" style="font-size: 14px; color: var(--text-muted); margin-top: 10px;">Type something to search...</div>
+            <div class="form-group" style="display: flex; gap: 8px;">
+                <input type="text" id="searchInput" placeholder="Search friends, posts, or tags..." onkeypress="if(event.key === 'Enter') runSearch(this.value)">
+                <button class="btn-full" style="width: 80px; margin-top: 0;" onclick="runSearch(document.getElementById('searchInput').value)">Go</button>
+            </div>
+            <div id="searchResults" style="font-size: 14px; color: var(--text-muted); margin-top: 10px;">Type something and click Go or Press Enter...</div>
         </div>
     </div>
 
@@ -418,14 +411,29 @@
         </div>
     </div>
 
-    <!-- FUNCTIONAL SUB-PANELS (REAL PAGES INSTEAD OF ALERTS) -->
+    <!-- EDIT PROFILE PANEL -->
+    <div class="sub-panel" id="editProfilePanel">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <button class="btn-icon" onclick="closePanel('editProfilePanel')"><i class="fa-solid fa-arrow-left"></i></button>
+            <h3>Edit Profile</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
+            <div class="form-group"><label>Bio</label><input type="text" id="editBioInput" placeholder="Write your bio..."></div>
+            <div class="form-group"><label>Current Location</label><input type="text" id="editLocInput" placeholder="e.g. Doha, Qatar"></div>
+            <div class="form-group"><label>Hometown</label><input type="text" id="editHometownInput" placeholder="e.g. Noakhali, Bangladesh"></div>
+            <div class="form-group"><label>Work</label><input type="text" id="editWorkInput" placeholder="e.g. Electrical Foreman"></div>
+            <div class="form-group"><label>Education</label><input type="text" id="editEduInput" placeholder="e.g. Sompara College"></div>
+            <button class="btn-full" onclick="saveProfileChanges()">Save Profile Details</button>
+        </div>
+    </div>
+
     <div class="sub-panel" id="privacyPanel">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
             <button class="btn-icon" onclick="closePanel('privacyPanel')"><i class="fa-solid fa-arrow-left"></i></button>
             <h3>Privacy Center</h3>
         </div>
         <p style="font-size: 15px; line-height: 1.6; color: var(--text-main);">
-            Welcome to the Talkia Privacy Center. Here you can control your data, manage who sees your voice expressions, and adjust your anonymous posting visibility settings. Your privacy is fully secured under end-to-end encryption standards.
+            Welcome to the Talkia Privacy Center. Control your data and manage your voice expression privacy settings easily.
         </p>
     </div>
 
@@ -436,7 +444,7 @@
         </div>
         <div class="post-box">
             <h4><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Account Status: Good</h4>
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">No violations found. Your account has full access to voice notes, posts, and monetization features.</p>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Your account has full access to voice notes and posts.</p>
         </div>
     </div>
 
@@ -445,10 +453,8 @@
             <button class="btn-icon" onclick="closePanel('activityPanel')"><i class="fa-solid fa-arrow-left"></i></button>
             <h3>Activity Log</h3>
         </div>
-        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            <li class="post-box" style="margin: 0;">✨ You created a new post in Talkia Feed.</li>
-            <li class="post-box" style="margin: 0;">❤️ You liked a post by Kazi Farhad.</li>
-            <li class="post-box" style="margin: 0;">🎙️ You explored Voice Reels.</li>
+        <ul id="activityList" style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+            <li class="post-box" style="margin: 0;">✨ Welcome to Talkia! Account initialized.</li>
         </ul>
     </div>
 
@@ -464,10 +470,8 @@
                 currentUser = JSON.parse(saved);
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appInterface').style.display = 'block';
-                updateUserInfoUI();
+                loadUserData();
             }
-            
-            // Restore last active view so refreshing doesn't bounce back blindly
             const lastView = localStorage.getItem('talkia_active_view') || 'Home';
             switchView(lastView, false);
         }
@@ -488,10 +492,10 @@
                 const name = document.getElementById('regName').value;
                 const username = document.getElementById('regUsername').value;
                 const contact = document.getElementById('regContact').value;
-                pendingUser = { name, username, contact };
+                pendingUser = { name, username, contact, bio: "Talkia User", location: "", hometown: "", work: "", education: "" };
             } else {
                 const contact = document.getElementById('loginId').value;
-                pendingUser = { name: "Ariful Haque Al Mamun", username: "ariful_haque", contact };
+                pendingUser = { name: "Talkia User", username: "user", contact, bio: "Talkia User", location: "", hometown: "", work: "", education: "" };
             }
             openModal('otpModal');
         }
@@ -504,19 +508,43 @@
                 closeModal('otpModal');
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appInterface').style.display = 'block';
-                updateUserInfoUI();
+                loadUserData();
             } else {
                 alert("Invalid OTP! Please enter 1234.");
             }
         }
 
-        function updateUserInfoUI() {
+        function loadUserData() {
             if(currentUser) {
                 const initial = currentUser.name.charAt(0).toUpperCase();
                 document.getElementById('headerAvatar').innerText = initial;
                 document.getElementById('profileAvatarText').innerText = initial;
                 document.getElementById('profileDisplayName').innerHTML = `${currentUser.name} <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>`;
+                document.getElementById('profileBioText').innerText = currentUser.bio || "Add your bio here...";
+                document.getElementById('locText').innerText = currentUser.location || "Not specified";
+                document.getElementById('hometownText').innerText = currentUser.hometown || "Not specified";
+                document.getElementById('workText').innerText = currentUser.work || "Not specified";
+                document.getElementById('eduText').innerText = currentUser.education || "Not specified";
+
+                document.getElementById('editBioInput').value = currentUser.bio || "";
+                document.getElementById('editLocInput').value = currentUser.location || "";
+                document.getElementById('editHometownInput').value = currentUser.hometown || "";
+                document.getElementById('editWorkInput').value = currentUser.work || "";
+                document.getElementById('editEduInput').value = currentUser.education || "";
             }
+        }
+
+        function saveProfileChanges() {
+            currentUser.bio = document.getElementById('editBioInput').value;
+            currentUser.location = document.getElementById('editLocInput').value;
+            currentUser.hometown = document.getElementById('editHometownInput').value;
+            currentUser.work = document.getElementById('editWorkInput').value;
+            currentUser.education = document.getElementById('editEduInput').value;
+
+            localStorage.setItem('talkia_user', JSON.stringify(currentUser));
+            loadUserData();
+            closePanel('editProfilePanel');
+            alert("Profile details updated successfully!");
         }
 
         function switchView(viewName, save = true) {
@@ -575,7 +603,7 @@
         function recordVoicePost() {
             isVoiceRecorded = true;
             document.getElementById('voiceBtnText').innerText = "Voice Recorded (0:15) ✓";
-            alert("🎙️ Voice note successfully recorded and attached to post!");
+            alert("🎙️ Voice note successfully recorded!");
         }
 
         function playVoiceNote(btn) {
@@ -588,14 +616,14 @@
         function sharePost(text) {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text);
-                alert("🔗 Post content & link copied to clipboard!");
+                alert("🔗 Post content & link copied!");
             } else {
-                alert("Share link generated successfully!");
+                alert("Share link generated!");
             }
         }
 
         function shareProfileLink() {
-            const profileUrl = `https://talkia.app/profile/${currentUser ? currentUser.username : 'ariful'}`;
+            const profileUrl = `https://talkia.app/profile/${currentUser ? currentUser.username : 'user'}`;
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(profileUrl);
             }
@@ -675,7 +703,7 @@
                 res.innerHTML = "Type something to search...";
                 return;
             }
-            res.innerHTML = `🔍 Searching for: "<b>${query}</b>"<br><small style="color:var(--primary);">Found matching posts & friends across Talkia community.</small>`;
+            res.innerHTML = `🔍 Search Results for: "<b>${query}</b>"<br><small style="color:var(--primary);">Found matching posts, voice reels & community members.</small>`;
         }
 
         function changeLanguage() {
@@ -687,7 +715,7 @@
             } else {
                 document.body.style.direction = 'ltr';
             }
-            alert(`Language switched successfully to: ${lang.toUpperCase()}`);
+            alert(`Language switched to: ${lang.toUpperCase()}`);
         }
 
         function logout() { localStorage.removeItem('talkia_user'); localStorage.removeItem('talkia_active_view'); location.reload(); }
