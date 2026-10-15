@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Talkia — Free Expressions & Voice</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -13,17 +13,17 @@
         body{margin:0;background:var(--bg-light);color:var(--text-main);min-height:100vh;padding-bottom:76px}
         button,input,textarea,select{font:inherit}
         button{cursor:pointer}
-        .auth-container{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 24px 30px;background:var(--card-bg);position:fixed;inset:0;z-index:5000;overflow-y:auto}
+        .auth-container{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 24px 30px;background:var(--card-bg);position:fixed;inset:0;z-index:5000;overflow:auto}
         .auth-top-bar{width:100%;max-width:450px;display:flex;justify-content:flex-end;gap:10px}
-        .auth-card{width:100%;max-width:420px;margin:auto 0;position:relative;z-index:5001}
+        .auth-card{width:100%;max-width:420px;margin:auto 0}
         .auth-logo{font-size:38px;font-weight:800;color:var(--primary);text-align:center;margin-bottom:6px}
         .auth-subtitle{text-align:center;font-size:14px;color:var(--text-muted);margin-bottom:30px}
         .form-group{margin-bottom:14px;width:100%}
         .form-group input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--border);outline:none;background:var(--input-bg);color:var(--text-main);font-size:15px}
-        .btn-full{width:100%;padding:14px;background:var(--primary);color:white;border:0;border-radius:25px;font-weight:700;margin-top:6px;cursor:pointer}
+        .btn-full{width:100%;padding:14px;background:var(--primary);color:white;border:0;border-radius:25px;font-weight:700;margin-top:6px}
         .btn-full:disabled{opacity:.6}
-        .forgot-link{display:block;text-align:center;font-size:14px;color:var(--text-main);font-weight:600;margin:16px 0 25px;cursor:pointer}
-        .btn-outline{width:100%;padding:13px;background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:25px;font-weight:700;cursor:pointer}
+        .forgot-link{display:block;width:100%;background:none;border:0;text-align:center;font-size:14px;color:var(--text-main);font-weight:600;margin:16px 0 25px;cursor:pointer;padding:0}
+        .btn-outline{width:100%;padding:13px;background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:25px;font-weight:700}
         #appInterface{display:none}
         header{position:sticky;top:0;z-index:100;background:var(--card-bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
         .logo{font-size:24px;font-weight:800;color:var(--primary);cursor:pointer}
@@ -80,7 +80,6 @@
     </style>
 </head>
 <body>
-
 <div class="auth-container" id="authPage">
     <div class="auth-top-bar">
         <select class="lang-select-box" id="authLangSelect" onchange="changeLanguage(this.value)">
@@ -102,9 +101,9 @@
             <div class="form-group">
                 <input type="password" id="loginPass" placeholder="Password (6+ characters)" required>
             </div>
-            <button class="btn-full" id="loginBtn" type="submit">Log in</button>
-            <a class="forgot-link" onclick="window.resetPassword()">Forgot password?</a>
-            <button type="button" class="btn-outline" onclick="document.getElementById('formLogin').style.display='none'; document.getElementById('formRegister').style.display='block';">Create new account</button>
+            <button type="submit" class="btn-full" id="loginBtn">Log in</button>
+            <button type="button" class="forgot-link" onclick="resetPassword()">Forgot password?</button>
+            <button type="button" class="btn-outline" onclick="toggleAuthForm('register')">Create new account</button>
             <p class="status-line" id="loginStatus"></p>
         </form>
 
@@ -121,8 +120,8 @@
             <div class="form-group">
                 <input type="password" id="regPass" placeholder="Password (at least 6 characters)" minlength="6" required>
             </div>
-            <button class="btn-full" id="registerBtn" type="submit">Sign Up</button>
-            <a class="forgot-link" onclick="document.getElementById('formRegister').style.display='none'; document.getElementById('formLogin').style.display='block';">Already have an account? Log in</a>
+            <button type="submit" class="btn-full" id="registerBtn">Sign Up</button>
+            <button type="button" class="forgot-link" onclick="toggleAuthForm('login')">Already have an account? Log in</button>
             <p class="status-line" id="registerStatus"></p>
         </form>
     </div>
@@ -138,7 +137,6 @@
             <button class="btn-icon" onclick="openModal('menuModal')"><i class="fa-solid fa-bars"></i></button>
         </div>
     </header>
-
     <section class="view-section active" id="viewHome">
         <div class="container">
             <div class="post-box">
@@ -151,7 +149,6 @@
             <div id="feedStream"><div class="empty-state">Loading Talkia…</div></div>
         </div>
     </section>
-
     <section class="view-section" id="viewReels">
         <div class="container" style="text-align:center;padding-top:35px">
             <i class="fa-solid fa-microphone-lines" style="font-size:50px;color:var(--primary)"></i>
@@ -160,7 +157,6 @@
             <div id="reelsStream"></div>
         </div>
     </section>
-
     <section class="view-section" id="viewFriends">
         <div class="container">
             <h3>Friend Requests</h3>
@@ -169,14 +165,12 @@
             <div id="friendsList"></div>
         </div>
     </section>
-
     <section class="view-section" id="viewNotifs">
         <div class="container">
             <h3>Notifications</h3>
             <div id="notificationsList"></div>
         </div>
     </section>
-
     <section class="view-section" id="viewProfile">
         <div class="profile-header-bg">
             <div class="cover-photo"></div>
@@ -202,7 +196,6 @@
             <div id="profilePosts"></div>
         </div>
     </section>
-
     <nav class="bottom-nav">
         <button class="b-nav-item active" id="navHome" onclick="switchView('Home')"><i class="fa-solid fa-house"></i></button>
         <button class="b-nav-item" id="navReels" onclick="switchView('Reels')"><i class="fa-solid fa-microphone-lines"></i></button>
@@ -211,7 +204,6 @@
         <button class="b-nav-item" id="navProfile" onclick="switchView('Profile')"><i class="fa-solid fa-user"></i></button>
     </nav>
 </div>
-
 <div class="modal" id="createModal">
     <div class="modal-body">
         <div class="modal-header">
@@ -229,7 +221,6 @@
         <p class="status-line" id="postStatus"></p>
     </div>
 </div>
-
 <div class="modal" id="searchModal">
     <div class="modal-body">
         <div class="modal-header">Search Talkia<button class="btn-icon" onclick="closeModal('searchModal')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -240,7 +231,6 @@
         <div id="searchResults" class="muted" style="margin-top:12px">Type something and click Go…</div>
     </div>
 </div>
-
 <div class="modal" id="menuModal">
     <div class="modal-body">
         <div class="modal-header">Menu & Shortcuts<button class="btn-icon" onclick="closeModal('menuModal')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -250,7 +240,6 @@
         <div class="setting-item" onclick="logout()" style="color:#E41E3F">↪ Logout Account</div>
     </div>
 </div>
-
 <div class="modal" id="settingsModal">
     <div class="modal-body">
         <div class="modal-header">Settings & Privacy<button class="btn-icon" onclick="closeModal('settingsModal')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -268,7 +257,6 @@
         <button class="btn-full" style="background:#E41E3F" onclick="logout()">Logout Account</button>
     </div>
 </div>
-
 <div class="sub-panel" id="editProfilePanel">
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px"><button class="btn-icon" onclick="closePanel('editProfilePanel')"><i class="fa-solid fa-arrow-left"></i></button><h3>Edit Profile</h3></div>
     <div style="max-width:500px;margin:auto">
@@ -281,24 +269,20 @@
         <p class="status-line" id="profileStatus"></p>
     </div>
 </div>
-
 <div class="sub-panel" id="privacyPanel">
     <div style="display:flex;gap:12px;align-items:center"><button class="btn-icon" onclick="closePanel('privacyPanel')"><i class="fa-solid fa-arrow-left"></i></button><h3>Privacy Center</h3></div>
     <p class="muted">Anonymous posts hide the public display name, but remain linked to the account for security. Avoid publishing sensitive personal information.</p>
     <p id="privacyEmail"></p>
     <button class="btn-outline" onclick="resetPassword()">Send password reset email</button>
 </div>
-
 <div class="sub-panel" id="statusPanel">
     <div style="display:flex;gap:12px;align-items:center"><button class="btn-icon" onclick="closePanel('statusPanel')"><i class="fa-solid fa-arrow-left"></i></button><h3>Profile Status</h3></div>
     <p class="muted">Your authentication status is provided by Firebase. This is not a verified badge.</p>
 </div>
-
 <div class="sub-panel" id="activityPanel">
     <div style="display:flex;gap:12px;align-items:center"><button class="btn-icon" onclick="closePanel('activityPanel')"><i class="fa-solid fa-arrow-left"></i></button><h3>Activity Log</h3></div>
     <ul id="activityList"></ul>
 </div>
-
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -351,12 +335,16 @@ function activity(t) {
 }
 
 window.toggleAuthForm = function(m) {
-    if (m === 'login') {
-        document.getElementById('formLogin').style.display = 'block';
-        document.getElementById('formRegister').style.display = 'none';
-    } else {
-        document.getElementById('formLogin').style.display = 'none';
-        document.getElementById('formRegister').style.display = 'block';
+    const loginForm = $('formLogin');
+    const registerForm = $('formRegister');
+    if (loginForm && registerForm) {
+        if (m === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        }
     }
 };
 
@@ -391,9 +379,9 @@ window.changeLanguage = l => {
 };
 
 window.resetPassword = async () => {
-    const email = me?.email || $('loginId').value.trim();
+    const email = $('loginId').value.trim();
     if (!email) {
-        alert('Please enter your email address in the box first.');
+        alert('Please enter your email address in the Login box first.');
         return;
     }
     try {
@@ -710,7 +698,7 @@ window.respondRequest = async (id, yes) => {
 };
 
 function renderNotifs() {
-    $('notificationsList').innerHTML = notifs.length ? notifs.map(n => `<div class="post-box" style="display:flex;justify-content:space-between;gap:8px"><span>${esc(n.message || 'Notification')}</span>${!n.read ? `<button class="small-btn" onclick="markRead('${esc(n.id)}')">Mark read</button>`: ''}</div>`).join('') : '<div class="empty-state">No notifications yet.</div>';
+    $('notificationsList').innerHTML = notifs.length ? notifs.map(n => `<div class="post-box" style="display:flex;justify-content:space-between;gap:8px"><span>${esc(n.message || 'Notification')}</span>${!n.read ? `<button class="small-btn" onclick="markRead('${esc(n.id)}')">Mark read</button>` : ''}</div>`).join('') : '<div class="empty-state">No notifications yet.</div>';
 }
 
 window.markRead = async id => {
