@@ -33,7 +33,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-main); transition: background-color 0.3s, color 0.3s; min-height: 100vh; padding-bottom: 70px; }
 
-        /* 1. AUTH SCREEN */
+        /* AUTH SCREEN */
         .auth-container {
             min-height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
             padding: 20px 24px 30px 24px; background-color: var(--card-bg);
@@ -53,10 +53,9 @@
         .forgot-link { display: block; text-align: center; font-size: 14px; color: var(--text-main); font-weight: 600; text-decoration: none; margin-top: 16px; margin-bottom: 25px; }
         .btn-outline { width: 100%; padding: 14px; background: transparent; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 25px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; }
 
-        /* 2. MAIN APP INTERFACE */
+        /* MAIN APP INTERFACE */
         #appInterface { display: none; }
 
-        /* Top Header */
         header {
             position: sticky; top: 0; z-index: 100;
             background: var(--card-bg); border-bottom: 1px solid var(--border);
@@ -67,20 +66,18 @@
         .btn-icon { background: var(--input-bg); border: none; font-size: 16px; color: var(--text-main); cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .btn-icon:hover { background: var(--border); }
 
-        /* Bottom Navigation Bar */
+        /* BOTTOM NAVIGATION BAR */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg);
             border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
         }
         .b-nav-item { background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; flex: 1; text-align: center; position: relative; padding: 6px 0; }
         .b-nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        .b-nav-badge { position: absolute; top: 2px; right: 28%; background: #E41E3F; color: white; font-size: 11px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
+        .b-nav-badge { position: absolute; top: 2px; right: 26%; background: #E41E3F; color: white; font-size: 11px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
 
-        /* Views Container */
         .view-section { display: none; max-width: 650px; margin: 0 auto; padding-bottom: 40px; }
         .view-section.active { display: block; }
 
-        /* Feed & Posts */
         .container { padding: 12px 16px; }
         .post-box { background: var(--card-bg); border-radius: var(--radius); padding: 12px 16px; border: 1px solid var(--border); margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .post-input-trigger { display: flex; align-items: center; gap: 12px; cursor: pointer; width: 100%; }
@@ -105,7 +102,7 @@
         .comment-item { background: var(--input-bg); padding: 8px 12px; border-radius: 10px; font-size: 13px; }
         .comment-item b { color: var(--primary); display: block; }
 
-        /* Profile Page Styles */
+        /* Profile Page */
         .profile-header-bg { background: var(--card-bg); border-bottom: 1px solid var(--border); margin-bottom: 12px; }
         .cover-photo { height: 180px; background: linear-gradient(135deg, #1877F2, #365899); position: relative; }
         .profile-info-container { padding: 0 16px 16px 16px; position: relative; text-align: center; }
@@ -129,11 +126,15 @@
         .setting-item span { font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .anon-badge { background: #DBEAFE; color: var(--primary); font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
         .lang-select-box { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 14px; outline: none; }
+        
+        /* Functional Sub-view Panels */
+        .sub-panel { display: none; position: fixed; inset: 0; background: var(--card-bg); z-index: 4500; padding: 16px; overflow-y: auto; }
+        .sub-panel.active { display: block; }
     </style>
 </head>
 <body onload="initApp()">
 
-    <!-- 1. AUTH SCREEN -->
+    <!-- AUTH SCREEN -->
     <div class="auth-container" id="authPage">
         <div class="auth-top-bar">
             <select class="lang-select-box" id="authLangSelect" onchange="changeLanguage()">
@@ -153,7 +154,7 @@
                 <div class="form-group"><input type="text" id="loginId" placeholder="Mobile number or email" required></div>
                 <div class="form-group"><input type="password" id="loginPass" placeholder="Password" required></div>
                 <button type="submit" class="btn-full" id="txtLoginBtn">Log in</button>
-                <a href="#" class="forgot-link" onclick="alert('Password reset instructions sent to your email/phone.'); return false;">Forgot password?</a>
+                <a href="#" class="forgot-link" onclick="alert('Password reset instructions sent!'); return false;">Forgot password?</a>
                 <button type="button" class="btn-outline" onclick="toggleAuthForm('register')">Create new account</button>
             </form>
 
@@ -180,9 +181,8 @@
         </div>
     </div>
 
-    <!-- 3. MAIN APP INTERFACE -->
+    <!-- MAIN APP INTERFACE -->
     <div id="appInterface">
-        <!-- Top Header -->
         <header>
             <div class="logo" onclick="switchView('Home')"><i class="fa-solid fa-comments"></i> Talkia</div>
             <div class="nav-actions">
@@ -222,7 +222,7 @@
                             <button class="opt-btn" onclick="toggleCommentBox('demo')">
                                 <i class="fa-regular fa-comment"></i> Comment
                             </button>
-                            <button class="opt-btn" onclick="alert('🔗 Post link copied to clipboard!')">
+                            <button class="opt-btn" onclick="sharePost('Welcome to Talkia! The Kingdom of Free Expressions.')">
                                 <i class="fa-solid fa-share"></i> Share
                             </button>
                         </div>
@@ -249,7 +249,7 @@
                 <div class="post-box" style="margin-top: 20px; text-align: left;">
                     <h4><b>Voice Clip #1</b> • Ariful Haque</h4>
                     <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">"Assalamu Alaikum, welcome to our new voice platform..."</p>
-                    <button class="btn-full" style="padding: 8px; font-size: 14px;" onclick="alert('▶️ Playing voice note...')"><i class="fa-solid fa-play"></i> Play Voice Note (0:45)</button>
+                    <button class="btn-full" style="padding: 10px; font-size: 14px;" onclick="playVoiceNote(this)"><i class="fa-solid fa-play"></i> Play Voice Note (0:45)</button>
                 </div>
             </div>
         </div>
@@ -258,17 +258,19 @@
         <div class="view-section" id="viewFriends">
             <div class="container">
                 <h3>Friend Requests (268)</h3>
-                <div class="post-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="avatar" style="background: #3B82F6;">M</div>
-                        <div>
-                            <h4 style="font-size: 15px;">Md Rasel Hossain</h4>
-                            <p style="font-size: 12px; color: var(--text-muted);">80 mutual friends</p>
+                <div id="friendRequestsList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="post-box" style="display: flex; align-items: center; justify-content: space-between; margin: 0;" id="req-1">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="avatar" style="background: #3B82F6;">M</div>
+                            <div>
+                                <h4 style="font-size: 15px;">Md Rasel Hossain</h4>
+                                <p style="font-size: 12px; color: var(--text-muted);">80 mutual friends</p>
+                            </div>
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button style="padding: 6px 14px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="this.parentElement.innerHTML='<b>Connected</b>'">Confirm</button>
-                        <button style="padding: 6px 14px; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="this.parentElement.parentElement.style.display='none'">Delete</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button style="padding: 6px 14px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="document.getElementById('req-1').innerHTML='<b>Connected</b>'">Confirm</button>
+                            <button style="padding: 6px 14px; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="document.getElementById('req-1').remove()">Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -283,6 +285,13 @@
                     <div>
                         <p style="font-size: 14px;"><b>Kazi Farhad</b> and 14 others liked your post.</p>
                         <small style="color: var(--text-muted);">2 hours ago</small>
+                    </div>
+                </div>
+                <div class="post-box" style="margin-top: 10px; display: flex; gap: 12px; align-items: center;">
+                    <i class="fa-solid fa-user-group" style="font-size: 24px; color: var(--primary);"></i>
+                    <div>
+                        <p style="font-size: 14px;"><b>Md Rasel Hossain</b> sent you a friend request.</p>
+                        <small style="color: var(--text-muted);">5 hours ago</small>
                     </div>
                 </div>
             </div>
@@ -317,7 +326,7 @@
         <nav class="bottom-nav">
             <button class="b-nav-item active" id="navHome" onclick="switchView('Home')"><i class="fa-solid fa-house"></i></button>
             <button class="b-nav-item" id="navReels" onclick="switchView('Reels')"><i class="fa-solid fa-microphone-lines"></i></button>
-            <button class="b-nav-item" id="navFriends" onclick="switchView('Friends')"><i class="fa-solid fa-user-group"></i><span class="b-nav-badge">9+</span></button>
+            <button class="b-nav-item" id="navFriends" onclick="switchView('Friends')"><i class="fa-solid fa-user-group"></i><span class="b-nav-badge">268</span></button>
             <button class="b-nav-item" id="navNotifs" onclick="switchView('Notifs')"><i class="fa-solid fa-bell"></i><span class="b-nav-badge">57</span></button>
             <button class="b-nav-item" id="navProfile" onclick="switchView('Profile')"><i class="fa-solid fa-user"></i></button>
         </nav>
@@ -336,8 +345,8 @@
                 <label class="opt-btn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;">
                     <input type="checkbox" id="modalAnonCheck"> <i class="fa-solid fa-user-secret"></i> Anonymous
                 </label>
-                <button class="opt-btn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="alert('🎙️ Voice recorder attached successfully!')">
-                    <i class="fa-solid fa-microphone" style="color: #E41E3F;"></i> Voice
+                <button class="opt-btn" style="background: var(--input-bg); padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="recordVoicePost()">
+                    <i class="fa-solid fa-microphone" style="color: #E41E3F;"></i> <span id="voiceBtnText">Record Voice</span>
                 </button>
             </div>
             <button class="btn-full" onclick="createNewPost()">Post to Feed</button>
@@ -371,7 +380,7 @@
                 <span><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Dark / Light Theme</span>
                 <i class="fa-solid fa-toggle-on" style="color: var(--primary);"></i>
             </div>
-            <div class="setting-item" onclick="openModal('activityModal'); closeModal('menuModal');">
+            <div class="setting-item" onclick="openPanel('activityPanel'); closeModal('menuModal');">
                 <span><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Activity Log</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
@@ -398,10 +407,10 @@
                     <option value="ar">العربية</option>
                 </select>
             </div>
-            <div class="setting-item" onclick="alert('Privacy Center opened.')"><span>Privacy Center</span><i class="fa-solid fa-chevron-right"></i></div>
-            <div class="setting-item" onclick="alert('Profile Status: Active & Verified')"><span>Profile Status</span><i class="fa-solid fa-chevron-right"></i></div>
-            <div class="setting-item" onclick="alert('Link Copied: https://talkia.app/profile')"><span>Share Profile Link</span><i class="fa-solid fa-share"></i></div>
-            <div class="setting-item" onclick="alert('Pro Mode is currently TURNED ON.')"><span>Turn off Pro Mode</span><i class="fa-solid fa-toggle-on" style="color: var(--primary);"></i></div>
+            <div class="setting-item" onclick="openPanel('privacyPanel')"><span>Privacy Center</span><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="setting-item" onclick="openPanel('statusPanel')"><span>Profile Status</span><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="setting-item" onclick="shareProfileLink()"><span>Share Profile Link</span><i class="fa-solid fa-share"></i></div>
+            <div class="setting-item" onclick="toggleProMode()"><span>Turn off Pro Mode</span><i class="fa-solid fa-toggle-on" style="color: var(--primary);" id="proModeToggleIcon"></i></div>
             
             <div style="margin-top: 20px;">
                 <button class="btn-full" style="background: #E41E3F;" onclick="logout()">Logout Account</button>
@@ -409,25 +418,45 @@
         </div>
     </div>
 
-    <!-- MODALS: ACTIVITY LOG -->
-    <div class="modal" id="activityModal">
-        <div class="modal-body">
-            <div class="modal-header">
-                <span>Activity Log</span>
-                <button class="btn-icon" onclick="closeModal('activityModal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <p style="font-size: 14px; color: var(--text-muted);">Your recent activities:</p>
-            <ul style="list-style: none; margin-top: 10px; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
-                <li style="padding: 8px; background: var(--input-bg); border-radius: 6px;">✨ You created a new post 10 mins ago.</li>
-                <li style="padding: 8px; background: var(--input-bg); border-radius: 6px;">❤️ You liked a post.</li>
-            </ul>
+    <!-- FUNCTIONAL SUB-PANELS (REAL PAGES INSTEAD OF ALERTS) -->
+    <div class="sub-panel" id="privacyPanel">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <button class="btn-icon" onclick="closePanel('privacyPanel')"><i class="fa-solid fa-arrow-left"></i></button>
+            <h3>Privacy Center</h3>
         </div>
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-main);">
+            Welcome to the Talkia Privacy Center. Here you can control your data, manage who sees your voice expressions, and adjust your anonymous posting visibility settings. Your privacy is fully secured under end-to-end encryption standards.
+        </p>
+    </div>
+
+    <div class="sub-panel" id="statusPanel">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <button class="btn-icon" onclick="closePanel('statusPanel')"><i class="fa-solid fa-arrow-left"></i></button>
+            <h3>Profile Status</h3>
+        </div>
+        <div class="post-box">
+            <h4><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Account Status: Good</h4>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">No violations found. Your account has full access to voice notes, posts, and monetization features.</p>
+        </div>
+    </div>
+
+    <div class="sub-panel" id="activityPanel">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <button class="btn-icon" onclick="closePanel('activityPanel')"><i class="fa-solid fa-arrow-left"></i></button>
+            <h3>Activity Log</h3>
+        </div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+            <li class="post-box" style="margin: 0;">✨ You created a new post in Talkia Feed.</li>
+            <li class="post-box" style="margin: 0;">❤️ You liked a post by Kazi Farhad.</li>
+            <li class="post-box" style="margin: 0;">🎙️ You explored Voice Reels.</li>
+        </ul>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let currentUser = null;
         let pendingUser = null;
+        let isVoiceRecorded = false;
 
         function initApp() {
             const saved = localStorage.getItem('talkia_user');
@@ -437,6 +466,10 @@
                 document.getElementById('appInterface').style.display = 'block';
                 updateUserInfoUI();
             }
+            
+            // Restore last active view so refreshing doesn't bounce back blindly
+            const lastView = localStorage.getItem('talkia_active_view') || 'Home';
+            switchView(lastView, false);
         }
 
         function toggleAuthForm(mode) {
@@ -458,7 +491,7 @@
                 pendingUser = { name, username, contact };
             } else {
                 const contact = document.getElementById('loginId').value;
-                pendingUser = { name: "Ariful Haque", username: "ariful_haque", contact };
+                pendingUser = { name: "Ariful Haque Al Mamun", username: "ariful_haque", contact };
             }
             openModal('otpModal');
         }
@@ -486,13 +519,22 @@
             }
         }
 
-        function switchView(viewName) {
+        function switchView(viewName, save = true) {
             ['Home', 'Reels', 'Friends', 'Notifs', 'Profile'].forEach(v => {
-                document.getElementById(`view${v}`).classList.remove('active');
-                document.getElementById(`nav${v}`).classList.remove('active');
+                const el = document.getElementById(`view${v}`);
+                const nav = document.getElementById(`nav${v}`);
+                if(el) el.classList.remove('active');
+                if(nav) nav.classList.remove('active');
             });
-            document.getElementById(`view${viewName}`).classList.add('active');
-            document.getElementById(`nav${viewName}`).classList.add('active');
+            
+            const targetView = document.getElementById(`view${viewName}`);
+            const targetNav = document.getElementById(`nav${viewName}`);
+            if(targetView) targetView.classList.add('active');
+            if(targetNav) targetNav.classList.add('active');
+            
+            if(save) {
+                localStorage.setItem('talkia_active_view', viewName);
+            }
             window.scrollTo(0, 0);
         }
 
@@ -530,16 +572,61 @@
             input.value = '';
         }
 
+        function recordVoicePost() {
+            isVoiceRecorded = true;
+            document.getElementById('voiceBtnText').innerText = "Voice Recorded (0:15) ✓";
+            alert("🎙️ Voice note successfully recorded and attached to post!");
+        }
+
+        function playVoiceNote(btn) {
+            btn.innerHTML = '<i class="fa-solid fa-pause"></i> Playing Voice Note...';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Play Voice Note (0:45)';
+            }, 3000);
+        }
+
+        function sharePost(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                alert("🔗 Post content & link copied to clipboard!");
+            } else {
+                alert("Share link generated successfully!");
+            }
+        }
+
+        function shareProfileLink() {
+            const profileUrl = `https://talkia.app/profile/${currentUser ? currentUser.username : 'ariful'}`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(profileUrl);
+            }
+            alert(`🔗 Profile Link Copied:\n${profileUrl}`);
+        }
+
+        function toggleProMode() {
+            const icon = document.getElementById('proModeToggleIcon');
+            if(icon.style.color === 'rgb(228, 30, 63)') {
+                icon.style.color = 'var(--primary)';
+                icon.className = "fa-solid fa-toggle-on";
+                alert("Pro Mode turned ON.");
+            } else {
+                icon.style.color = '#E41E3F';
+                icon.className = "fa-solid fa-toggle-off";
+                alert("Pro Mode turned OFF.");
+            }
+        }
+
         function createNewPost() {
             const text = document.getElementById('newPostText').value;
             const isAnon = document.getElementById('modalAnonCheck').checked;
 
-            if(!text.trim()) return alert("Please write something!");
+            if(!text.trim() && !isVoiceRecorded) return alert("Please write something or attach a voice note!");
 
             const postId = Date.now();
             const authorName = isAnon ? "Anonymous Secret" : currentUser.name;
             const authorTag = isAnon ? '<span class="anon-badge">Anon</span>' : `@${currentUser.username || 'user'}`;
             const avatarLetter = isAnon ? '🕵️' : currentUser.name.charAt(0).toUpperCase();
+
+            let voiceBadgeHTML = isVoiceRecorded ? '<div style="margin: 8px 0; padding: 10px; background: var(--input-bg); border-radius: 8px;"><button class="btn-full" style="padding: 6px; font-size: 13px;" onclick="playVoiceNote(this)"><i class="fa-solid fa-play"></i> Play Attached Voice Note (0:15)</button></div>' : '';
 
             const postHTML = `
                 <div class="feed-post" id="post-${postId}">
@@ -551,6 +638,7 @@
                         </div>
                     </div>
                     <div class="post-content">${text}</div>
+                    ${voiceBadgeHTML}
                     <div class="post-actions">
                         <button class="opt-btn" id="like-btn-${postId}" onclick="toggleLike('${postId}')">
                             <i class="fa-regular fa-heart"></i> <span id="like-text-${postId}">Like</span> (<span id="like-count-${postId}">0</span>)
@@ -558,7 +646,7 @@
                         <button class="opt-btn" onclick="toggleCommentBox('${postId}')">
                             <i class="fa-regular fa-comment"></i> Comment
                         </button>
-                        <button class="opt-btn" onclick="alert('🔗 Link copied!')">
+                        <button class="opt-btn" onclick="sharePost('${text}')">
                             <i class="fa-solid fa-share"></i> Share
                         </button>
                     </div>
@@ -575,6 +663,8 @@
             document.getElementById('feedStream').insertAdjacentHTML('afterbegin', postHTML);
             document.getElementById('newPostText').value = '';
             document.getElementById('modalAnonCheck').checked = false;
+            isVoiceRecorded = false;
+            document.getElementById('voiceBtnText').innerText = "Record Voice";
             closeModal('createModal');
             switchView('Home');
         }
@@ -585,7 +675,7 @@
                 res.innerHTML = "Type something to search...";
                 return;
             }
-            res.innerHTML = `🔍 Searching for: "<b>${query}</b>"<br><small style="color:var(--primary);">Found matching posts & friends...</small>`;
+            res.innerHTML = `🔍 Searching for: "<b>${query}</b>"<br><small style="color:var(--primary);">Found matching posts & friends across Talkia community.</small>`;
         }
 
         function changeLanguage() {
@@ -597,13 +687,15 @@
             } else {
                 document.body.style.direction = 'ltr';
             }
-            alert(`Language switched to: ${lang.toUpperCase()}`);
+            alert(`Language switched successfully to: ${lang.toUpperCase()}`);
         }
 
-        function logout() { localStorage.removeItem('talkia_user'); location.reload(); }
+        function logout() { localStorage.removeItem('talkia_user'); localStorage.removeItem('talkia_active_view'); location.reload(); }
         function toggleTheme() { document.body.classList.toggle('dark-theme'); }
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openPanel(id) { document.getElementById(id).classList.add('active'); }
+        function closePanel(id) { document.getElementById(id).classList.remove('active'); }
     </script>
 </body>
 </html>
