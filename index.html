@@ -20,7 +20,7 @@ import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmail
 import{getFirestore,doc,getDoc,setDoc,updateDoc,collection,addDoc,query,orderBy,limit,onSnapshot,serverTimestamp,runTransaction,where,getDocs}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import{getStorage,ref as storageRef,uploadBytes,getDownloadURL}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
-// এখানে শুধুমাত্র আপনার আসল API Key বসানো হয়েছে, অন্য কোনো কোড বদলানো হয়নি
+// এখানে একদম প্রথম কোডের হুবহু ফরম্যাট রেখে শুধুমাত্র আসল API Key বসানো হয়েছে
 const firebaseConfig={apiKey:'AIzaSyDS_W0nj4IGDh3NRjwtJ3WKL3M4z7o',authDomain:'talkia-30e8b.firebaseapp.com',projectId:'talkia-30e8b',storageBucket:'talkia-30e8b.firebasestorage.app',messagingSenderId:'509867492456',appId:'1:509867492456:web:f4fb5f5f193ea4881927dd',measurementId:'G-HV6Z3BCG8E'};
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app);let me=null,profile=null,posts=[],requests=[],friends=[],notifs=[],recorder=null,chunks=[],blob=null,unPosts,unReq,unFriends,unNotifs;
