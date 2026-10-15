@@ -17,7 +17,7 @@
             --text-main: #0F172A;
             --text-muted: #64748B;
             --border: #E2E8F0;
-            --radius: 12px;
+            --radius: 14px;
         }
 
         body.dark-theme {
@@ -29,13 +29,13 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-light); color: var(--text-main); transition: background-color 0.3s, color 0.3s; min-height: 100vh; }
 
-        /* Fullscreen Auth Page */
+        /* Fullscreen Auth Page - Fixed centering & width */
         .auth-container {
-            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(15,23,42,0.05) 100%);
-            position: relative;
+            min-height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(15,23,42,0.06) 100%);
+            position: fixed; top: 0; left: 0; z-index: 1000; overflow-y: auto;
         }
         
         .auth-top-bar {
@@ -43,22 +43,23 @@
         }
 
         .auth-card {
-            background: var(--card-bg); width: 100%; max-width: 440px; border-radius: 16px;
-            padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 40px;
+            background: var(--card-bg); width: 100%; max-width: 480px; border-radius: 20px;
+            padding: 35px 30px; border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            margin: auto;
         }
-        .auth-logo { font-size: 32px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .auth-logo { font-size: 34px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .auth-subtitle { text-align: center; font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
 
-        .tab-buttons { display: flex; background: var(--bg-light); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; }
-        .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .tab-buttons { display: flex; background: var(--bg-light); border-radius: 12px; padding: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 14px; }
+        .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 3px 8px rgba(0,0,0,0.06); }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
-        .form-group input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); font-size: 14px; transition: 0.2s; }
-        .form-group input:focus { border-color: var(--primary); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+        .form-group input { width: 100%; padding: 13px 15px; border-radius: 10px; border: 1px solid var(--border); outline: none; background: var(--bg-light); color: var(--text-main); font-size: 14px; transition: 0.2s; }
+        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        .btn-full { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-full { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .btn-full:hover { background: var(--primary-hover); }
 
         /* Main App Interface (Hidden initially) */
@@ -72,7 +73,7 @@
         }
         .logo { font-size: 24px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
         .nav-actions { display: flex; align-items: center; gap: 10px; }
-        .lang-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 13px; }
+        .lang-select { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 13px; }
         .btn-icon { background: none; border: none; font-size: 18px; color: var(--text-main); cursor: pointer; padding: 8px; border-radius: 50%; }
         .btn-icon:hover { background: var(--bg-light); }
 
@@ -96,7 +97,7 @@
         .post-actions { display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding-top: 10px; }
 
         /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
         .modal-body { background: var(--card-bg); width: 100%; max-width: 450px; border-radius: var(--radius); padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -108,7 +109,7 @@
 </head>
 <body onload="initApp()">
 
-    <!-- 1. AUTH SCREEN (Landed First) -->
+    <!-- 1. AUTH SCREEN (Landed First - Fullscreen Centered) -->
     <div class="auth-container" id="authPage">
         <!-- Top Bar with Language Selector -->
         <div class="auth-top-bar">
@@ -143,7 +144,7 @@
                 <button type="submit" class="btn-full" id="txtLoginBtn">Login to Talkia</button>
             </form>
 
-            <!-- Register Form -->
+            <!-- Register Form (Supports Gmail or Mobile Number) -->
             <form id="formRegister" style="display: none;" onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label id="lblRegName">Full Name</label>
@@ -430,13 +431,11 @@
         function changeLanguage(source) {
             const lang = source === 'auth' ? document.getElementById('authLangSelect').value : document.getElementById('appLangSelect').value;
             
-            // Sync selectors
             document.getElementById('authLangSelect').value = lang;
             document.getElementById('appLangSelect').value = lang;
 
             const t = i18n[lang];
 
-            // Update Auth UI
             document.getElementById('txtAuthSub').innerText = t.sub;
             document.getElementById('btnTabLogin').innerText = t.tabLogin;
             document.getElementById('btnTabRegister').innerText = t.tabReg;
@@ -449,7 +448,6 @@
             document.getElementById('lblRegPass').innerText = t.lblRegPass;
             document.getElementById('txtRegBtn').innerText = t.btnReg;
 
-            // Update App UI
             document.getElementById('postInput').placeholder = t.postPlaceholder;
             document.getElementById('txtVoice').innerText = t.voiceNote;
             document.getElementById('txtAnon').innerText = t.anon;
@@ -458,7 +456,6 @@
             document.getElementById('txtComment').innerHTML = `<i class="fa-regular fa-comment"></i> ${t.comment}`;
             document.getElementById('txtShare').innerHTML = `<i class="fa-solid fa-share"></i> ${t.share}`;
 
-            // Update Settings
             document.getElementById('txtSettingsTitle').innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${t.stgTitle}`;
             document.getElementById('stgPrivate').innerText = t.stgPrivate;
             document.getElementById('stgPrivateSub').innerText = t.stgPrivateSub;
@@ -470,7 +467,6 @@
             document.getElementById('stgLikesSub').innerText = t.stgLikesSub;
             document.getElementById('btnLogoutStg').innerText = t.btnLogout;
 
-            // RTL Handling for Arabic
             if(lang === 'ar') {
                 document.body.style.direction = 'rtl';
             } else {
@@ -508,7 +504,7 @@
         function handleLogin(e) {
             e.preventDefault();
             const contact = document.getElementById('loginId').value;
-            currentUser = { name: "Ariful Haque", username: "ariful8830", contact };
+            currentUser = { name: "User", username: "talkia_user", contact };
             localStorage.setItem('talkia_user', JSON.stringify(currentUser));
             
             document.getElementById('authPage').style.display = 'none';
