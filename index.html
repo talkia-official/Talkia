@@ -1,3 +1,371 @@
+<!doctype html>
+<html lang="bn" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Talkia</title>
+<meta name="theme-color" content="#0a0d14">
+<meta name="description" content="Talkia - The Voice Universe">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14; --surface:#121826; --surface2:#1a2234; --line:#26314a;
+  --text:#eef2fb; --muted:#8b97b3; --accent:#2f6bff; --accent-text:#7aa5ff; --accent-ink:#ffffff; --danger:#ef6b5b;
+  --nav-h:68px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:"Hind Siliguri","Noto Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.hidden{display:none !important}
+
+/* ---------- Auth ---------- */
+#auth{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px 20px}
+.auth-card{width:100%;max-width:400px}
+.brand{text-align:center;margin-bottom:28px}
+.brand .badge{display:inline-block;background:#fff;border-radius:22px;padding:16px 26px;box-shadow:0 12px 44px rgba(47,107,255,.28)}
+.brand .badge img{height:58px;display:block}
+.bn-name{margin-top:14px;font-size:20px;font-weight:600;color:var(--accent-text)}
+.hbadge{display:flex;background:#fff;border-radius:11px;padding:6px 12px}
+.hbadge img{height:24px;display:block}
+.brand p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
+.seg button{padding:10px;border-radius:9px;color:var(--muted);font-weight:600}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.field{margin-bottom:12px}
+.field input{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
+.field input:focus{border-color:var(--accent)}
+.btn{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px}
+.btn:disabled{opacity:.6}
+.btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.msg{min-height:20px;margin:10px 0;font-size:14px;text-align:center;color:var(--danger)}
+.msg.ok{color:#7bd88f}
+.langs{display:flex;gap:8px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+.langs button{padding:7px 14px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-size:14px}
+.langs button.on{border-color:var(--accent);color:var(--accent-text)}
+
+/* ---------- App shell ---------- */
+#app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;position:relative}
+header{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  border-bottom:1px solid var(--line);background:var(--bg)}
+.hdr-actions{display:flex;gap:6px}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.icon-btn svg{width:21px;height:21px;stroke:var(--text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+main{flex:1;overflow-y:auto;padding:16px 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px)}
+.tab{display:none}.tab.active{display:block}
+h2{margin:0 0 12px;font-size:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.muted{color:var(--muted)}
+.tag{display:inline-block;background:var(--surface2);color:var(--accent-text);border-radius:99px;padding:3px 11px;font-size:13px;margin-inline-end:6px}
+.prompt-text{font-size:21px;line-height:1.5;margin:10px 0 16px}
+.empty{text-align:center;padding:40px 16px;color:var(--muted)}
+.empty .big{font-size:42px;margin-bottom:8px}
+.post .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:8px}
+.post .play{display:flex;align-items:center;gap:12px;margin-top:12px}
+.post .play i{width:40px;height:40px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
+.post .play i svg{width:16px;height:16px;fill:var(--accent-ink)}
+.post .wave{flex:1;height:30px;background:repeating-linear-gradient(90deg,var(--line) 0 3px,transparent 3px 7px);border-radius:4px;opacity:.8}
+.profile-top{text-align:center;margin-bottom:18px}
+.avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 12px;background:var(--surface2);border:2px solid var(--accent);
+  display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text)}
+.profile-top h2{margin:0}
+.row{display:flex;gap:10px;margin-top:10px}
+
+/* ---------- Bottom nav ---------- */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-content:center;pointer-events:none}
+.nav-in{pointer-events:auto;width:100%;max-width:560px;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);align-items:center}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:12px;padding:8px 2px}
+.nav-btn svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn.on{color:var(--accent-text)}
+.nav-rec{position:relative;top:-18px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent-text);font-size:12px}
+.nav-rec .dot{width:62px;height:62px;border-radius:50%;background:var(--accent);display:grid;place-items:center;
+  box-shadow:0 6px 24px rgba(47,107,255,.5);border:4px solid var(--bg)}
+.nav-rec .dot svg{width:28px;height:28px;stroke:var(--accent-ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Sheet + toast ---------- */
+#sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{width:100%;max-width:560px;background:var(--surface);border-radius:22px 22px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;border-top:1px solid var(--line)}
+.sheet-in h3{margin:0 0 8px;font-size:20px}
+.sheet-in p{color:var(--muted);margin:0 0 18px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 30px + env(safe-area-inset-bottom));z-index:40;
+  background:var(--surface2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;max-width:90%}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<section id="auth" class="hidden">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="badge"><img src="logo-wordmark.png" alt="Talkia"></div>
+      <div class="bn-name">টকিয়া</div>
+      <p data-i18n="tagline"></p>
+    </div>
+    <div class="seg">
+      <button id="mode-login" class="on" data-i18n="login"></button>
+      <button id="mode-signup" data-i18n="signup"></button>
+    </div>
+    <form id="auth-form" autocomplete="on">
+      <div class="field hidden" id="name-field"><input id="name" type="text" data-i18n-ph="name" autocomplete="name"></div>
+      <div class="field"><input id="email" type="email" data-i18n-ph="email" autocomplete="email" required></div>
+      <div class="field"><input id="password" type="password" data-i18n-ph="password" autocomplete="current-password" minlength="6" required></div>
+      <div id="auth-msg" class="msg"></div>
+      <button class="btn" id="auth-submit" type="submit" data-i18n="login"></button>
+    </form>
+    <div class="langs" data-langs></div>
+  </div>
+</section>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+  <header>
+    <div class="hbadge"><img src="logo-wordmark.png" alt="Talkia"></div>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="btn-inbox" aria-label="Inbox">
+        <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-bell" aria-label="Notifications">
+        <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 20a2 2 0 0 0 3.4 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="tab-prompt" class="tab">
+      <h2 data-i18n="t_prompt"></h2>
+      <div class="card">
+        <span class="tag">#TalkiaToday</span>
+        <div class="prompt-text" id="prompt-text">...</div>
+        <button class="btn" id="prompt-answer" data-i18n="answer_prompt"></button>
+      </div>
+    </section>
+
+    <section id="tab-feed" class="tab">
+      <h2 data-i18n="t_feed"></h2>
+      <div id="feed-list"></div>
+    </section>
+
+    <section id="tab-profile" class="tab">
+      <div class="profile-top">
+        <div class="avatar" id="p-avatar">T</div>
+        <h2 id="p-name"></h2>
+        <div class="muted" id="p-email"></div>
+      </div>
+      <div class="card">
+        <div class="muted" style="margin-bottom:8px" data-i18n="language"></div>
+        <div class="langs" style="margin:0;justify-content:flex-start" data-langs></div>
+      </div>
+      <button class="btn danger" id="btn-logout" data-i18n="logout"></button>
+    </section>
+  </main>
+
+  <nav>
+    <div class="nav-in">
+      <button class="nav-btn" data-tab="prompt">
+        <svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 16.7 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg>
+        <span data-i18n="n_prompt"></span>
+      </button>
+      <button class="nav-btn" data-tab="feed">
+        <svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
+        <span data-i18n="n_feed"></span>
+      </button>
+      <button class="nav-rec" id="btn-record">
+        <span class="dot"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+        <span data-i18n="n_record"></span>
+      </button>
+      <button class="nav-btn" data-tab="profile">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span data-i18n="n_profile"></span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<div id="sheet" class="hidden">
+  <div class="sheet-in">
+    <h3 data-i18n="rec_title"></h3>
+    <p data-i18n="rec_soon"></p>
+    <button class="btn ghost" id="sheet-close" data-i18n="close"></button>
+  </div>
+</div>
+<div id="toast" class="hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://kqgteeykuflyawbtddyk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_RO0xP9_bKNIc2ARIBqDmYA_nPVI-5y5';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ---------- i18n ---------- */
+const I18N = {
+  bn: {
+    tagline:'আওয়াজের ভুবন', login:'লগইন', signup:'সাইন আপ', name:'আপনার নাম', email:'ইমেইল', password:'পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)',
+    t_prompt:'আজকের প্রশ্ন', t_feed:'শুনুন', n_prompt:'আজকের প্রশ্ন', n_feed:'শুনুন', n_record:'রেকর্ড', n_profile:'আমি',
+    answer_prompt:'ভয়েসে উত্তর দিন', no_prompt:'আজকের প্রশ্ন শীঘ্রই আসছে।', feed_empty:'এখনো কোনো পোস্ট নেই। প্রথম আওয়াজটা আপনার হোক!',
+    language:'ভাষা', logout:'লগআউট', rec_title:'রেকর্ড', rec_soon:'ভয়েস রেকর্ডিং ধাপ ৩-এ যোগ হবে।', close:'বন্ধ করুন',
+    soon:'শীঘ্রই আসছে', check_email:'আপনার ইমেইলে পাঠানো লিংকে ক্লিক করে অ্যাকাউন্ট নিশ্চিত করুন।', loading:'লোড হচ্ছে...',
+    sec:'সেকেন্ড', anon:'বেনামী', user:'ব্যবহারকারী'
+  },
+  en: {
+    tagline:'The Voice Universe', login:'Log in', signup:'Sign up', name:'Your name', email:'Email', password:'Password (min 6 characters)',
+    t_prompt:'Daily Prompt', t_feed:'Listen', n_prompt:'Prompt', n_feed:'Listen', n_record:'Record', n_profile:'Me',
+    answer_prompt:'Answer with your voice', no_prompt:"Today's prompt is coming soon.", feed_empty:'No posts yet. Be the first voice!',
+    language:'Language', logout:'Log out', rec_title:'Record', rec_soon:'Voice recording arrives in Step 3.', close:'Close',
+    soon:'Coming soon', check_email:'Please confirm your account using the link sent to your email.', loading:'Loading...',
+    sec:'sec', anon:'Anonymous', user:'User'
+  },
+  ar: {
+    tagline:'عالم الأصوات', login:'تسجيل الدخول', signup:'إنشاء حساب', name:'اسمك', email:'البريد الإلكتروني', password:'كلمة المرور (٦ أحرف على الأقل)',
+    t_prompt:'سؤال اليوم', t_feed:'استمع', n_prompt:'سؤال اليوم', n_feed:'استمع', n_record:'سجّل', n_profile:'أنا',
+    answer_prompt:'أجب بصوتك', no_prompt:'سؤال اليوم قادم قريباً.', feed_empty:'لا توجد منشورات بعد. كن أول صوت!',
+    language:'اللغة', logout:'تسجيل الخروج', rec_title:'تسجيل', rec_soon:'سيتم إضافة التسجيل الصوتي في الخطوة 3.', close:'إغلاق',
+    soon:'قريباً', check_email:'يرجى تأكيد حسابك عبر الرابط المرسل إلى بريدك.', loading:'جارٍ التحميل...',
+    sec:'ث', anon:'مجهول', user:'مستخدم'
+  }
+};
+const LANG_NAMES = { bn:'বাংলা', en:'English', ar:'العربية' };
+let lang = 'bn';
+try { lang = localStorage.getItem('talkia_lang') || 'bn'; } catch(e) {}
+if (!I18N[lang]) lang = 'bn';
+const t = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  document.querySelectorAll('[data-langs]').forEach(box => {
+    box.innerHTML = '';
+    Object.keys(LANG_NAMES).forEach(code => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = LANG_NAMES[code];
+      if (code === lang) b.className = 'on';
+      b.onclick = () => setLang(code);
+      box.appendChild(b);
+    });
+  });
+  if (currentUser) { renderProfile(); if (currentTab === 'prompt') loadPrompt(); if (currentTab === 'feed') loadFeed(); }
+}
+function setLang(code) {
+  lang = code;
+  try { localStorage.setItem('talkia_lang', code); } catch(e) {}
+  applyLang();
+}
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastTimer;
+function toast(msg) {
+  const el = $('toast'); el.textContent = msg; el.classList.remove('hidden');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('hidden'), 2200);
+}
+
+/* ---------- auth ---------- */
+let mode = 'login', currentUser = null, currentProfile = null, currentTab = 'feed';
+
+function setMode(m) {
+  mode = m;
+  $('mode-login').classList.toggle('on', m === 'login');
+  $('mode-signup').classList.toggle('on', m === 'signup');
+  $('name-field').classList.toggle('hidden', m !== 'signup');
+  $('auth-submit').textContent = t(m === 'login' ? 'login' : 'signup');
+  $('password').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+  $('auth-msg').textContent = '';
+}
+$('mode-login').onclick = () => setMode('login');
+$('mode-signup').onclick = () => setMode('signup');
+
+$('auth-form').onsubmit = async e => {
+  e.preventDefault();
+  const email = $('email').value.trim(), password = $('password').value, msg = $('auth-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  $('auth-submit').disabled = true;
+  try {
+    if (mode === 'signup') {
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name: $('name').value.trim() || t('user') } } });
+      if (error) throw error;
+      if (!data.session) { msg.className = 'msg ok'; msg.textContent = t('check_email'); }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (err) {
+    msg.textContent = err.message || String(err);
+  } finally {
+    $('auth-submit').disabled = false;
+  }
+};
+
+$('btn-logout').onclick = async () => { await sb.auth.signOut(); };
+
+async function onSession(session) {
+  currentUser = session ? session.user : null;
+  if (!currentUser) {
+    currentProfile = null;
+    $('app').classList.add('hidden'); $('auth').classList.remove('hidden');
+    setMode(mode); return;
+  }
+  $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
+  await loadProfile();
+  showTab(currentTab);
+}
+sb.auth.onAuthStateChange((_evt, session) => { setTimeout(() => onSession(session), 0); });
+sb.auth.getSession().then(({ data }) => onSession(data.session));
+
+/* ---------- profile ---------- */
+async function loadProfile() {
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+  currentProfile = data;
+  renderProfile();
+}
+function renderProfile() {
+  if (!currentUser) return;
+  const name = (currentProfile && currentProfile.display_name) || t('user');
+  $('p-name').textContent = name;
+  $('p-email').textContent = currentUser.email || '';
+  $('p-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'T';
+}
+
+/* ---------- tabs ---------- */
+function showTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+  if (name === 'prompt') loadPrompt();
+  if (name === 'feed') loadFeed();
+  if (name === 'profile') renderProfile();
+  document.querySelector('main').scrollTop = 0;
+}
+document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+$('btn-record').onclick = () => $('sheet').classList.remove('hidden');
+$('sheet-close').onclick = () => $('sheet').classList.add('hidden');
+$('sheet').onclick = e => { if (e.target.id === 'sheet') $('sheet').classList.add('hidden'); };
+$('btn-inbox').onclick = () => toast(t('soon'));
+$('btn-bell').onclick = () => toast(t('soon'));
+$('prompt-answer').onclick = () => $('sheet').classList.remove('hidden');
+
+/* ---------- daily prompt ---------- */
+function todayISO() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+async function loadPrompt() {
+  const el = $('prompt-text');
+  const { data } = await sb.from('daily_prompts').select('*').eq('prompt_date', todayISO()).maybeSingle();
+  if (!data) { el.textContent = t('no_prompt'); return; }
+  const field = { bn: 'text_bn', en: 'text_en', ar: 'text_ar' }[lang];
   el.textContent = data[field] || data.text_bn;
 }
 
