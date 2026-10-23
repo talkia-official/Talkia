@@ -2,6 +2,31 @@
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
+  // পারফেক্ট CSS ফিক্স: লেখকের অবতার ছোট ও গোল থাকবে, কিন্তু মূল ফটো পোস্ট বড় ও সুন্দর দেখাবে
+  const style = document.createElement('style');
+  style.innerHTML = `
+    /* ১. শুধু পোস্টের হেডার বা লিস্টে থাকা ইউজার/প্রোফাইল পিকচারগুলো ছোট ও গোল হবে */
+    .post-header img, .feed-item img:not(.post-main-img), .friend-item img, .search-user-item img, .notif-item img, img.avatar-small {
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      min-height: 40px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+    }
+
+    /* ২. মূল ফটো পোস্ট বা আপলোড করা ছবিগুলো বড় ও সুন্দর ফিটিংয়ে থাকবে (গোল হবে না) */
+    .post-content img, .uploaded-feed-img, .post img:not(.author-avatar) {
+      width: 100% !important;
+      max-height: 350px !important;
+      object-fit: cover !important;
+      border-radius: 12px !important;
+      display: block;
+      margin: 8px auto;
+    }
+  `;
+  document.head.appendChild(style);
+
   const btnSettings = document.getElementById('btn-settings');
   if (btnSettings) {
     btnSettings.onclick = (e) => {
@@ -88,7 +113,7 @@ window.openNotificationsModal = async function() {
     return `
       <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #26314a;">
         <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden; flex-shrink:0;">
-          ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((s.display_name || 'U').charAt(0).toUpperCase())}
+          ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((s.display_name || 'U').charAt(0).toUpperCase())}
         </div>
         <div style="flex:1; min-width:0;">
           <div style="color:#fff; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(s.display_name)}</div>
@@ -154,7 +179,7 @@ window.openInboxModal = async function() {
   inboxList.innerHTML = friends.map(f => `
     <div class="inbox-friend-item" data-id="${f.id}" style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #26314a; cursor:pointer;">
       <div style="width:44px; height:44px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-        ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'U').charAt(0).toUpperCase())}
+        ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'U').charAt(0).toUpperCase())}
       </div>
       <div style="flex:1;">
         <div style="color:#fff; font-weight:600; font-size:15px;">${esc(f.display_name)}</div>
@@ -389,7 +414,7 @@ if (srForm) {
     resBox.innerHTML = data.map(u => `
       <div class="search-user-item" data-id="${u.id}" style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #26314a; cursor:pointer;">
         <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-          ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
+          ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
         </div>
         <div style="flex:1;">
           <div style="color:#fff; font-weight:600; font-size:14px;">${esc(u.display_name || 'User')}</div>
@@ -483,7 +508,7 @@ window.openProfileVisitorsModal = async function() {
     return `
       <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #26314a;">
         <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-          ${vp.avatar_url ? `<img src="${esc(vp.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((vp.display_name || 'U').charAt(0).toUpperCase())}
+          ${vp.avatar_url ? `<img src="${esc(vp.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((vp.display_name || 'U').charAt(0).toUpperCase())}
         </div>
         <div style="flex:1;">
           <div style="color:#fff; font-weight:600; font-size:14px;">${esc(vp.display_name)}</div>
@@ -583,7 +608,7 @@ window.renderPeople = async function() {
       reqBox.innerHTML = senders.map(s => `
         <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #26314a;">
           <div style="width:36px; height:36px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-            ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((s.display_name || 'U').charAt(0).toUpperCase())}
+            ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((s.display_name || 'U').charAt(0).toUpperCase())}
           </div>
           <div style="flex:1; font-size:14px; color:#fff;">${esc(s.display_name)}</div>
         </div>
@@ -598,7 +623,7 @@ window.renderPeople = async function() {
       friendBox.innerHTML = friends.map(f => `
         <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #26314a;">
           <div style="width:36px; height:36px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-            ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'T').charAt(0).toUpperCase())}
+            ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" class="avatar-small" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'T').charAt(0).toUpperCase())}
           </div>
           <div style="flex:1; font-size:14px; color:#fff;">${esc(f.display_name)}</div>
         </div>
