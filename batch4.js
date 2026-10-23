@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Visitors Eye Toggle, Full Settings, Search Navigation, User Profile & Chat
+// Talkia Advanced Suite Batch 4: Profile Actions (Add Friend & Inbox), Scrolling & Settings Fix
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnPeople = document.getElementById('btn-people');
   if (btnPeople) btnPeople.onclick = () => { const p = document.getElementById('people'); if(p) p.classList.remove('hidden'); };
 
-  // Search form handler to prevent reload
   const srForm = document.getElementById('sr-form');
   if (srForm) {
     srForm.onsubmit = async (e) => {
@@ -78,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Open Other User's Profile Modal
+// Open Other User's Profile Modal with Add Friend & Inbox Buttons and Smooth Scrolling
 window.openUserProfileModal = async function(userId) {
   if (currentUser && userId === currentUser.id) {
     showTab('profile');
@@ -89,7 +88,7 @@ window.openUserProfileModal = async function(userId) {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'user-profile-modal';
-    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1150; display:flex; flex-direction:column; overflow-y:auto; padding:20px;';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1150; display:flex; flex-direction:column; overflow-y:auto; padding:20px;';
     document.body.appendChild(modal);
   }
   modal.classList.remove('hidden');
@@ -104,12 +103,12 @@ window.openUserProfileModal = async function(userId) {
   const { data: posts } = await sb.from('voice_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
 
   modal.innerHTML = `
-    <div style="max-width:560px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow:hidden;">
-      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line);">
+    <div style="max-width:560px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow:hidden; max-height:90vh; display:flex; flex-direction:column;">
+      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); flex-shrink:0;">
         <h3 style="margin:0; font-size:18px;">${esc(user.display_name)}</h3>
         <button id="upm-close" style="color:var(--muted); font-size:20px; background:none; border:0; cursor:pointer;">✕</button>
       </div>
-      <div style="padding:20px; text-align:center;">
+      <div style="padding:20px; text-align:center; overflow-y:auto; flex:1;">
         <div class="uav" style="width:80px !important; height:80px !important; margin:0 auto 12px; font-size:32px;">
           ${user.avatar_url ? `<img src="${esc(user.avatar_url)}">` : esc((user.display_name || 'U').charAt(0))}
         </div>
@@ -118,6 +117,11 @@ window.openUserProfileModal = async function(userId) {
         ${user.country ? `<span class="tag">${esc(user.country)}</span>` : ''}
         <p style="margin:12px 0; color:var(--muted); font-size:14px;">${esc(user.bio || '')}</p>
         
+        <div style="display:flex; gap:10px; margin:16px 0;">
+          <button class="btn" id="upm-add-friend" style="flex:1; font-size:14px; padding:10px;">${t('add_friend')}</button>
+          <button class="btn ghost" id="upm-inbox" style="flex:1; font-size:14px; padding:10px;">💬 Inbox</button>
+        </div>
+
         <div class="ext-bio-box" style="text-align:left;">
           <div><b>${t('lbl_edu')}</b> <span>${esc(user.education || t('not_added'))}</span></div>
           <div><b>${t('lbl_rel')}</b> <span>${esc(user.marital_status || t('not_added'))}</span></div>
@@ -137,9 +141,23 @@ window.openUserProfileModal = async function(userId) {
   `;
 
   document.getElementById('upm-close').onclick = () => modal.classList.add('hidden');
+  
+  document.getElementById('upm-add-friend').onclick = async () => {
+    try {
+      const { error } = await sb.from('friendships').insert({ requester_id: currentUser.id, addressee_id: userId, status: 'pending' });
+      if (error) throw error;
+      toast(t('req_sent'));
+    } catch (err) {
+      toast(t('req_already_sent'));
+    }
+  };
+
+  document.getElementById('upm-inbox').onclick = () => {
+    modal.classList.add('hidden');
+    openDirectChat(user);
+  };
 };
 
-// Profile Visitors Modal
 window.openProfileVisitorsModal = async function() {
   let modal = document.getElementById('visitors-modal');
   if (!modal) {
@@ -164,7 +182,6 @@ window.openProfileVisitorsModal = async function() {
   }
 };
 
-// Create Group Room Modal
 window.openCreateGroupRoomModal = function() {
   let modal = document.createElement('div');
   modal.id = 'group-modal';
@@ -207,7 +224,6 @@ window.loadGroupRooms = function() {
   }
 };
 
-// Full Inbox & Direct Chat with Sender's Avatar
 window.openInboxModal = async function() {
   const inboxSheet = document.getElementById('inbox-sheet');
   const inboxList = document.getElementById('inbox-list');
@@ -385,7 +401,7 @@ window.openNotificationsModal = async function() {
   document.getElementById('notif-close-btn').onclick = () => notifSheet.classList.add('hidden');
 };
 
-// Full Settings Dashboard with Personal Info, Privacy, Language & Logout
+// Full Settings Dashboard
 window.openSettingsDashboard = function() {
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
