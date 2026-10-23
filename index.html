@@ -80,6 +80,7 @@ h2{margin:0 0 12px;font-size:20px}
 .cover-box{height:130px;background:linear-gradient(135deg, #1e293b, #0f172a);position:relative}
 .cover-box img{width:100%;height:100%;object-fit:cover;display:block}
 .cover-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2}
+.visitor-btn{position:absolute;top:10px;right:116px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:#fff;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2}
 .profile-top{text-align:center;padding:0 16px 20px;position:relative}
 .avatar{width:92px;height:92px;border-radius:50%;margin:-46px auto 10px;background:var(--surface2);border:4px solid var(--surface);
   display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text);position:relative;overflow:hidden;cursor:pointer;z-index:3}
@@ -87,6 +88,11 @@ h2{margin:0 0 12px;font-size:20px}
 
 .ext-bio-box{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-top:12px;text-align:left;font-size:13px;display:flex;flex-direction:column;gap:6px}
 .ext-bio-box div{display:flex;align-items:center;gap:8px;color:var(--text)}
+
+/* Profile Tabs (Posts & Photos) */
+.profile-tabs{display:flex;gap:10px;border-bottom:1px solid var(--line);margin-top:16px;padding-bottom:6px}
+.profile-tab-btn{flex:1;font-weight:600;font-size:14px;color:var(--muted);padding:8px;cursor:pointer;text-align:center;background:none;border:0}
+.profile-tab-btn.on{color:var(--accent-text);border-bottom:2px solid var(--accent)}
 
 /* Filter Dropdowns */
 .filter-row{display:flex;gap:10px;margin-bottom:14px}
@@ -188,7 +194,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
     <section id="tab-feed" class="tab">
       <h2 data-i18n="t_feed"></h2>
-      <!-- Dropdown Feed Filters -->
       <div class="filter-row">
         <select id="feed-cat-select" onchange="onFeedFilterChange()">
           <option value="" data-i18n="all_cats">সকল ক্যাটাগরি</option>
@@ -204,6 +209,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div class="profile-card">
         <div class="cover-box">
           <img id="p-cover-img" src="" class="hidden">
+          <button class="visitor-btn" id="btn-visitors" title="Profile Visitors">👁️ ভিজিটর</button>
           <button class="cover-btn" id="btn-cover-change" data-i18n="cover_change">📷 কভার ছবি</button>
           <input type="file" id="cover-input" accept="image/*" class="hidden">
         </div>
@@ -218,7 +224,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
           <div class="p-meta" id="p-country"></div>
           <p class="p-bio" id="p-bio"></p>
 
-          <!-- Extended Bio Box -->
           <div class="ext-bio-box">
             <div><b data-i18n="lbl_edu">🎓 শিক্ষা:</b> <span id="p-edu"></span></div>
             <div><b data-i18n="lbl_rel">💍 সম্পর্ক:</b> <span id="p-rel"></span></div>
@@ -226,6 +231,15 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
             <div><b data-i18n="lbl_hobby">🎨 শখ:</b> <span id="p-hobby"></span></div>
             <div><b data-i18n="lbl_city">📍 বর্তমান শহর:</b> <span id="p-city"></span></div>
           </div>
+
+          <!-- Profile Tabs: Posts & Photos -->
+          <div class="profile-tabs">
+            <button type="button" class="profile-tab-btn on" id="ptab-posts-btn" onclick="switchProfileTab('posts')">পোস্টসমূহ</button>
+            <button type="button" class="profile-tab-btn" id="ptab-photos-btn" onclick="switchProfileTab('photos')">ফটো গ্যালারি</button>
+          </div>
+
+          <div id="profile-posts-area" style="margin-top:14px; text-align:left;"></div>
+          <div id="profile-photos-area" class="hidden" style="margin-top:14px; display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;"></div>
 
           <div style="display:flex; gap:8px; justify-content:center; margin-top:14px;">
             <button class="btn ghost" id="btn-edit" data-i18n="edit_profile" style="margin:0"></button>
@@ -458,12 +472,14 @@ async function onSession(session) {
 sb.auth.onAuthStateChange((_evt, session) => { setTimeout(() => onSession(session), 0); });
 sb.auth.getSession().then(({ data }) => onSession(data.session));
 
-/* ---------- Profile ---------- */
+/* ---------- Profile & Photos Tab ---------- */
 async function loadProfile() {
   const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
   currentProfile = data;
   renderProfile();
+  loadUserMyPostsAndPhotos(currentUser.id);
 }
+
 function renderProfile() {
   if (!currentUser) return;
   const p = currentProfile || {};
@@ -490,6 +506,46 @@ function renderProfile() {
     } else {
       $('p-cover-img').classList.add('hidden');
     }
+  }
+}
+
+function switchProfileTab(tabName) {
+  const postsBtn = $('ptab-posts-btn');
+  const photosBtn = $('ptab-photos-btn');
+  const postsArea = $('profile-posts-area');
+  const photosArea = $('profile-photos-area');
+
+  if (tabName === 'posts') {
+    postsBtn.classList.add('on'); photosBtn.classList.remove('on');
+    postsArea.classList.remove('hidden'); photosArea.classList.add('hidden');
+  } else {
+    photosBtn.classList.add('on'); postsBtn.classList.remove('on');
+    photosArea.classList.remove('hidden'); postsArea.classList.add('hidden');
+  }
+}
+
+async function loadUserMyPostsAndPhotos(userId) {
+  const postsArea = $('profile-posts-area');
+  const photosArea = $('profile-photos-area');
+  if (!postsArea || !photosArea) return;
+
+  const { data: posts } = await sb.from('voice_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  if (!posts || posts.length === 0) {
+    postsArea.innerHTML = `<div class="muted" style="text-align:center; padding:20px;">${t('none_yet')}</div>`;
+    photosArea.innerHTML = `<div class="muted" style="text-align:center; padding:20px; grid-column:span 3;">${t('none_yet')}</div>`;
+    return;
+  }
+
+  postsArea.innerHTML = posts.map(cardHtml).join('');
+  const photoPosts = posts.filter(p => p.image_url);
+  if (photoPosts.length === 0) {
+    photosArea.innerHTML = `<div class="muted" style="text-align:center; padding:20px; grid-column:span 3;">${t('none_yet')}</div>`;
+  } else {
+    photosArea.innerHTML = photoPosts.map(p => `
+      <div style="aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--surface2);">
+        <img src="${esc(p.image_url)}" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+    `).join('');
   }
 }
 
@@ -594,12 +650,11 @@ function showTab(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
   if (name === 'prompt') loadPrompt();
   if (name === 'feed') loadFeed();
-  if (name === 'profile') renderProfile();
+  if (name === 'profile') { renderProfile(); loadUserMyPostsAndPhotos(currentUser.id); }
   document.querySelector('main').scrollTop = 0;
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
-// Global My Friends button handler fix
 if ($('btn-people')) {
   $('btn-people').onclick = async () => { $('people').classList.remove('hidden'); await renderPeople(); };
 }
