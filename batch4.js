@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Complete Architecture Upgrade (Final Fixed)
+// Talkia Advanced Suite Batch 4: Complete Upgrade with Search Profile Visit, Visitors, Granular Privacy & Photo Tabs
 console.log("Talkia Advanced Suite Batch 4 Loaded");
 
 // ১. সেটিংস ড্যাশবোর্ড
@@ -6,6 +6,10 @@ document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-settings')) {
     e.preventDefault();
     openSettingsDashboard();
+  }
+  if (e.target.closest('#btn-visitors')) {
+    e.preventDefault();
+    openProfileVisitorsModal();
   }
 }, true);
 
@@ -84,22 +88,71 @@ window.openPersonalDetailsModal = async function() {
   };
 };
 
-// ৩. Privacy & Password
-window.openPrivacyPasswordModal = function() {
+// ৩. Detailed Granular Privacy & Password Settings
+window.openPrivacyPasswordModal = async function() {
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
   modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
 
   modal.innerHTML = `
-    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
-      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🔒 Privacy & Password</h3>
+    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:420px; border-radius:20px; padding:20px; text-align:left; max-height:85vh; overflow-y:auto;">
+      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🔒 Privacy Controls & Password</h3>
       <div style="display:flex; flex-direction:column; gap:12px;">
+        
+        <div>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">🌍 হু ক্যান সি ইউর পোস্ট (Who can see your posts):</label>
+          <select id="pr-post" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
+            <option value="public" ${profile?.post_privacy === 'public' ? 'selected' : ''}>সবাই (Public)</option>
+            <option value="friends" ${profile?.post_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+            <option value="only_me" ${profile?.post_privacy === 'only_me' ? 'selected' : ''}>শুধু আমি (Only Me)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 হু ক্যান সেন্ড এসএমএস (Who can send messages):</label>
+          <select id="pr-sms" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
+            <option value="everyone" ${profile?.sms_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
+            <option value="friends" ${profile?.sms_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">📝 হু ক্যান পোস্ট অন ইউর প্রোফাইল:</label>
+          <select id="pr-wall" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
+            <option value="friends" ${profile?.wall_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+            <option value="only_me" ${profile?.wall_privacy === 'only_me' ? 'selected' : ''}>শুধু আমি (Only Me)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 হু ক্যান কমেন্ট অন ইউর পোস্ট:</label>
+          <select id="pr-comment" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
+            <option value="everyone" ${profile?.comment_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
+            <option value="friends" ${profile?.comment_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">❤️ হু ক্যান লাইক ইউর পোস্ট:</label>
+          <select id="pr-like" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
+            <option value="everyone" ${profile?.like_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
+            <option value="friends" ${profile?.like_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+          </select>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #26314a; margin:4px 0;">
+
         <h4 style="margin:0; font-size:14px; color:#7aa5ff;">🔑 পাসওয়ার্ড পরিবর্তন</h4>
         <div>
           <label style="font-size:12px; color:#8b97b3; display:block; margin-bottom:4px;">নতুন পাসওয়ার্ড:</label>
-          <input type="password" id="pass-new" placeholder="কমপক্ষে ৬ অক্ষর" style="width:100%; padding:12px; border-radius:10px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:14px; outline:none;">
+          <input type="password" id="pass-new" placeholder="কমপক্ষে ৬ অক্ষর" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px; outline:none;">
         </div>
-        <div style="display:flex; gap:10px; margin-top:10px;">
+
+        <div style="display:flex; gap:10px; margin-top:8px;">
           <button id="save-priv-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">${t('save')}</button>
           <button onclick="this.closest('.fixed').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
         </div>
@@ -110,6 +163,16 @@ window.openPrivacyPasswordModal = function() {
 
   document.getElementById('save-priv-btn').onclick = async () => {
     const newPass = document.getElementById('pass-new').value;
+    const privData = {
+      post_privacy: document.getElementById('pr-post').value,
+      sms_privacy: document.getElementById('pr-sms').value,
+      wall_privacy: document.getElementById('pr-wall').value,
+      comment_privacy: document.getElementById('pr-comment').value,
+      like_privacy: document.getElementById('pr-like').value
+    };
+
+    await sb.from('profiles').update(privData).eq('id', user.id);
+
     if (newPass) {
       if (newPass.length < 6) { alert('পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে'); return; }
       const { error } = await sb.auth.updateUser({ password: newPass });
@@ -141,7 +204,7 @@ window.openLanguageModal = function() {
   document.body.appendChild(modal);
 };
 
-// ৫. সার্চ ইঞ্জিন লজিক
+// ৫. সার্চ ইঞ্জিন এবং সার্চ থেকে অন্য ইউজারের প্রোফাইল ভিজিট ও ফ্রেন্ড রিকোয়েস্ট সিস্টেম
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-search')) {
     e.preventDefault();
@@ -170,18 +233,102 @@ if (srForm) {
     if (!data || data.length === 0) { resBox.innerHTML = `<div class="muted" style="padding:10px;">${t('no_results')}</div>`; return; }
 
     resBox.innerHTML = data.map(u => `
-      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #26314a;">
+      <div onclick="openVisitedUserProfile('${u.id}')" style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #26314a; cursor:pointer;">
         <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
           ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
         </div>
         <div style="flex:1;">
           <div style="color:#fff; font-weight:600; font-size:14px;">${esc(u.display_name || 'User')}</div>
-          <div style="color:#8b97b3; font-size:12px;">@${esc(u.username || 'username')}</div>
+          <div style="color:#8b97b3; font-size:12px;">@${esc(u.username || 'username')} - প্রোফাইল দেখতে ক্লিক করুন</div>
         </div>
       </div>
     `).join('');
   };
 }
+
+// অন্য ইউজারের প্রোফাইল ওপেন করা ও ভিজিটর রেকর্ড করা
+window.openVisitedUserProfile = async function(userId) {
+  $('search').classList.add('hidden');
+  const { data: u } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if(!u) return;
+
+  // লগ ভিজিটর (যদি নিজের প্রোফাইল না হয়)
+  if (currentUser && currentUser.id !== userId) {
+    await sb.from('profile_visitors').insert({ profile_id: userId, visitor_id: currentUser.id }).catch(()=>{});
+  }
+
+  const sheet = document.getElementById('user-sheet');
+  const container = document.getElementById('user-in');
+  sheet.classList.remove('hidden');
+
+  container.innerHTML = `
+    <div style="text-align:right;"><button onclick="this.closest('.sheet').classList.add('hidden')" style="color:#8b97b3; font-size:20px; cursor:pointer;">✕</button></div>
+    <div style="text-align:center;">
+      <div style="width:80px; height:80px; border-radius:50%; background:#2f6bff; margin:0 auto 10px; display:grid; place-items:center; font-size:32px; font-weight:bold; color:#fff; overflow:hidden;">
+        ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
+      </div>
+      <h3 style="margin:0; color:#fff;">${esc(u.display_name)}</h3>
+      <div style="color:#8b97b3; font-size:13px;">@${esc(u.username || '')}</div>
+      <p style="color:#eef2fb; font-size:14px; margin-top:8px;">${esc(u.bio || '')}</p>
+      <button onclick="sendFriendRequestTo('${u.id}')" style="background:#2f6bff; color:#fff; border:0; padding:10px 20px; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">🤝 ফ্রেন্ড রিকোয়েস্ট পাঠান</button>
+    </div>
+  `;
+};
+
+window.sendFriendRequestTo = async function(targetId) {
+  if (!currentUser) return;
+  const { error } = await sb.from('friendships').insert({ requester_id: currentUser.id, addressee_id: targetId, status: 'pending' });
+  if (error) { toast('আগে থেকেই রিকোয়েস্ট পাঠানো হয়েছে'); return; }
+  toast('ফ্রেন্ড রিকোয়েস্ট পাঠানো হয়েছে!');
+};
+
+// প্রোফাইল ভিজিটর হিস্ট্রি দেখার ফাংশন (👁️ icon)
+window.openProfileVisitorsModal = async function() {
+  if (!currentUser) return;
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+
+  modal.innerHTML = `
+    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; height:70vh; display:flex; flex-direction:column; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="margin:0; font-size:18px; color:#fff;">👁️ প্রোফাইল ভিজিটর</h3>
+        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
+      </div>
+      <div id="visitors-list" style="overflow-y:auto; flex:1;">
+        <p style="text-align:center; color:#8b97b3; padding-top:20px;">লোড হচ্ছে...</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const { data: visits } = await sb.from('profile_visitors').select('*').eq('profile_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
+  const container = document.getElementById('visitors-list');
+
+  if (!visits || visits.length === 0) {
+    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">আজ কেউ আপনার প্রোফাইল ভিজিট করেনি।</p>`;
+    return;
+  }
+
+  const vIds = [...new Set(visits.map(v => v.visitor_id))];
+  const { data: vProfiles } = await sb.from('profiles').select('*').in('id', vIds);
+
+  container.innerHTML = visits.map(v => {
+    const vp = vProfiles?.find(p => p.id === v.visitor_id);
+    if (!vp) return '';
+    return `
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #26314a;">
+        <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
+          ${vp.avatar_url ? `<img src="${esc(vp.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((vp.display_name || 'U').charAt(0).toUpperCase())}
+        </div>
+        <div style="flex:1;">
+          <div style="color:#fff; font-weight:600; font-size:14px;">${esc(vp.display_name)}</div>
+          <div style="color:#8b97b3; font-size:11px;">ভিজিট করেছেন: ${new Date(v.created_at).toLocaleTimeString()}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
 
 // ৬. মাই ফ্রেন্ডস (People Modal) লজিক
 document.addEventListener('click', function(e) {
@@ -240,7 +387,7 @@ window.renderPeople = async function() {
       friendBox.innerHTML = friends.map(f => `
         <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #26314a;">
           <div style="width:36px; height:36px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-            ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'U').charAt(0).toUpperCase())}
+            ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'T').charAt(0).toUpperCase())}
           </div>
           <div style="flex:1; font-size:14px; color:#fff;">${esc(f.display_name)}</div>
         </div>
@@ -249,7 +396,7 @@ window.renderPeople = async function() {
   }
 };
 
-// ৭. সক্রিয় মেসেঞ্জার চ্যাট উইন্ডো (Fixed: Real Chat Modal instead of alert)
+// ৭. সক্রিয় মেসেঞ্জার চ্যাট উইন্ডো ও নোটিফিকেশন
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-inbox')) {
     e.preventDefault();
@@ -321,7 +468,6 @@ window.openRealChatBox = function(friendId, friendName) {
   document.body.appendChild(chatModal);
 };
 
-// ৮. ডাইনামিক নোটিফিকেশন সিস্টেম (Fixed: No more static 'Ariful' dummy names)
 window.openDetailedNotificationsList = async function() {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
@@ -343,7 +489,6 @@ window.openDetailedNotificationsList = async function() {
   const container = document.getElementById('notif-list-box');
   if (!currentUser) return;
 
-  // ফেচ রিয়েল কমেন্টস ও লাইক নোটিফিকেশন ফ্রম ডেটাবেজ
   const { data: myPosts } = await sb.from('voice_posts').select('id').eq('user_id', currentUser.id);
   if (!myPosts || myPosts.length === 0) {
     container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('none_yet')}</p>`;
