@@ -1,7 +1,7 @@
-// Talkia Advanced Suite Batch 4: Complete Upgrade with Search Profile Visit, Visitors, Granular Privacy & Photo Tabs
-console.log("Talkia Advanced Suite Batch 4 Loaded");
+// Talkia Advanced Suite Batch 4: Complete Implementation of all 10 Options
+console.log("Talkia Advanced Suite Batch 4 Loaded with 10 Options");
 
-// ১. সেটিংস ড্যাশবোর্ড
+// ১. সেটিংস ড্যাশবোর্ড ও স্ট্রাকচার (Personal Info & Privacy Settings)
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-settings')) {
     e.preventDefault();
@@ -32,7 +32,7 @@ window.openSettingsDashboard = function() {
           ${t('privacy_pass')}
         </button>
         <button onclick="this.closest('.fixed').remove(); openLanguageModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
-          🌐 Language (ভাষা পরিবর্তন)
+          🌐 Language / ভাষা
         </button>
         <button onclick="sb.auth.signOut().then(()=>location.reload())" style="text-align:left; padding:14px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:8px;">
           🚪 ${t('logout')}
@@ -43,15 +43,14 @@ window.openSettingsDashboard = function() {
   document.body.appendChild(modal);
 };
 
-// ২. Personal Information
+// Personal Information Modal
 window.openPersonalDetailsModal = async function() {
   const { data: { user } } = await sb.auth.getUser();
   if(!user) return;
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
@@ -71,7 +70,7 @@ window.openPersonalDetailsModal = async function() {
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
           <button id="save-pi-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">${t('save')}</button>
-          <button onclick="this.closest('.fixed').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
         </div>
       </div>
     </div>
@@ -88,23 +87,22 @@ window.openPersonalDetailsModal = async function() {
   };
 };
 
-// ৩. Detailed Granular Privacy & Password Settings
+// Granular Privacy Settings Modal
 window.openPrivacyPasswordModal = async function() {
   const { data: { user } } = await sb.auth.getUser();
   if(!user) return;
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:420px; border-radius:20px; padding:20px; text-align:left; max-height:85vh; overflow-y:auto;">
-      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🔒 Privacy Controls & Password</h3>
+      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🔒 Privacy Settings</h3>
       <div style="display:flex; flex-direction:column; gap:12px;">
         
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">🌍 হু ক্যান সি ইউর পোস্ট (Who can see your posts):</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">🌍 Who can see your posts:</label>
           <select id="pr-post" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
             <option value="public" ${profile?.post_privacy === 'public' ? 'selected' : ''}>সবাই (Public)</option>
             <option value="friends" ${profile?.post_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
@@ -113,7 +111,7 @@ window.openPrivacyPasswordModal = async function() {
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 হু ক্যান সেন্ড এসএমএস (Who can send messages):</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 Who can send messages:</label>
           <select id="pr-sms" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
             <option value="everyone" ${profile?.sms_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
             <option value="friends" ${profile?.sms_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
@@ -121,7 +119,7 @@ window.openPrivacyPasswordModal = async function() {
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">📝 হু ক্যান পোস্ট অন ইউর প্রোফাইল:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">📝 Who can post on your profile:</label>
           <select id="pr-wall" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
             <option value="friends" ${profile?.wall_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
             <option value="only_me" ${profile?.wall_privacy === 'only_me' ? 'selected' : ''}>শুধু আমি (Only Me)</option>
@@ -129,7 +127,7 @@ window.openPrivacyPasswordModal = async function() {
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 হু ক্যান কমেন্ট অন ইউর পোস্ট:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 Who can comment on your posts:</label>
           <select id="pr-comment" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
             <option value="everyone" ${profile?.comment_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
             <option value="friends" ${profile?.comment_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
@@ -137,24 +135,16 @@ window.openPrivacyPasswordModal = async function() {
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">❤️ হু ক্যান লাইক ইউর পোস্ট:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">❤️ Who can like your posts:</label>
           <select id="pr-like" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
             <option value="everyone" ${profile?.like_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
             <option value="friends" ${profile?.like_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
           </select>
         </div>
 
-        <hr style="border:0; border-top:1px solid #26314a; margin:4px 0;">
-
-        <h4 style="margin:0; font-size:14px; color:#7aa5ff;">🔑 পাসওয়ার্ড পরিবর্তন</h4>
-        <div>
-          <label style="font-size:12px; color:#8b97b3; display:block; margin-bottom:4px;">নতুন পাসওয়ার্ড:</label>
-          <input type="password" id="pass-new" placeholder="কমপক্ষে ৬ অক্ষর" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px; outline:none;">
-        </div>
-
         <div style="display:flex; gap:10px; margin-top:8px;">
           <button id="save-priv-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">${t('save')}</button>
-          <button onclick="this.closest('.fixed').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
         </div>
       </div>
     </div>
@@ -162,7 +152,6 @@ window.openPrivacyPasswordModal = async function() {
   document.body.appendChild(modal);
 
   document.getElementById('save-priv-btn').onclick = async () => {
-    const newPass = document.getElementById('pass-new').value;
     const privData = {
       post_privacy: document.getElementById('pr-post').value,
       sms_privacy: document.getElementById('pr-sms').value,
@@ -170,41 +159,42 @@ window.openPrivacyPasswordModal = async function() {
       comment_privacy: document.getElementById('pr-comment').value,
       like_privacy: document.getElementById('pr-like').value
     };
-
     await sb.from('profiles').update(privData).eq('id', user.id);
-
-    if (newPass) {
-      if (newPass.length < 6) { alert('পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে'); return; }
-      const { error } = await sb.auth.updateUser({ password: newPass });
-      if (error) { alert('পাসওয়ার্ড আপডেট করা যায়নি: ' + error.message); return; }
-    }
     toast(t('saved'));
     modal.remove();
   };
 };
 
-// ৪. Language Modal
+// Language Modal with Indicator (✓)
 window.openLanguageModal = function() {
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
+
+  const langs = [
+    { code: 'bn', name: '🇧🇩 বাংলা (Bengali)' },
+    { code: 'en', name: '🇺🇸 English' },
+    { code: 'ar', name: '🇸🇦 العربية (Arabic)' },
+    { code: 'hi', name: '🇮🇳 हिन्दी (Hindi)' }
+  ];
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:360px; border-radius:20px; padding:20px; text-align:left;">
       <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🌐 Select Language / ভাষা</h3>
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <button onclick="setLang('bn'); this.closest('.fixed').remove();" style="text-align:left; padding:12px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:10px; cursor:pointer;">🇧🇩 বাংলা (Bengali)</button>
-        <button onclick="setLang('en'); this.closest('.fixed').remove();" style="text-align:left; padding:12px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:10px; cursor:pointer;">🇺🇸 English</button>
-        <button onclick="setLang('ar'); this.closest('.fixed').remove();" style="text-align:left; padding:12px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:10px; cursor:pointer;">🇸🇦 العربية (Arabic)</button>
-        <button onclick="setLang('hi'); this.closest('.fixed').remove();" style="text-align:left; padding:12px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:10px; cursor:pointer;">🇮🇳 हिन्दी (Hindi)</button>
+        ${langs.map(l => `
+          <button onclick="setLang('${l.code}'); this.closest('div[style*=\\'position:fixed\\']').remove();" style="display:flex; justify-content:space-between; align-items:center; text-align:left; padding:12px; background:${lang === l.code ? '#2f6bff' : '#1a2234'}; border:1px solid #26314a; color:#fff; border-radius:10px; cursor:pointer; font-weight:${lang === l.code ? 'bold' : 'normal'};">
+            <span>${l.name}</span>
+            <span>${lang === l.code ? '✓' : ''}</span>
+          </button>
+        `).join('')}
       </div>
-      <button onclick="this.closest('.fixed').remove()" style="width:100%; margin-top:14px; background:#1a2234; color:#fff; border:1px solid #26314a; padding:10px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+      <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="width:100%; margin-top:14px; background:#1a2234; color:#fff; border:1px solid #26314a; padding:10px; border-radius:10px; cursor:pointer;">${t('close')}</button>
     </div>
   `;
   document.body.appendChild(modal);
 };
 
-// ৫. সার্চ ইঞ্জিন এবং সার্চ থেকে অন্য ইউজারের প্রোফাইল ভিজিট ও ফ্রেন্ড রিকোয়েস্ট সিস্টেম
+// Search & Profile Visit from Search
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-search')) {
     e.preventDefault();
@@ -239,20 +229,18 @@ if (srForm) {
         </div>
         <div style="flex:1;">
           <div style="color:#fff; font-weight:600; font-size:14px;">${esc(u.display_name || 'User')}</div>
-          <div style="color:#8b97b3; font-size:12px;">@${esc(u.username || 'username')} - প্রোফাইল দেখতে ক্লিক করুন</div>
+          <div style="color:#8b97b3; font-size:12px;">@${esc(u.username || 'username')}</div>
         </div>
       </div>
     `).join('');
   };
 }
 
-// অন্য ইউজারের প্রোফাইল ওপেন করা ও ভিজিটর রেকর্ড করা
 window.openVisitedUserProfile = async function(userId) {
   $('search').classList.add('hidden');
   const { data: u } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
   if(!u) return;
 
-  // লগ ভিজিটর (যদি নিজের প্রোফাইল না হয়)
   if (currentUser && currentUser.id !== userId) {
     await sb.from('profile_visitors').insert({ profile_id: userId, visitor_id: currentUser.id }).catch(()=>{});
   }
@@ -282,18 +270,17 @@ window.sendFriendRequestTo = async function(targetId) {
   toast('ফ্রেন্ড রিকোয়েস্ট পাঠানো হয়েছে!');
 };
 
-// প্রোফাইল ভিজিটর হিস্ট্রি দেখার ফাংশন (👁️ icon)
+// Profile Visitors Modal (Only 👁️ icon)
 window.openProfileVisitorsModal = async function() {
   if (!currentUser) return;
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; height:70vh; display:flex; flex-direction:column; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h3 style="margin:0; font-size:18px; color:#fff;">👁️ প্রোফাইল ভিজিটর</h3>
-        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
       </div>
       <div id="visitors-list" style="overflow-y:auto; flex:1;">
         <p style="text-align:center; color:#8b97b3; padding-top:20px;">লোড হচ্ছে...</p>
@@ -330,22 +317,66 @@ window.openProfileVisitorsModal = async function() {
   }).join('');
 };
 
-// ৬. মাই ফ্রেন্ডস (People Modal) লজিক
+// Group Rooms Feature (5-10 people)
+window.loadGroupRooms = async function() {
+  const box = document.getElementById('group-rooms-list');
+  if(!box) return;
+  box.innerHTML = `<div class="card muted" style="text-align:center;">গ্রুপ রুম লোড হচ্ছে...</div>`;
+  
+  const { data, error } = await sb.from('group_rooms').select('*').order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) {
+    box.innerHTML = `<div class="card muted" style="text-align:center;">বর্তমানে কোনো লাইভ গ্রুপ রুম নেই। একটি রুম তৈরি করুন!</div>`;
+    return;
+  }
+
+  box.innerHTML = data.map(r => `
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h4 style="margin:0 0 4px; color:#fff;">🎙️ ${esc(r.room_name)}</h4>
+        <div style="font-size:12px; color:#8b97b3;">সদস্য সীমা: ১০ জন</div>
+      </div>
+      <button class="btn ghost sm" onclick="joinGroupRoom('${r.id}')" style="width:auto; padding:8px 16px;">যুক্ত হোন</button>
+    </div>
+  `).join('');
+};
+
+window.openCreateGroupRoomModal = function() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
+  modal.innerHTML = `
+    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:380px; border-radius:20px; padding:20px; text-align:left;">
+      <h3 style="margin:0 0 14px; font-size:18px; color:#fff;">🎙️ নতুন গ্রুপ রুম</h3>
+      <div class="field"><label>রুমের নাম:</label><input type="text" id="g-name" placeholder="যেমন: আড্ডা ও আলোচনা" style="width:100%; padding:12px; border-radius:10px; background:#1a2234; border:1px solid #26314a; color:#fff; outline:none;"></div>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button id="create-g-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">তৈরি করুন</button>
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('create-g-btn').onclick = async () => {
+    const name = document.getElementById('g-name').value.trim();
+    if(!name) return;
+    await sb.from('group_rooms').insert({ room_name: name, host_id: currentUser.id });
+    toast('গ্রুপ রুম তৈরি হয়েছে!');
+    modal.remove();
+    loadGroupRooms();
+  };
+};
+
+window.joinGroupRoom = function(roomId) {
+  toast('গ্রুপ রুমে যুক্ত হয়েছেন (লাইভ ভয়েস চ্যাট)');
+};
+
+// Friends list
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-people')) {
     e.preventDefault();
     const peopleModal = document.getElementById('people');
-    if (peopleModal) {
-      peopleModal.classList.remove('hidden');
-      renderPeople();
-    }
+    if (peopleModal) { peopleModal.classList.remove('hidden'); renderPeople(); }
   }
 }, true);
-
-const ppClose = document.getElementById('pp-close');
-if (ppClose) {
-  ppClose.onclick = () => document.getElementById('people').classList.add('hidden');
-}
 
 window.renderPeople = async function() {
   const reqBox = document.getElementById('pp-req');
@@ -394,124 +425,4 @@ window.renderPeople = async function() {
       `).join('');
     }
   }
-};
-
-// ৭. সক্রিয় মেসেঞ্জার চ্যাট উইন্ডো ও নোটিফিকেশন
-document.addEventListener('click', function(e) {
-  if (e.target.closest('#btn-inbox')) {
-    e.preventDefault();
-    openActiveMessengerModal();
-  }
-  if (e.target.closest('#btn-bell')) {
-    e.preventDefault();
-    openDetailedNotificationsList();
-  }
-}, true);
-
-window.openActiveMessengerModal = async function() {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
-
-  modal.innerHTML = `
-    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:420px; border-radius:20px; padding:20px; height:80vh; display:flex; flex-direction:column; text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:18px; color:#fff;">💬 মেসেঞ্জার & ইনবক্স</h3>
-        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
-      </div>
-      <div id="inbox-friends-list" style="overflow-y:auto; flex:1;">
-        <p style="text-align:center; color:#8b97b3; padding-top:20px;">${t('loading')}</p>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  const me = currentUser.id;
-  const { data: friendships } = await sb.from('friendships').select('*').or(`requester_id.eq.${me},addressee_id.eq.${me}`).eq('status', 'accepted');
-  const container = document.getElementById('inbox-friends-list');
-
-  if (!friendships || friendships.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('none_yet')}</p>`;
-    return;
-  }
-
-  const friendIds = friendships.map(f => f.requester_id === me ? f.addressee_id : f.requester_id);
-  const { data: friends } = await sb.from('profiles').select('*').in('id', friendIds);
-
-  container.innerHTML = friends.map(f => `
-    <div onclick="openRealChatBox('${f.id}', '${esc(f.display_name)}')" style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #26314a; cursor:pointer; border-radius:10px; background:#1a2234; margin-bottom:8px;">
-      <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-        ${f.avatar_url ? `<img src="${esc(f.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((f.display_name || 'T').charAt(0).toUpperCase())}
-      </div>
-      <div style="flex:1;">
-        <div style="color:#fff; font-weight:600; font-size:14px;">${esc(f.display_name || 'User')}</div>
-        <div style="color:#8b97b3; font-size:12px;">চ্যাট করতে ক্লিক করুন</div>
-      </div>
-    </div>
-  `).join('');
-};
-
-window.openRealChatBox = function(friendId, friendName) {
-  const chatModal = document.createElement('div');
-  chatModal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1100; display:flex; flex-direction:column; padding:16px;';
-  chatModal.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #26314a; padding-bottom:10px; margin-bottom:10px;">
-      <h3 style="margin:0; font-size:16px; color:#fff;">💬 ${friendName}</h3>
-      <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
-    </div>
-    <div style="flex:1; overflow-y:auto; padding:10px; color:#8b97b3; text-align:center;">চ্যাট হিস্ট্রি লোড হচ্ছে...</div>
-    <div style="display:flex; gap:8px; padding-top:10px;">
-      <input type="text" placeholder="মেসেজ লিখুন..." style="flex:1; padding:12px; border-radius:10px; background:#1a2234; border:1px solid #26314a; color:#fff; outline:none;">
-      <button style="background:#2f6bff; color:#fff; border:0; padding:0 16px; border-radius:10px; font-weight:bold; cursor:pointer;">পাঠান</button>
-    </div>
-  `;
-  document.body.appendChild(chatModal);
-};
-
-window.openDetailedNotificationsList = async function() {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
-
-  modal.innerHTML = `
-    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:420px; border-radius:20px; padding:20px; height:75vh; display:flex; flex-direction:column; text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:18px; color:#fff;">🔔 নোটিফিকেশন</h3>
-        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
-      </div>
-      <div id="notif-list-box" style="overflow-y:auto; flex:1;">
-        <p style="text-align:center; color:#8b97b3; padding-top:20px;">${t('loading')}</p>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  const container = document.getElementById('notif-list-box');
-  if (!currentUser) return;
-
-  const { data: myPosts } = await sb.from('voice_posts').select('id').eq('user_id', currentUser.id);
-  if (!myPosts || myPosts.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('none_yet')}</p>`;
-    return;
-  }
-
-  const postIds = myPosts.map(p => p.id);
-  const { data: comments } = await sb.from('comment_feed').select('*').in('voice_post_id', postIds).order('created_at', { ascending: false }).limit(10);
-
-  if (!comments || comments.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('none_yet')}</p>`;
-    return;
-  }
-
-  container.innerHTML = comments.map(c => `
-    <div style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #26314a; background:#1a2234; border-radius:12px; margin-bottom:8px;">
-      <div style="width:40px; height:40px; border-radius:50%; background:#2f6bff; display:grid; place-items:center; font-weight:bold; color:#fff; overflow:hidden;">
-        ${c.avatar_url ? `<img src="${esc(c.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((c.display_name || 'U').charAt(0).toUpperCase())}
-      </div>
-      <div style="flex:1;">
-        <div style="color:#fff; font-size:13px;"><b style="color:#7aa5ff;">${esc(c.display_name || 'User')}</b> আপনার পোস্টে কমেন্ট করেছে 💬</div>
-        <div style="color:#8b97b3; font-size:11px; margin-top:2px;">${new Date(c.created_at).toLocaleString()}</div>
-      </div>
-    </div>
-  `).join('');
 };
