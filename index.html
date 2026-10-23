@@ -37,13 +37,13 @@ button{cursor:pointer;border:0;background:none}
 .hbadge img{height:24px;display:block}
 .brand p{margin:6px 0 0;color:var(--muted);font-size:15px}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
-.seg button{padding:10px;border-radius:9px;color:var(--muted);font-weight:600}
+.seg button{padding:10px;border-radius:99px;color:var(--muted);font-weight:600}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
 .field{margin-bottom:12px}
 .field label{display:block;margin-bottom:4px;font-size:13px;color:var(--muted)}
-.field input,.field textarea{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
+.field input,.field textarea,.field select{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none;color:var(--text)}
 .field textarea{resize:none;min-height:84px}
-.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .btn{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px}
 .btn:disabled{opacity:.6}
 .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
@@ -74,13 +74,20 @@ h2{margin:0 0 12px;font-size:20px}
 .post .play i{width:40px;height:40px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
 .post .play i svg{width:16px;height:16px;fill:var(--accent-ink)}
 .post .wave{flex:1;height:30px;background:repeating-linear-gradient(90deg,var(--line) 0 3px,transparent 3px 7px);border-radius:4px;opacity:.8}
-.profile-top{text-align:center;margin-bottom:18px}
-.avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 12px;background:var(--surface2);border:2px solid var(--accent);
-  display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text)}
-.profile-top h2{margin:0}
-.avatar{position:relative;overflow:hidden;cursor:pointer}
+
+/* Profile Cover and Avatar */
+.profile-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-bottom:16px}
+.cover-box{height:120px;background:linear-gradient(135deg, #1e293b, #0f172a);position:relative}
+.cover-box img{width:100%;height:100%;object-fit:cover;display:block}
+.cover-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer}
+.profile-top{text-align:center;padding:0 16px 20px;position:relative}
+.avatar{width:92px;height:92px;border-radius:50%;margin:-46px auto 10px;background:var(--surface2);border:4px solid var(--surface);
+  display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text);position:relative;overflow:hidden;cursor:pointer}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.field select{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
+
+.ext-bio-box{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-top:12px;text-align:left;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.ext-bio-box div{display:flex;align-items:center;gap:8px;color:var(--text)}
+
 .urow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .uav{width:44px;height:44px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;overflow:hidden;font-weight:700;color:var(--accent-text);flex:none}
 .uav img{width:100%;height:100%;object-fit:cover}
@@ -186,17 +193,39 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     </section>
 
     <section id="tab-profile" class="tab">
-      <div class="profile-top">
-        <div class="avatar" id="p-avatar">T</div>
-        <div class="avatar-hint" id="avatar-hint" data-i18n="avatar_change"></div>
-        <input type="file" id="avatar-input" accept="image/*" class="hidden">
-        <h2 id="p-name"></h2>
-        <div class="muted" id="p-username"></div>
-        <div class="muted" id="p-email"></div>
-        <div class="p-meta" id="p-country"></div>
-        <p class="p-bio" id="p-bio"></p>
-        <button class="btn ghost" id="btn-edit" data-i18n="edit_profile"></button>
-        <button class="btn ghost" id="btn-people" data-i18n="people" style="margin-inline-start:8px"></button>
+      <div class="profile-card">
+        <!-- Cover Photo Section -->
+        <div class="cover-box">
+          <img id="p-cover-img" src="" class="hidden">
+          <button class="cover-btn" id="btn-cover-change">📷 কভার ছবি</button>
+          <input type="file" id="cover-input" accept="image/*" class="hidden">
+        </div>
+
+        <div class="profile-top">
+          <div class="avatar" id="p-avatar">T</div>
+          <div class="avatar-hint" id="avatar-hint" data-i18n="avatar_change"></div>
+          <input type="file" id="avatar-input" accept="image/*" class="hidden">
+          
+          <h2 id="p-name"></h2>
+          <div class="muted" id="p-username"></div>
+          <!-- Email is removed from Profile and moved to Personal Details -->
+          <div class="p-meta" id="p-country"></div>
+          <p class="p-bio" id="p-bio"></p>
+
+          <!-- Extended Bio Details (Education, Relationship, Religion, Hobbies, City) -->
+          <div class="ext-bio-box">
+            <div>🎓 <b>শিক্ষা:</b> <span id="p-edu">যোগ করা হয়নি</span></div>
+            <div>💍 <b>সম্পর্ক:</b> <span id="p-rel">যোগ করা হয়নি</span></div>
+            <div>🕌 <b>ধর্ম:</b> <span id="p-relig">যোগ করা হয়নি</span></div>
+            <div>🎨 <b>শখ:</b> <span id="p-hobby">যোগ করা হয়নি</span></div>
+            <div>📍 <b>বর্তমান শহর:</b> <span id="p-city">যোগ করা হয়নি</span></div>
+          </div>
+
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:14px;">
+            <button class="btn ghost" id="btn-edit" data-i18n="edit_profile" style="margin:0"></button>
+            <button class="btn ghost" id="btn-people" data-i18n="people" style="margin:0"></button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -231,6 +260,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </div>
 </div>
 
+<!-- Bio & Extended Profile Edit Sheet -->
 <div id="edit-sheet" class="sheet hidden">
   <div class="sheet-in">
     <h3 data-i18n="edit_profile"></h3>
@@ -238,6 +268,11 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div class="field"><label data-i18n="name"></label><input id="e-name" type="text" maxlength="40"></div>
       <div class="field"><label data-i18n="username"></label><input id="e-username" type="text" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
       <div class="field"><label data-i18n="bio"></label><textarea id="e-bio" maxlength="200"></textarea></div>
+      <div class="field"><label>🎓 শিক্ষা (Education)</label><input id="e-edu" type="text" maxlength="60"></div>
+      <div class="field"><label>💍 সম্পর্কের অবস্থা (Relationship)</label><input id="e-rel" type="text" maxlength="40"></div>
+      <div class="field"><label>🕌 ধর্ম (Religion)</label><input id="e-relig" type="text" maxlength="40"></div>
+      <div class="field"><label>🎨 শখ (Hobbies)</label><input id="e-hobby" type="text" maxlength="60"></div>
+      <div class="field"><label>📍 বর্তমান শহর (Current City)</label><input id="e-city" type="text" maxlength="50"></div>
       <div class="field"><label data-i18n="country"></label><input id="e-country" type="text" maxlength="40"></div>
       <div class="field"><label data-i18n="dm_priv"></label><select id="e-dm"><option value="friends" data-i18n="dm_friends"></option><option value="everyone" data-i18n="dm_everyone"></option></select></div>
       <div id="edit-msg" class="msg"></div>
@@ -246,6 +281,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     </form>
   </div>
 </div>
+
 <div id="rec-sheet" class="sheet hidden">
   <div class="sheet-in" style="text-align:start">
     <h3 data-i18n="rec_title" style="text-align:center"></h3>
@@ -266,6 +302,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <button class="btn ghost sm" id="rec-close" type="button" data-i18n="close" style="margin-top:14px"></button>
   </div>
 </div>
+
 <div id="cm-sheet" class="sheet hidden">
   <div class="sheet-in" style="height:80%;text-align:start">
     <h3 data-i18n="comments_h"></h3>
@@ -274,15 +311,20 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <button class="btn ghost sm" id="cm-close" type="button" data-i18n="close"></button>
   </div>
 </div>
+
 <div id="settings" class="sheet hidden">
   <div class="sheet-in" style="text-align:start">
     <h3 data-i18n="settings"></h3>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+      <button class="btn ghost" id="btn-personal-info" style="text-align:left;">👤 Personal Information (নাম, ইমেইল, ফোন)</button>
+    </div>
     <div class="muted" style="margin-bottom:8px" data-i18n="language"></div>
     <div class="langs" style="margin:0 0 22px;justify-content:flex-start" data-langs></div>
     <button class="btn danger" id="btn-logout" data-i18n="logout"></button>
     <button class="btn ghost sm" id="settings-close" data-i18n="close" style="margin-top:12px"></button>
   </div>
 </div>
+
 <div id="search" class="sheet hidden">
   <div class="sheet-in" style="height:90%;text-align:start">
     <form id="sr-form" class="field" style="display:flex;gap:8px"><input id="sr-q" type="search" data-i18n-ph="search_ph" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit" data-i18n="search_btn" style="width:auto;padding:0 18px;font-size:15px"></button></form>
@@ -291,16 +333,17 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <button class="btn ghost sm" id="sr-close" data-i18n="close" style="margin-top:20px"></button>
   </div>
 </div>
+
 <div id="people" class="sheet hidden">
   <div class="sheet-in" style="height:90%;text-align:start">
     <h3 data-i18n="people"></h3>
-    
-        <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
+    <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
     <div class="sec-h" data-i18n="friends"></div><div id="pp-friends"></div>
     <div class="sec-h" data-i18n="blocked_list"></div><div id="pp-blocked"></div>
     <button class="btn ghost sm" id="pp-close" data-i18n="close" style="margin-top:20px"></button>
   </div>
 </div>
+
 <div id="user-sheet" class="sheet hidden"><div class="sheet-in" id="user-in" style="min-height:70%"></div></div>
 <div id="toast" class="hidden"></div>
 
@@ -427,6 +470,13 @@ $('btn-settings').onclick = () => $('settings').classList.remove('hidden');
 $('settings-close').onclick = () => $('settings').classList.add('hidden');
 $('settings').onclick = e => { if (e.target.id === 'settings') $('settings').classList.add('hidden'); };
 
+if ($('btn-personal-info')) {
+  $('btn-personal-info').onclick = () => {
+    $('settings').classList.add('hidden');
+    if (typeof openPersonalDetailsModal === 'function') openPersonalDetailsModal();
+  };
+}
+
 async function onSession(session) {
   currentUser = session ? session.user : null;
   if (!currentUser) {
@@ -453,15 +503,32 @@ function renderProfile() {
   const name = p.display_name || t('user');
   $('p-name').textContent = name;
   $('p-username').textContent = p.username ? '@' + p.username : '';
-  $('p-email').textContent = currentUser.email || '';
   $('p-country').innerHTML = p.country ? '<span class="tag">' + esc(p.country) + '</span>' : '';
   $('p-bio').textContent = p.bio || '';
+  
+  // Extended Bio fields
+  if ($('p-edu')) $('p-edu').textContent = p.education || 'যোগ করা হয়নি';
+  if ($('p-rel')) $('p-rel').textContent = p.marital_status || 'যোগ করা হয়নি';
+  if ($('p-relig')) $('p-relig').textContent = p.religion || 'যোগ করা হয়নি';
+  if ($('p-hobby')) $('p-hobby').textContent = p.hobbies || 'যোগ করা হয়নি';
+  if ($('p-city')) $('p-city').textContent = p.city || 'যোগ করা হয়নি';
+
   const av = $('p-avatar');
   if (p.avatar_url) { av.innerHTML = '<img alt="" src="' + esc(p.avatar_url) + '">'; }
   else { av.textContent = name.trim().charAt(0).toUpperCase() || 'T'; }
+
+  // Cover photo
+  if ($('p-cover-img')) {
+    if (p.cover_url) {
+      $('p-cover-img').src = esc(p.cover_url);
+      $('p-cover-img').classList.remove('hidden');
+    } else {
+      $('p-cover-img').classList.add('hidden');
+    }
+  }
 }
 
-/* ---------- avatar upload ---------- */
+/* ---------- avatar & cover upload ---------- */
 function compressImage(file, maxSide, quality) {
   return new Promise((resolve, reject) => {
     const img = new Image(), url = URL.createObjectURL(file);
@@ -501,12 +568,41 @@ $('avatar-input').onchange = async e => {
   }
 };
 
+// Cover Photo Upload Logic
+if ($('btn-cover-change')) $('btn-cover-change').onclick = () => $('cover-input').click();
+if ($('cover-input')) {
+  $('cover-input').onchange = async e => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    toast(t('uploading'));
+    try {
+      const blob = await compressImage(file, 1024, 0.85);
+      const path = currentUser.id + '/cover.jpg';
+      const { error } = await sb.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      if (error) throw error;
+      const { data } = sb.storage.from('images').getPublicUrl(path);
+      const url = data.publicUrl + '?v=' + Date.now();
+      await sb.from('profiles').update({ cover_url: url }).eq('id', currentUser.id);
+      await loadProfile();
+      toast(t('saved'));
+    } catch (err) {
+      toast(t('upload_fail') + (err.message || err));
+    }
+  };
+}
+
 /* ---------- profile edit ---------- */
 $('btn-edit').onclick = () => {
   const p = currentProfile || {};
   $('e-name').value = p.display_name || '';
   $('e-username').value = p.username || '';
   $('e-bio').value = p.bio || '';
+  if ($('e-edu')) $('e-edu').value = p.education || '';
+  if ($('e-rel')) $('e-rel').value = p.marital_status || '';
+  if ($('e-relig')) $('e-relig').value = p.religion || '';
+  if ($('e-hobby')) $('e-hobby').value = p.hobbies || '';
+  if ($('e-city')) $('e-city').value = p.city || '';
   $('e-country').value = p.country || '';
   $('e-dm').value = p.dm_privacy || 'friends';
   $('edit-msg').textContent = '';
@@ -524,6 +620,11 @@ $('edit-form').onsubmit = async e => {
     display_name: $('e-name').value.trim() || t('user'),
     username: uname || null,
     bio: $('e-bio').value.trim() || null,
+    education: $('e-edu')?.value.trim() || null,
+    marital_status: $('e-rel')?.value.trim() || null,
+    religion: $('e-relig')?.value.trim() || null,
+    hobbies: $('e-hobby')?.value.trim() || null,
+    city: $('e-city')?.value.trim() || null,
     country: $('e-country').value.trim() || null,
     dm_privacy: $('e-dm').value
   };
@@ -540,7 +641,6 @@ $('edit-form').onsubmit = async e => {
     $('edit-save').disabled = false;
   }
 };
-
 
 /* ---------- people: search, friends, block, report ---------- */
 const PCOLS = 'id,display_name,username,avatar_url,bio,country';
@@ -688,25 +788,15 @@ function showTab(name) {
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
-// ইনবক্স ও বেল আইকন ডাইনামিক হ্যান্ডলার (Batch 4)
+// Inbox & Notification Handlers (Batch 4 Integration)
 $('btn-inbox').onclick = function() {
-  if (typeof openCreateGroupModal === 'function') {
-    openCreateGroupModal();
-  } else if (window.openCreateGroupModal) {
-    window.openCreateGroupModal();
-  } else {
-    toast(t('soon'));
-  }
+  if (typeof openCreateGroupModal === 'function') openCreateGroupModal();
+  else toast(t('soon'));
 };
 
 $('btn-bell').onclick = function() {
-  if (typeof openNotificationsList === 'function') {
-    openNotificationsList();
-  } else if (window.openNotificationsList) {
-    window.openNotificationsList();
-  } else {
-    toast(t('soon'));
-  }
+  if (typeof openNotificationsList === 'function') openNotificationsList();
+  else toast(t('soon'));
 };
 
 function todayISO() {
@@ -720,7 +810,6 @@ async function loadPrompt() {
   const field = { bn: 'text_bn', en: 'text_en', ar: 'text_ar' }[lang];
   el.textContent = data[field] || data.text_bn;
 }
-
 
 /* ---------- categories ---------- */
 let cats = [];
