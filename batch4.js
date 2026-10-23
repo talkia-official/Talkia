@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Profile Actions (Add Friend & Inbox), Scrolling & Settings Fix
+// Talkia Advanced Suite Batch 4: Privacy Settings, Nested Personal Info, Clean Language Accordion & Profile Actions
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,7 +77,125 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Open Other User's Profile Modal with Add Friend & Inbox Buttons and Smooth Scrolling
+// Settings Dashboard with Nested Menons (Personal Info, Privacy Settings, Language Accordion)
+window.openSettingsDashboard = function() {
+  let modal = document.getElementById('settings-dashboard-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'settings-dashboard-modal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+    document.body.appendChild(modal);
+  }
+
+  function renderMainSettings() {
+    modal.innerHTML = `
+      <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+          <h3 style="margin:0; font-size:18px; color:#fff;">⚙️ ${t('settings')}</h3>
+          <button id="set-close-x" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div id="menu-personal" style="padding:14px; background:var(--surface2); border-radius:12px; border:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:var(--text);">👤 ${t('p_info')}</span>
+            <span style="color:var(--muted);">›</span>
+          </div>
+          <div id="menu-privacy" style="padding:14px; background:var(--surface2); border-radius:12px; border:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:var(--text);">🔒 ${t('p_privacy_title')}</span>
+            <span style="color:var(--muted);">›</span>
+          </div>
+          <div id="menu-lang" style="padding:14px; background:var(--surface2); border-radius:12px; border:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:var(--text);">🌐 ${t('language')}</span>
+            <span style="color:var(--muted);" id="lang-arrow">⌄</span>
+          </div>
+          <div id="lang-container-box" class="hidden" style="padding:10px; background:var(--bg); border-radius:10px; border:1px solid var(--line);">
+            <div class="langs" data-langs style="justify-content:center;"></div>
+          </div>
+          <button id="set-logout-btn" style="text-align:left; padding:14px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:6px;">🚪 ${t('logout')}</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('set-close-x').onclick = () => modal.remove();
+    document.getElementById('set-logout-btn').onclick = () => sb.auth.signOut().then(() => location.reload());
+
+    document.getElementById('menu-personal').onclick = () => renderPersonalModal();
+    document.getElementById('menu-privacy').onclick = () => renderPrivacyModal();
+
+    const langMenu = document.getElementById('menu-lang');
+    const langBox = document.getElementById('lang-container-box');
+    langMenu.onclick = () => {
+      langBox.classList.toggle('hidden');
+      if (!langBox.classList.contains('hidden') && typeof renderLangButtons === 'function') {
+        renderLangButtons();
+      }
+    };
+  }
+
+  function renderPersonalModal() {
+    modal.innerHTML = `
+      <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+          <h3 style="margin:0; font-size:18px; color:#fff;">👤 ${t('p_info')}</h3>
+          <button id="back-to-set" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">←</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px; color:var(--text);">
+          <div style="padding:12px; background:var(--surface2); border-radius:10px; border:1px solid var(--line);">
+            <div style="color:var(--muted); font-size:12px;">Email</div>
+            <div style="font-weight:600; margin-top:2px;">${currentUser ? currentUser.email : ''}</div>
+          </div>
+          <div style="padding:12px; background:var(--surface2); border-radius:10px; border:1px solid var(--line);">
+            <div style="color:var(--muted); font-size:12px;">Name</div>
+            <div style="font-weight:600; margin-top:2px;">${currentProfile?.display_name || 'User'}</div>
+          </div>
+          <div style="padding:12px; background:var(--surface2); border-radius:10px; border:1px solid var(--line);">
+            <div style="color:var(--muted); font-size:12px;">Username</div>
+            <div style="font-weight:600; margin-top:2px;">@${currentProfile?.username || ''}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('back-to-set').onclick = () => renderMainSettings();
+  }
+
+  function renderPrivacyModal() {
+    modal.innerHTML = `
+      <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left; max-height:85vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+          <h3 style="margin:0; font-size:18px; color:#fff;">🔒 ${t('p_privacy_title')}</h3>
+          <button id="back-to-set" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">←</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px; font-size:14px; color:var(--text);">
+          <div>
+            <label style="color:var(--muted); font-size:12px; display:block; margin-bottom:4px;">${t('p_who_posts')}</label>
+            <select style="width:100%; padding:10px; background:var(--surface2); border:1px solid var(--line); border-radius:8px; color:#fff; outline:none;">
+              <option>${t('opt_public')}</option>
+              <option>${t('opt_friends')}</option>
+              <option>${t('opt_onlyme')}</option>
+            </select>
+          </div>
+          <div>
+            <label style="color:var(--muted); font-size:12px; display:block; margin-bottom:4px;">${t('p_who_cm')}</label>
+            <select style="width:100%; padding:10px; background:var(--surface2); border:1px solid var(--line); border-radius:8px; color:#fff; outline:none;">
+              <option>${t('opt_everyone')}</option>
+              <option>${t('opt_friends')}</option>
+            </select>
+          </div>
+          <div style="border-top:1px solid var(--line); padding-top:12px;">
+            <div style="font-weight:600; margin-bottom:8px; color:var(--accent-text);">${t('blocked_list')}</div>
+            <div id="blocked-users-list" style="color:var(--muted); font-size:13px; text-align:center; padding:10px; background:var(--surface2); border-radius:8px;">
+              ${t('none_yet')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('back-to-set').onclick = () => renderMainSettings();
+  }
+
+  renderMainSettings();
+};
+
+// Open Other User's Profile Modal with Add Friend & Inbox Buttons
 window.openUserProfileModal = async function(userId) {
   if (currentUser && userId === currentUser.id) {
     showTab('profile');
@@ -217,11 +335,26 @@ window.openCreateGroupRoomModal = function() {
   };
 };
 
-window.loadGroupRooms = function() {
+window.loadGroupRooms = async function() {
   const list = document.getElementById('group-rooms-list');
-  if (list) {
+  if (!list) return;
+  list.innerHTML = `<div class="empty">${t('loading')}</div>`;
+  
+  const { data, error } = await sb.from('group_rooms').select('*').order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) {
     list.innerHTML = `<div class="empty"><div class="big">🎙️</div>${t('g_empty')}</div>`;
+    return;
   }
+
+  list.innerHTML = data.map(room => `
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px; margin-bottom:10px; text-align:start;">
+      <div>
+        <div style="font-weight:600; font-size:16px; color:var(--text);">${esc(room.name)}</div>
+        <div class="muted" style="font-size:12px;">${t('member_limit')}</div>
+      </div>
+      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="toast('${t('room_joined')}')">${t('g_join')}</button>
+    </div>
+  `).join('');
 };
 
 window.openInboxModal = async function() {
@@ -399,34 +532,4 @@ window.openNotificationsModal = async function() {
   if (notifSheet) notifSheet.classList.remove('hidden');
   document.getElementById('notif-sheet-close').onclick = () => notifSheet.classList.add('hidden');
   document.getElementById('notif-close-btn').onclick = () => notifSheet.classList.add('hidden');
-};
-
-// Full Settings Dashboard
-window.openSettingsDashboard = function() {
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
-  modal.innerHTML = `
-    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-        <h3 style="margin:0; font-size:18px; color:#fff;">⚙️ ${t('settings')}</h3>
-        <button id="set-close-x" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="padding:12px; background:var(--surface2); border-radius:12px; border:1px solid var(--line);">
-          <div style="font-weight:600; margin-bottom:6px; color:var(--accent-text);">${t('p_info')}</div>
-          <div style="font-size:13px; color:var(--muted);">${currentUser ? currentUser.email : ''}</div>
-        </div>
-        <div style="padding:12px; background:var(--surface2); border-radius:12px; border:1px solid var(--line);">
-          <div style="font-weight:600; margin-bottom:6px; color:var(--accent-text);">${t('language')}</div>
-          <div class="langs" data-langs style="justify-content:flex-start;"></div>
-        </div>
-        <button id="set-logout-btn" style="text-align:left; padding:14px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer;">🚪 ${t('logout')}</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  document.getElementById('set-close-x').onclick = () => modal.remove();
-  document.getElementById('set-logout-btn').onclick = () => sb.auth.signOut().then(() => location.reload());
-  
-  if (typeof renderLangButtons === 'function') renderLangButtons();
 };
