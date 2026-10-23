@@ -331,6 +331,16 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </div>
 </div>
 
+<div id="people" class="sheet hidden">
+  <div class="sheet-in" style="height:90%;text-align:start">
+    <h3 data-i18n="people"></h3>
+    <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
+    <div class="sec-h" data-i18n="friends"></div><div id="pp-friends"></div>
+    <div class="sec-h" data-i18n="blocked_list"></div><div id="pp-blocked"></div>
+    <button class="btn ghost sm" id="pp-close" data-i18n="close" style="margin-top:20px"></button>
+  </div>
+</div>
+
 <div id="user-sheet" class="sheet hidden"><div class="sheet-in" id="user-in" style="min-height:70%"></div></div>
 <div id="toast" class="hidden"></div>
 
@@ -577,7 +587,7 @@ $('edit-form').onsubmit = async e => {
   finally { $('edit-save').disabled = false; }
 };
 
-/* ---------- Navigation ---------- */
+/* ---------- Navigation & People/Search Links ---------- */
 function showTab(name) {
   currentTab = name;
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
@@ -588,6 +598,11 @@ function showTab(name) {
   document.querySelector('main').scrollTop = 0;
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+// Global My Friends button handler fix
+if ($('btn-people')) {
+  $('btn-people').onclick = async () => { $('people').classList.remove('hidden'); await renderPeople(); };
+}
 
 function todayISO() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
