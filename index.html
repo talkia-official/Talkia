@@ -161,17 +161,9 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </header>
 
   <main>
-    <section id="tab-prompt" class="tab">
-      <h2 data-i18n="t_prompt"></h2>
-      <div class="card">
-        <span class="tag">#TalkiaToday</span>
-        <div class="prompt-text" id="prompt-text">...</div>
-        <button class="btn" id="prompt-answer" data-i18n="answer_prompt"></button>
-      </div>
-    </section>
-
-    <section id="tab-feed" class="tab">
-      <h2 data-i18n="t_feed"></h2>
+    <!-- Home / Feed Tab (Facebook Style Home Feed) -->
+    <section id="tab-home" class="tab">
+      <h2 data-i18n="t_home">হোম ফিড</h2>
       <div class="filter-row">
         <select id="feed-cat-select" onchange="onFeedFilterChange()">
           <option value="" data-i18n="all_cats"></option>
@@ -183,9 +175,18 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div id="feed-list"></div>
     </section>
 
+    <section id="tab-prompt" class="tab">
+      <h2 data-i18n="t_prompt"></h2>
+      <div class="card">
+        <span class="tag">#TalkiaToday</span>
+        <div class="prompt-text" id="prompt-text">...</div>
+        <button class="btn" id="prompt-answer" data-i18n="answer_prompt"></button>
+      </div>
+    </section>
+
     <!-- Group Rooms Tab -->
     <section id="tab-groups" class="tab">
-      <h2 data-i18n="t_groups">👥 গ্রুপ ভয়েস রুম</h2>
+      <h2 data-i18n="t_groups">গ্রুপ ভয়েস রুম</h2>
       <div class="card">
         <p class="muted" style="font-size:14px; margin-bottom:12px;">৫ থেকে ১০ জন একসাথে একটি গ্রুপ রুমে যুক্ত হয়ে লাইভ কথা বলতে পারেন।</p>
         <button class="btn" onclick="openCreateGroupRoomModal()">+ নতুন রুম তৈরি করুন</button>
@@ -237,13 +238,13 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
   <nav>
     <div class="nav-in">
+      <button class="nav-btn" data-tab="home">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span data-i18n="n_home">হোম</span>
+      </button>
       <button class="nav-btn" data-tab="prompt">
         <svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 16.7 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg>
         <span data-i18n="n_prompt"></span>
-      </button>
-      <button class="nav-btn" data-tab="feed">
-        <svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
-        <span data-i18n="n_feed"></span>
       </button>
       <button class="nav-rec" id="btn-record">
         <span class="dot"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
@@ -277,24 +278,24 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div class="field"><label data-i18n="country"></label><input id="e-country" type="text" maxlength="40"></div>
       <div id="edit-msg" class="msg"></div>
       <button class="btn" id="edit-save" type="submit" data-i18n="save"></button>
-      <button class="btn ghost" id="edit-cancel" type="button" data-i18n="close"></button>
+      <button class="btn ghost" id="edit-cancel" type="button" data-i18n="btn_back"></button>
     </form>
   </div>
 </div>
 
-<!-- Post Creation Modal Sheet with Dedicated Text Box -->
+<!-- Post Creation Modal Sheet -->
 <div id="rec-sheet" class="sheet hidden">
   <div class="sheet-in" style="text-align:start">
     <h3 data-i18n="rec_title" style="text-align:center"></h3>
     
     <div style="display:flex; gap:6px; margin-bottom:14px; background:var(--surface2); padding:4px; border-radius:10px;">
-      <button type="button" id="ptype-text" onclick="setPostMode('text')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; background:var(--accent); color:#fff;">📝 লেখা</button>
-      <button type="button" id="ptype-voice" onclick="setPostMode('voice')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--muted);">🎙️ ভয়েস</button>
-      <button type="button" id="ptype-image" onclick="setPostMode('image')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--muted);">🖼️ ছবি</button>
+      <button type="button" id="ptype-text" onclick="setPostMode('text')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; background:var(--accent); color:#fff;" data-i18n="lbl_text">লেখা</button>
+      <button type="button" id="ptype-voice" onclick="setPostMode('voice')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--muted);" data-i18n="lbl_voice">ভয়েস</button>
+      <button type="button" id="ptype-image" onclick="setPostMode('image')" style="flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--muted);" data-i18n="lbl_image">ছবি</button>
     </div>
 
     <div id="text-post-area" style="margin-bottom:12px;">
-      <div class="field"><textarea id="r-text-content" maxlength="500" placeholder="আপনার মনে কি চলছে, তা এখানে লিখুন..." style="min-height:110px; width:100%; padding:14px; border-radius:12px; background:var(--surface); border:1px solid var(--line); color:var(--text); outline:none;"></textarea></div>
+      <div class="field"><textarea id="r-text-content" maxlength="500" data-i18n-ph="post_ph" style="min-height:110px; width:100%; padding:14px; border-radius:12px; background:var(--surface); border:1px solid var(--line); color:var(--text); outline:none;"></textarea></div>
     </div>
 
     <div id="voice-rec-area" class="hidden" style="text-align:center">
@@ -315,7 +316,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div id="rec-msg" class="msg"></div>
       <button class="btn" id="rec-post" type="button" data-i18n="rec_post"></button>
     </div>
-    <button class="btn ghost sm" id="rec-close" type="button" data-i18n="close" style="margin-top:14px"></button>
+    <button class="btn ghost sm" id="rec-close" type="button" data-i18n="btn_cancel" style="margin-top:14px"></button>
   </div>
 </div>
 
@@ -324,7 +325,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <h3 data-i18n="comments_h"></h3>
     <div id="cm-list"></div>
     <form id="cm-form" class="field" style="display:flex;gap:8px;margin-top:12px"><input id="cm-in" type="text" maxlength="300" data-i18n-ph="cm_ph" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit" data-i18n="send" style="width:auto;padding:0 18px;font-size:15px"></button></form>
-    <button class="btn ghost sm" id="cm-close" type="button" data-i18n="close"></button>
+    <button class="btn ghost sm" id="cm-close" type="button" data-i18n="btn_back"></button>
   </div>
 </div>
 
@@ -333,7 +334,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <form id="sr-form" class="field" style="display:flex;gap:8px"><input id="sr-q" type="search" data-i18n-ph="search_ph" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit" data-i18n="search_btn" style="width:auto;padding:0 18px;font-size:15px"></button></form>
     <div id="sr-recent"></div>
     <div id="sr-results"></div>
-    <button class="btn ghost sm" id="sr-close" data-i18n="close" style="margin-top:20px"></button>
+    <button class="btn ghost sm" id="sr-close" data-i18n="btn_back" style="margin-top:20px"></button>
   </div>
 </div>
 
@@ -343,7 +344,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
     <div class="sec-h" data-i18n="friends"></div><div id="pp-friends"></div>
     <div class="sec-h" data-i18n="blocked_list"></div><div id="pp-blocked"></div>
-    <button class="btn ghost sm" id="pp-close" data-i18n="close" style="margin-top:20px"></button>
+    <button class="btn ghost sm" id="pp-close" data-i18n="btn_back" style="margin-top:20px"></button>
   </div>
 </div>
 
@@ -361,9 +362,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const I18N = {
   bn: {
     tagline:'আওয়াজের ভুবন', login:'লগইন', signup:'সাইন আপ', name:'আপনার নাম', email:'ইমেইল', password:'পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)',
-    t_prompt:'আজকের প্রশ্ন', t_feed:'শুনুন', t_groups:'গ্রুপ ভয়েস রুম', n_prompt:'আজকের প্রশ্ন', n_feed:'শুনুন', n_record:'পোস্ট', n_groups:'গ্রুপ', n_profile:'আমি',
+    t_home:'হোম ফিড', t_prompt:'আজকের প্রশ্ন', t_groups:'গ্রুপ ভয়েস রুম', n_home:'হোম', n_prompt:'আজকের প্রশ্ন', n_record:'পোস্ট', n_groups:'গ্রুপ', n_profile:'আমি',
     answer_prompt:'উত্তর দিন', no_prompt:'আজকের প্রশ্ন শীঘ্রই আসছে।', feed_empty:'এখনো কোনো পোস্ট নেই। প্রথম আওয়াজটি আপনার হোক!',
-    language:'ভাষা', logout:'লগআউট', rec_title:'নতুন পোস্ট', close:'বন্ধ করুন',
+    language:'ভাষা', logout:'লগআউট', rec_title:'নতুন পোস্ট', close:'বন্ধ করুন', btn_back:'পিছনে যান', btn_cancel:'ক্যান্সেল',
     soon:'শীঘ্রই আসছে', check_email:'আপনার ইমেইলে পাঠানো লিংকে ক্লিক করে অ্যাকাউন্ট নিশ্চিত করুন।', loading:'লোড হচ্ছে...',
     sec:'সেকেন্ড', anon:'বেনামী', user:'ব্যবহারকারী',
     edit_profile:'প্রোফাইল এডিট', username:'ইউজারনেম (ইংরেজি অক্ষর, সংখ্যা, _)', bio:'আপনার সম্পর্কে', country:'দেশ', save:'সেভ করুন',
@@ -372,13 +373,17 @@ const I18N = {
     avatar_change:'ছবি বদলান', settings:'সেটিংস', rec_start:'রেকর্ড শুরু করুন', rec_stop:'থামান', rec_again:'আবার রেকর্ড করুন', rec_post:'পোস্ট করুন', rec_cap:'ক্যাপশন বা আপনার পোস্ট...', anon_toggle:'বেনামে পোস্ট করুন', all:'সব', comments_h:'কমেন্ট', cm_ph:'কমেন্ট লিখুন...', send:'পাঠান', mic_err:'মাইক্রোফোন চালু করা যায়নি।', too_short:'কমপক্ষে ৩ সেকেন্ড রেকর্ড করুন।', too_big:'রেকর্ডিং বেশি বড়।', posted:'পোস্ট হয়েছে',
     c_BD:'বাংলাদেশ', c_IN:'ভারত', c_SA:'সৌদি', c_AE:'আমিরাত', c_GLOBAL:'বিশ্ব', l_bn:'বাংলা', l_en:'English', l_ar:'العربية', l_hi:'हिन्दी', search_btn:'খুঁজুন', min2:'কমপক্ষে ২টা অক্ষর লিখুন', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।',
     cover_change:'📷 কভার ছবি', lbl_edu:'🎓 শিক্ষা:', lbl_rel:'💍 সম্পর্ক:', lbl_relig:'🕌 ধর্ম:', lbl_hobby:'🎨 শখ:', lbl_city:'📍 বর্তমান শহর:', not_added:'যোগ করা হয়নি', all_cats:'সকল ক্যাটাগরি', all_countries:'সকল দেশ', p_info:'👤 Personal Information (ব্যক্তিগত তথ্য)', privacy_pass:'🔒 Privacy & Settings (প্রাইভেসি সেটিংস)',
-    posts_tab:'পোস্টসমূহ', photos_tab:'ফটো গ্যালারি'
+    posts_tab:'পোস্টসমূহ', photos_tab:'ফটো গ্যালারি', img_opts:'ছবির অপশন', view_large:'🔍 বড় করে দেখুন', chg_photo:'📷 ছবি পরিবর্তন করুন', no_img:'কোনো ছবি নেই',
+    lbl_text:'লেখা', lbl_voice:'ভয়েস', lbl_image:'ছবি', post_ph:'আপনার মনে কি চলছে, তা এখানে লিখুন...',
+    pv_title:'প্রোফাইল ভিজিটর', visited_at:'ভিজিট করেছেন: ', no_visitors:'আজ কেউ আপনার প্রোফাইল ভিজিট করেনি।',
+    p_privacy_title:'🔒 প্রাইভেসি সেটিংস', p_who_posts:'🌍 কে আপনার পোস্ট দেখতে পাবে:', p_who_sms:'💬 কে মেসেজ পাঠাতে পারবে:', p_who_wall:'📝 কে আপনার প্রোফাইলে পোস্ট করতে পারবে:', p_who_cm:'💬 কে কমেন্ট করতে পারবে:', p_who_like:'❤️ কে লাইক দিতে পারবে:',
+    opt_public:'সবাই (Public)', opt_friends:'শুধু বন্ধুরা (Friends Only)', opt_onlyme:'শুধু আমি (Only Me)', opt_everyone:'সবাই (Everyone)'
   },
   en: {
     tagline:'The Voice Universe', login:'Log in', signup:'Sign up', name:'Your name', email:'Email', password:'Password (min 6 characters)',
-    t_prompt:'Daily Prompt', t_feed:'Listen', t_groups:'Group Rooms', n_prompt:'Prompt', n_feed:'Listen', n_record:'Post', n_groups:'Groups', n_profile:'Me',
+    t_home:'Home Feed', t_prompt:'Daily Prompt', t_groups:'Group Rooms', n_home:'Home', n_prompt:'Prompt', n_record:'Post', n_groups:'Groups', n_profile:'Me',
     answer_prompt:'Answer Prompt', no_prompt:"Today's prompt is coming soon.", feed_empty:'No posts yet. Be the first voice!',
-    language:'Language', logout:'Log out', rec_title:'New Post', close:'Close',
+    language:'Language', logout:'Log out', rec_title:'New Post', close:'Close', btn_back:'Back', btn_cancel:'Cancel',
     soon:'Coming soon', check_email:'Please confirm your account via email link.', loading:'Loading...',
     sec:'sec', anon:'Anonymous', user:'User',
     edit_profile:'Edit profile', username:'Username (a-z, 0-9, _)', bio:'About you', country:'Country', save:'Save changes',
@@ -387,7 +392,11 @@ const I18N = {
     avatar_change:'Change photo', settings:'Settings', rec_start:'Start recording', rec_stop:'Stop', rec_again:'Record again', rec_post:'Post', rec_cap:'Caption or post details...', anon_toggle:'Post anonymously', all:'All', comments_h:'Comments', cm_ph:'Write a comment...', send:'Send', mic_err:'Could not use microphone.', too_short:'Record at least 3 seconds.', too_big:'Recording too large.', posted:'Posted',
     c_BD:'Bangladesh', c_IN:'India', c_SA:'Saudi Arabia', c_AE:'UAE', c_GLOBAL:'Global', l_bn:'বাংলা', l_en:'English', l_ar:'العربية', l_hi:'हिन्दी', search_btn:'Search', min2:'Type at least 2 characters', uploading:'Uploading photo...', upload_fail:'Upload failed: ', bad_username:'Username must be 3-20 chars.', taken:'Username taken.',
     cover_change:'📷 Cover Photo', lbl_edu:'🎓 Education:', lbl_rel:'💍 Relationship:', lbl_relig:'🕌 Religion:', lbl_hobby:'🎨 Hobbies:', lbl_city:'📍 Current City:', not_added:'Not added yet', all_cats:'All Categories', all_countries:'All Countries', p_info:'👤 Personal Information (Name, Phone)', privacy_pass:'🔒 Privacy & Settings',
-    posts_tab:'Posts', photos_tab:'Photo Gallery'
+    posts_tab:'Posts', photos_tab:'Photo Gallery', img_opts:'Photo Options', view_large:'🔍 View Large', chg_photo:'📷 Change Photo', no_img:'No image',
+    lbl_text:'Text', lbl_voice:'Voice', lbl_image:'Image', post_ph:"What's on your mind...",
+    pv_title:'Profile Visitors', visited_at:'Visited at: ', no_visitors:'No visitors today.',
+    p_privacy_title:'🔒 Privacy Settings', p_who_posts:'🌍 Who can see your posts:', p_who_sms:'💬 Who can send messages:', p_who_wall:'📝 Who can post on your profile:', p_who_cm:'💬 Who can comment on your posts:', p_who_like:'❤️ Who can like your posts:',
+    opt_public:'Public', opt_friends:'Friends Only', opt_onlyme:'Only Me', opt_everyone:'Everyone'
   }
 };
 let lang = 'bn';
@@ -400,7 +409,7 @@ function applyLang() {
   document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
   document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
-  if (currentUser) { renderProfile(); if (currentTab === 'prompt') loadPrompt(); if (currentTab === 'feed') loadFeed(); }
+  if (currentUser) { renderProfile(); if (currentTab === 'prompt') loadPrompt(); if (currentTab === 'home') loadFeed(); }
 }
 function setLang(code) {
   lang = code;
@@ -417,7 +426,7 @@ function toast(msg) {
 }
 
 let mode = 'login', currentUser = null, currentProfile = null;
-let currentTab = localStorage.getItem('talkia_tab') || 'feed';
+let currentTab = localStorage.getItem('talkia_tab') || 'home';
 
 function setMode(m) {
   mode = m;
@@ -562,14 +571,12 @@ function compressImage(file, maxSide, quality) {
 // Avatar & Cover Click Actions (View Large vs Change)
 window.handleAvatarClick = function() {
   const p = currentProfile || {};
-  const avUrl = p.avatar_url;
-  openImageModal(avUrl, 'avatar');
+  openImageModal(p.avatar_url, 'avatar');
 };
 
 window.handleCoverClick = function() {
   const p = currentProfile || {};
-  const coverUrl = p.cover_url;
-  openImageModal(coverUrl, 'cover');
+  openImageModal(p.cover_url, 'cover');
 };
 
 window.openImageModal = function(url, type) {
@@ -578,12 +585,12 @@ window.openImageModal = function(url, type) {
   
   modal.innerHTML = `
     <div style="width:100%; max-width:400px; text-align:center; background:#121826; border:1px solid #26314a; border-radius:20px; padding:20px;">
-      <h3 style="color:#fff; margin-bottom:14px; font-size:16px;">ছবির অপশন</h3>
-      ${url ? `<img src="${esc(url)}" style="width:100%; max-height:250px; object-fit:contain; border-radius:10px; margin-bottom:14px;">` : `<p class="muted">কোনো ছবি নেই</p>`}
+      <h3 style="color:#fff; margin-bottom:14px; font-size:16px;">${t('img_opts')}</h3>
+      ${url ? `<img src="${esc(url)}" style="width:100%; max-height:250px; object-fit:contain; border-radius:10px; margin-bottom:14px;">` : `<p class="muted">${t('no_img')}</p>`}
       <div style="display:flex; flex-direction:column; gap:8px;">
-        ${url ? `<button class="btn ghost" onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); viewLargeImage('${esc(url)}')">🔍 বড় করে দেখুন</button>` : ''}
-        <button class="btn" onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); triggerImageUpload('${type}')">📷 ছবি পরিবর্তন করুন</button>
-        <button class="btn ghost" onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="margin-top:6px;">${t('close')}</button>
+        ${url ? `<button class="btn ghost" onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); viewLargeImage('${esc(url)}')">${t('view_large')}</button>` : ''}
+        <button class="btn" onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); triggerImageUpload('${type}')">${t('chg_photo')}</button>
+        <button class="btn ghost" onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="margin-top:6px;">${t('btn_back')}</button>
       </div>
     </div>
   `;
@@ -676,23 +683,19 @@ $('edit-form').onsubmit = async e => {
   finally { $('edit-save').disabled = false; }
 };
 
-/* Page Refresh State Retention */
+/* Page Refresh State Retention & Navigation */
 function showTab(name) {
   currentTab = name;
   try { localStorage.setItem('talkia_tab', name); } catch(e) {}
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
   if (name === 'prompt') loadPrompt();
-  if (name === 'feed') loadFeed();
+  if (name === 'home') loadFeed();
   if (name === 'groups') loadGroupRooms();
   if (name === 'profile') { renderProfile(); loadUserMyPostsAndPhotos(currentUser.id); }
   document.querySelector('main').scrollTop = 0;
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-
-if ($('btn-people')) {
-  $('btn-people').onclick = async () => { $('people').classList.remove('hidden'); await renderPeople(); };
-}
 
 function todayISO() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
@@ -838,7 +841,7 @@ $('rec-post').onclick = async () => {
       is_anonymous: $('r-anon').checked
     });
     if (error) throw error;
-    resetRec(); $('rec-sheet').classList.add('hidden'); toast(t('posted')); showTab('feed');
+    resetRec(); $('rec-sheet').classList.add('hidden'); toast(t('posted')); showTab('home');
   } catch (err) { msg.textContent = err.message || String(err); }
   finally { $('rec-post').disabled = false; }
 };
