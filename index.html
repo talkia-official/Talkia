@@ -686,9 +686,26 @@ function showTab(name) {
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
-// ইনবক্স ও বেল আইকন ইভেন্ট আপডেট (Batch 4-এর সাথে কানেক্টেড)
-$('btn-inbox').onclick = () => { if (window.openCreateGroupModal) window.openCreateGroupModal(); else toast(t('soon')); };
-$('btn-bell').onclick = () => { if (window.openNotificationsList) window.openNotificationsList(); else toast(t('soon')); };
+// ইনবক্স ও বেল আইকন ডাইনামিক হ্যান্ডলার (Batch 4)
+$('btn-inbox').onclick = function() {
+  if (typeof openCreateGroupModal === 'function') {
+    openCreateGroupModal();
+  } else if (window.openCreateGroupModal) {
+    window.openCreateGroupModal();
+  } else {
+    toast(t('soon'));
+  }
+};
+
+$('btn-bell').onclick = function() {
+  if (typeof openNotificationsList === 'function') {
+    openNotificationsList();
+  } else if (window.openNotificationsList) {
+    window.openNotificationsList();
+  } else {
+    toast(t('soon'));
+  }
+};
 
 function todayISO() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
