@@ -12,7 +12,10 @@
     + '.b3img{width:100%;max-height:350px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}'
     + '.b3th{width:46px;height:46px;border-radius:8px;object-fit:cover;flex:none}'
     + '.b3cov{width:100%;height:120px;object-fit:cover;border-radius:14px;margin-bottom:12px;display:block}'
-    + '.phead img, .post-header img {width:40px !important;height:40px !important;min-width:40px !important;min-height:40px !important;border-radius:50% !important;object-fit:cover !important;flex-shrink:0;}';
+    /* ১. পোস্টের উপরের লেখকের প্রোফাইল পিকচার ছোট (40px) ও গোল করার রুল */
+    + '.phead img, .uav img, .card .phead > img, div[class*="avatar"] img {width:40px !important;height:40px !important;min-width:40px !important;min-height:40px !important;border-radius:50% !important;object-fit:cover !important;flex-shrink:0 !important;}'
+    /* ২. পোস্টের ভেতরের মূল পিকচার যেন কেটে না যায় এবং সুন্দর ৩৫০ পিক্সেল মাপে দেখায় */
+    + '.card > img:not(.phead img), .post-img, .post > img {width:100% !important;max-height:350px !important;object-fit:cover !important;border-radius:12px !important;margin:8px 0 !important;display:block !important;}';
   document.head.appendChild(st);
 
   /* ---- helpers ---- */
@@ -247,7 +250,7 @@
     if ((b = g('[data-m]'))) return setMode(b.dataset.m);
     if ((b = g('[data-del]'))) return del('v', b.dataset.del, b.dataset.url);
     if ((b = g('[data-pdel]'))) return del('p', b.dataset.pdel, b.dataset.url);
-    if ((by = g('[data-pcm]'))) { ck = 'p'; cmPost = b.dataset.pcm; cmSpan = b.querySelector('span'); $('cm-list').innerHTML = ''; $('cm-sheet').classList.remove('hidden'); loadComments(); return; }
+    if ((b = g('[data-pcm]'))) { ck = 'p'; cmPost = b.dataset.pcm; cmSpan = b.querySelector('span'); $('cm-list').innerHTML = ''; $('cm-sheet').classList.remove('hidden'); loadComments(); return; }
     if ((b = g('[data-share]'))) {
       const u = location.origin + location.pathname;
       if (navigator.share) navigator.share({ title: 'Talkia', text: b.dataset.share || 'Talkia', url: u }).catch(() => {});
