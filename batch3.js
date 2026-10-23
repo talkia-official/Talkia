@@ -9,8 +9,10 @@
   st.textContent = '.b3row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);text-align:start}'
     + '.b3p{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;flex:none}'
     + '.b3i{flex:1;min-width:0;overflow-wrap:anywhere}.b3d{flex:none;padding:6px 10px;color:var(--danger)}'
-    + '.b3img{width:100%;border-radius:12px;margin-top:10px;display:block}.b3th{width:46px;height:46px;border-radius:8px;object-fit:cover;flex:none}'
-    + '.b3cov{width:100%;height:120px;object-fit:cover;border-radius:14px;margin-bottom:12px;display:block}';
+    + '.b3img{width:100%;max-height:350px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}'
+    + '.b3th{width:46px;height:46px;border-radius:8px;object-fit:cover;flex:none}'
+    + '.b3cov{width:100%;height:120px;object-fit:cover;border-radius:14px;margin-bottom:12px;display:block}'
+    + '.phead img, .post-header img {width:40px !important;height:40px !important;min-width:40px !important;min-height:40px !important;border-radius:50% !important;object-fit:cover !important;flex-shrink:0;}';
   document.head.appendChild(st);
 
   /* ---- helpers ---- */
@@ -245,7 +247,7 @@
     if ((b = g('[data-m]'))) return setMode(b.dataset.m);
     if ((b = g('[data-del]'))) return del('v', b.dataset.del, b.dataset.url);
     if ((b = g('[data-pdel]'))) return del('p', b.dataset.pdel, b.dataset.url);
-    if ((b = g('[data-pcm]'))) { ck = 'p'; cmPost = b.dataset.pcm; cmSpan = b.querySelector('span'); $('cm-list').innerHTML = ''; $('cm-sheet').classList.remove('hidden'); loadComments(); return; }
+    if ((by = g('[data-pcm]'))) { ck = 'p'; cmPost = b.dataset.pcm; cmSpan = b.querySelector('span'); $('cm-list').innerHTML = ''; $('cm-sheet').classList.remove('hidden'); loadComments(); return; }
     if ((b = g('[data-share]'))) {
       const u = location.origin + location.pathname;
       if (navigator.share) navigator.share({ title: 'Talkia', text: b.dataset.share || 'Talkia', url: u }).catch(() => {});
