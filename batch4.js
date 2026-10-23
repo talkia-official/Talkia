@@ -16,7 +16,7 @@ window.openNotificationsList = async function() {
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:16px; padding:20px; max-height:80vh; display:flex; flex-direction:column;">
-      <div style="display:flex; justify-between; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3 style="margin:0; font-size:18px; color:#fff;">🔔 নোটিফিকেশন</h3>
         <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
       </div>
@@ -68,15 +68,31 @@ window.openNotificationsList = async function() {
   }
 };
 
-// ২. বেল বাটন ও ইনবক্স বাটনের সাথে কানেক্ট
-document.addEventListener('DOMContentLoaded', () => {
-  const bellBtn = document.getElementById('btn-bell');
-  if (bellBtn) {
-    bellBtn.onclick = () => window.openNotificationsList();
-  }
-});
+// ২. ইনবক্স / চ্যাট উইন্ডো খোলার হ্যান্ডলার (Messenger & Group Chat)
+window.openCreateGroupModal = function() {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(0,0,0,0.8)';
+  modal.style.zIndex = '999';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.padding = '16px';
 
-// পেজ আগে থেকেই লোড হয়ে থাকলে সাথে সাথে অন-ক্লিক বসানো
-if (document.getElementById('btn-bell')) {
-  document.getElementById('btn-bell').onclick = () => window.openNotificationsList();
-}
+  modal.innerHTML = `
+    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:16px; padding:20px; max-height:80vh; display:flex; flex-direction:column; text-align:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:18px; color:#fff;">💬 ইনবক্স ও চ্যাট</h3>
+        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:30px 10px; color:#8b97b3;">
+        <p style="font-size:38px; margin:0 0 10px;">📨</p>
+        <p style="margin:0; font-size:15px; color:#eef2fb;">আপনার মেসেজ ও গ্রুপ চ্যাট লিস্ট শীঘ্রই এখানে দেখা যাবে।</p>
+      </div>
+      <button onclick="this.closest('.fixed').remove()" style="margin-top:10px; padding:12px; background:#2f6bff; color:#fff; border-radius:10px; font-weight:600; border:0; cursor:pointer;">বন্ধ করুন</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
