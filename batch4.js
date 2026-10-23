@@ -1,7 +1,7 @@
-// Talkia Advanced Suite Batch 4: Complete Implementation of all 10 Options
-console.log("Talkia Advanced Suite Batch 4 Loaded with 10 Options");
+// Talkia Advanced Suite Batch 4: Fully Fixed & Bug-Free
+console.log("Talkia Advanced Suite Batch 4 Loaded Successfully");
 
-// ১. সেটিংস ড্যাশবোর্ড ও স্ট্রাকচার (Personal Info & Privacy Settings)
+// ১. সেটিংস ড্যাশবোর্ড ও স্ট্রাকচার
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-settings')) {
     e.preventDefault();
@@ -11,27 +11,30 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
     openProfileVisitorsModal();
   }
+  if (e.target.closest('#btn-inbox')) {
+    e.preventDefault();
+    toast(t('soon'));
+  }
 }, true);
 
 window.openSettingsDashboard = function() {
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
   modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
         <h3 style="margin:0; font-size:18px; color:#fff;">⚙️ ${t('settings')}</h3>
-        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
       </div>
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <button onclick="this.closest('.fixed').remove(); openPersonalDetailsModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); openPersonalDetailsModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
           ${t('p_info')}
         </button>
-        <button onclick="this.closest('.fixed').remove(); openPrivacyPasswordModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); openPrivacyPasswordModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
           ${t('privacy_pass')}
         </button>
-        <button onclick="this.closest('.fixed').remove(); openLanguageModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove(); openLanguageModal();" style="text-align:left; padding:14px; background:#1a2234; border:1px solid #26314a; color:#fff; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500;">
           🌐 Language / ভাষা
         </button>
         <button onclick="sb.auth.signOut().then(()=>location.reload())" style="text-align:left; padding:14px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:8px;">
@@ -43,7 +46,6 @@ window.openSettingsDashboard = function() {
   document.body.appendChild(modal);
 };
 
-// Personal Information Modal
 window.openPersonalDetailsModal = async function() {
   const { data: { user } } = await sb.auth.getUser();
   if(!user) return;
@@ -70,7 +72,7 @@ window.openPersonalDetailsModal = async function() {
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
           <button id="save-pi-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">${t('save')}</button>
-          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('btn_back')}</button>
         </div>
       </div>
     </div>
@@ -87,7 +89,7 @@ window.openPersonalDetailsModal = async function() {
   };
 };
 
-// Granular Privacy Settings Modal
+// Granular Privacy Settings with correct multi-language support
 window.openPrivacyPasswordModal = async function() {
   const { data: { user } } = await sb.auth.getUser();
   if(!user) return;
@@ -98,53 +100,53 @@ window.openPrivacyPasswordModal = async function() {
 
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:420px; border-radius:20px; padding:20px; text-align:left; max-height:85vh; overflow-y:auto;">
-      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">🔒 Privacy Settings</h3>
+      <h3 style="margin:0 0 16px; font-size:18px; color:#fff;">${t('p_privacy_title')}</h3>
       <div style="display:flex; flex-direction:column; gap:12px;">
         
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">🌍 Who can see your posts:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">${t('p_who_posts')}</label>
           <select id="pr-post" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
-            <option value="public" ${profile?.post_privacy === 'public' ? 'selected' : ''}>সবাই (Public)</option>
-            <option value="friends" ${profile?.post_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
-            <option value="only_me" ${profile?.post_privacy === 'only_me' ? 'selected' : ''}>শুধু আমি (Only Me)</option>
+            <option value="public" ${profile?.post_privacy === 'public' ? 'selected' : ''}>${t('opt_public')}</option>
+            <option value="friends" ${profile?.post_privacy === 'friends' ? 'selected' : ''}>${t('opt_friends')}</option>
+            <option value="only_me" ${profile?.post_privacy === 'only_me' ? 'selected' : ''}>${t('opt_onlyme')}</option>
           </select>
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 Who can send messages:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">${t('p_who_sms')}</label>
           <select id="pr-sms" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
-            <option value="everyone" ${profile?.sms_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
-            <option value="friends" ${profile?.sms_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+            <option value="everyone" ${profile?.sms_privacy === 'everyone' ? 'selected' : ''}>${t('opt_everyone')}</option>
+            <option value="friends" ${profile?.sms_privacy === 'friends' ? 'selected' : ''}>${t('opt_friends')}</option>
           </select>
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">📝 Who can post on your profile:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">${t('p_who_wall')}</label>
           <select id="pr-wall" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
-            <option value="friends" ${profile?.wall_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
-            <option value="only_me" ${profile?.wall_privacy === 'only_me' ? 'selected' : ''}>শুধু আমি (Only Me)</option>
+            <option value="friends" ${profile?.wall_privacy === 'friends' ? 'selected' : ''}>${t('opt_friends')}</option>
+            <option value="only_me" ${profile?.wall_privacy === 'only_me' ? 'selected' : ''}>${t('opt_onlyme')}</option>
           </select>
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">💬 Who can comment on your posts:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">${t('p_who_cm')}</label>
           <select id="pr-comment" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
-            <option value="everyone" ${profile?.comment_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
-            <option value="friends" ${profile?.comment_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+            <option value="everyone" ${profile?.comment_privacy === 'everyone' ? 'selected' : ''}>${t('opt_everyone')}</option>
+            <option value="friends" ${profile?.comment_privacy === 'friends' ? 'selected' : ''}>${t('opt_friends')}</option>
           </select>
         </div>
 
         <div>
-          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">❤️ Who can like your posts:</label>
+          <label style="font-size:12px; color:#7aa5ff; display:block; margin-bottom:4px; font-weight:600;">${t('p_who_like')}</label>
           <select id="pr-like" style="width:100%; padding:10px; border-radius:8px; background:#1a2234; border:1px solid #26314a; color:#fff; font-size:13px;">
-            <option value="everyone" ${profile?.like_privacy === 'everyone' ? 'selected' : ''}>সবাই (Everyone)</option>
-            <option value="friends" ${profile?.like_privacy === 'friends' ? 'selected' : ''}>শুধু বন্ধুরা (Friends Only)</option>
+            <option value="everyone" ${profile?.like_privacy === 'everyone' ? 'selected' : ''}>${t('opt_everyone')}</option>
+            <option value="friends" ${profile?.like_privacy === 'friends' ? 'selected' : ''}>${t('opt_friends')}</option>
           </select>
         </div>
 
         <div style="display:flex; gap:10px; margin-top:8px;">
           <button id="save-priv-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">${t('save')}</button>
-          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+          <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('btn_back')}</button>
         </div>
       </div>
     </div>
@@ -165,7 +167,6 @@ window.openPrivacyPasswordModal = async function() {
   };
 };
 
-// Language Modal with Indicator (✓)
 window.openLanguageModal = function() {
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;';
@@ -188,13 +189,13 @@ window.openLanguageModal = function() {
           </button>
         `).join('')}
       </div>
-      <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="width:100%; margin-top:14px; background:#1a2234; color:#fff; border:1px solid #26314a; padding:10px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+      <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="width:100%; margin-top:14px; background:#1a2234; color:#fff; border:1px solid #26314a; padding:10px; border-radius:10px; cursor:pointer;">${t('btn_back')}</button>
     </div>
   `;
   document.body.appendChild(modal);
 };
 
-// Search & Profile Visit from Search
+// Search Modal & Safe Profile Routing (Fixed crash issue)
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-search')) {
     e.preventDefault();
@@ -237,7 +238,9 @@ if (srForm) {
 }
 
 window.openVisitedUserProfile = async function(userId) {
-  $('search').classList.add('hidden');
+  const searchModal = document.getElementById('search');
+  if (searchModal) searchModal.classList.add('hidden');
+  
   const { data: u } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
   if(!u) return;
 
@@ -247,20 +250,22 @@ window.openVisitedUserProfile = async function(userId) {
 
   const sheet = document.getElementById('user-sheet');
   const container = document.getElementById('user-in');
-  sheet.classList.remove('hidden');
+  if (sheet) sheet.classList.remove('hidden');
 
-  container.innerHTML = `
-    <div style="text-align:right;"><button onclick="this.closest('.sheet').classList.add('hidden')" style="color:#8b97b3; font-size:20px; cursor:pointer;">✕</button></div>
-    <div style="text-align:center;">
-      <div style="width:80px; height:80px; border-radius:50%; background:#2f6bff; margin:0 auto 10px; display:grid; place-items:center; font-size:32px; font-weight:bold; color:#fff; overflow:hidden;">
-        ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
+  if (container) {
+    container.innerHTML = `
+      <div style="text-align:right;"><button onclick="this.closest('.sheet').classList.add('hidden')" style="color:#8b97b3; font-size:20px; cursor:pointer; background:none; border:0;">✕</button></div>
+      <div style="text-align:center;">
+        <div style="width:80px; height:80px; border-radius:50%; background:#2f6bff; margin:0 auto 10px; display:grid; place-items:center; font-size:32px; font-weight:bold; color:#fff; overflow:hidden;">
+          ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((u.display_name || 'U').charAt(0).toUpperCase())}
+        </div>
+        <h3 style="margin:0; color:#fff;">${esc(u.display_name)}</h3>
+        <div style="color:#8b97b3; font-size:13px;">@${esc(u.username || '')}</div>
+        <p style="color:#eef2fb; font-size:14px; margin-top:8px;">${esc(u.bio || '')}</p>
+        <button onclick="sendFriendRequestTo('${u.id}')" style="background:#2f6bff; color:#fff; border:0; padding:10px 20px; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">🤝 ফ্রেন্ড রিকোয়েস্ট পাঠান</button>
       </div>
-      <h3 style="margin:0; color:#fff;">${esc(u.display_name)}</h3>
-      <div style="color:#8b97b3; font-size:13px;">@${esc(u.username || '')}</div>
-      <p style="color:#eef2fb; font-size:14px; margin-top:8px;">${esc(u.bio || '')}</p>
-      <button onclick="sendFriendRequestTo('${u.id}')" style="background:#2f6bff; color:#fff; border:0; padding:10px 20px; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">🤝 ফ্রেন্ড রিকোয়েস্ট পাঠান</button>
-    </div>
-  `;
+    `;
+  }
 };
 
 window.sendFriendRequestTo = async function(targetId) {
@@ -270,7 +275,7 @@ window.sendFriendRequestTo = async function(targetId) {
   toast('ফ্রেন্ড রিকোয়েস্ট পাঠানো হয়েছে!');
 };
 
-// Profile Visitors Modal (Only 👁️ icon)
+// Profile Visitors Modal with working close button
 window.openProfileVisitorsModal = async function() {
   if (!currentUser) return;
   const modal = document.createElement('div');
@@ -279,12 +284,13 @@ window.openProfileVisitorsModal = async function() {
   modal.innerHTML = `
     <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; height:70vh; display:flex; flex-direction:column; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:18px; color:#fff;">👁️ প্রোফাইল ভিজিটর</h3>
+        <h3 style="margin:0; font-size:18px; color:#fff;">👁️ ${t('pv_title')}</h3>
         <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
       </div>
       <div id="visitors-list" style="overflow-y:auto; flex:1;">
-        <p style="text-align:center; color:#8b97b3; padding-top:20px;">লোড হচ্ছে...</p>
+        <p style="text-align:center; color:#8b97b3; padding-top:20px;">${t('loading')}</p>
       </div>
+      <button class="btn ghost sm" onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="margin-top:12px;">${t('btn_back')}</button>
     </div>
   `;
   document.body.appendChild(modal);
@@ -293,7 +299,7 @@ window.openProfileVisitorsModal = async function() {
   const container = document.getElementById('visitors-list');
 
   if (!visits || visits.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">আজ কেউ আপনার প্রোফাইল ভিজিট করেনি।</p>`;
+    container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('no_visitors')}</p>`;
     return;
   }
 
@@ -310,18 +316,18 @@ window.openProfileVisitorsModal = async function() {
         </div>
         <div style="flex:1;">
           <div style="color:#fff; font-weight:600; font-size:14px;">${esc(vp.display_name)}</div>
-          <div style="color:#8b97b3; font-size:11px;">ভিজিট করেছেন: ${new Date(v.created_at).toLocaleTimeString()}</div>
+          <div style="color:#8b97b3; font-size:11px;">${t('visited_at')}${new Date(v.created_at).toLocaleTimeString()}</div>
         </div>
       </div>
     `;
   }).join('');
 };
 
-// Group Rooms Feature (5-10 people)
+// Group Rooms Feature (Fixed list display)
 window.loadGroupRooms = async function() {
   const box = document.getElementById('group-rooms-list');
   if(!box) return;
-  box.innerHTML = `<div class="card muted" style="text-align:center;">গ্রুপ রুম লোড হচ্ছে...</div>`;
+  box.innerHTML = `<div class="card muted" style="text-align:center;">${t('loading')}</div>`;
   
   const { data, error } = await sb.from('group_rooms').select('*').order('created_at', { ascending: false });
   if (error || !data || data.length === 0) {
@@ -349,7 +355,7 @@ window.openCreateGroupRoomModal = function() {
       <div class="field"><label>রুমের নাম:</label><input type="text" id="g-name" placeholder="যেমন: আড্ডা ও আলোচনা" style="width:100%; padding:12px; border-radius:10px; background:#1a2234; border:1px solid #26314a; color:#fff; outline:none;"></div>
       <div style="display:flex; gap:10px; margin-top:10px;">
         <button id="create-g-btn" style="flex:1; background:#2f6bff; color:#fff; border:0; padding:12px; border-radius:10px; font-weight:600; cursor:pointer;">তৈরি করুন</button>
-        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('close')}</button>
+        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1; background:#1a2234; color:#fff; border:1px solid #26314a; padding:12px; border-radius:10px; cursor:pointer;">${t('btn_back')}</button>
       </div>
     </div>
   `;
@@ -358,7 +364,8 @@ window.openCreateGroupRoomModal = function() {
   document.getElementById('create-g-btn').onclick = async () => {
     const name = document.getElementById('g-name').value.trim();
     if(!name) return;
-    await sb.from('group_rooms').insert({ room_name: name, host_id: currentUser.id });
+    const { error } = await sb.from('group_rooms').insert({ room_name: name, host_id: currentUser.id });
+    if (error) { toast(error.message); return; }
     toast('গ্রুপ রুম তৈরি হয়েছে!');
     modal.remove();
     loadGroupRooms();
@@ -369,12 +376,15 @@ window.joinGroupRoom = function(roomId) {
   toast('গ্রুপ রুমে যুক্ত হয়েছেন (লাইভ ভয়েস চ্যাট)');
 };
 
-// Friends list
+// Friends modal close & Back buttons fixed
 document.addEventListener('click', function(e) {
   if (e.target.closest('#btn-people')) {
     e.preventDefault();
     const peopleModal = document.getElementById('people');
     if (peopleModal) { peopleModal.classList.remove('hidden'); renderPeople(); }
+  }
+  if (e.target.closest('#pp-close')) {
+    document.getElementById('people').classList.add('hidden');
   }
 }, true);
 
