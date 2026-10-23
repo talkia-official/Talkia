@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Visitors Eye Toggle, Full Settings, Back Buttons & Chat Avatars
+// Talkia Advanced Suite Batch 4: Visitors Eye Toggle, Full Settings, Search Navigation, User Profile & Chat
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnVisitors = document.getElementById('btn-visitors');
   if (btnVisitors) btnVisitors.onclick = (e) => { 
     e.preventDefault(); 
-    // Open eye icon when clicked
     btnVisitors.textContent = '👁️';
     openProfileVisitorsModal(); 
   };
@@ -41,7 +40,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnPeople = document.getElementById('btn-people');
   if (btnPeople) btnPeople.onclick = () => { const p = document.getElementById('people'); if(p) p.classList.remove('hidden'); };
+
+  // Search form handler to prevent reload
+  const srForm = document.getElementById('sr-form');
+  if (srForm) {
+    srForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const q = document.getElementById('sr-q').value.trim();
+      const resBox = document.getElementById('sr-results');
+      if (!q || q.length < 2) { resBox.innerHTML = `<div class="muted" style="text-align:center; padding:10px;">${t('min2')}</div>`; return; }
+      resBox.innerHTML = `<div class="muted" style="text-align:center; padding:10px;">${t('loading')}</div>`;
+      
+      const { data, error } = await sb.from('profiles').select('*').ilike('display_name', `%${q}%`).limit(20);
+      if (error || !data || data.length === 0) {
+        resBox.innerHTML = `<div class="muted" style="text-align:center; padding:10px;">${t('no_results')}</div>`;
+        return;
+      }
+
+      resBox.innerHTML = data.map(u => `
+        <div class="search-user-item" data-uid="${u.id}" style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); cursor:pointer;">
+          <div class="uav">${u.avatar_url ? `<img src="${esc(u.avatar_url)}">` : esc((u.display_name || 'U').charAt(0))}</div>
+          <div>
+            <div style="color:var(--text); font-weight:600;">${esc(u.display_name)}</div>
+            <div class="muted" style="font-size:12px;">@${esc(u.username || '')}</div>
+          </div>
+        </div>
+      `).join('');
+
+      resBox.querySelectorAll('.search-user-item').forEach(el => {
+        el.onclick = () => {
+          const uid = el.dataset.uid;
+          document.getElementById('search').classList.add('hidden');
+          openUserProfileModal(uid);
+        };
+      });
+    };
+  }
 });
+
+// Open Other User's Profile Modal
+window.openUserProfileModal = async function(userId) {
+  if (currentUser && userId === currentUser.id) {
+    showTab('profile');
+    return;
+  }
+
+  let modal = document.getElementById('user-profile-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'user-profile-modal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1150; display:flex; flex-direction:column; overflow-y:auto; padding:20px;';
+    document.body.appendChild(modal);
+  }
+  modal.classList.remove('hidden');
+  modal.innerHTML = `<div style="text-align:center; color:#8b97b3; margin-top:50px;">${t('loading')}</div>`;
+
+  const { data: user, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error || !user) {
+    modal.innerHTML = `<div style="text-align:center; color:var(--danger); margin-top:50px;">User not found</div><button class="btn ghost" onclick="document.getElementById('user-profile-modal').classList.add('hidden')" style="margin-top:20px;">${t('btn_back')}</button>`;
+    return;
+  }
+
+  const { data: posts } = await sb.from('voice_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+
+  modal.innerHTML = `
+    <div style="max-width:560px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow:hidden;">
+      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line);">
+        <h3 style="margin:0; font-size:18px;">${esc(user.display_name)}</h3>
+        <button id="upm-close" style="color:var(--muted); font-size:20px; background:none; border:0; cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:20px; text-align:center;">
+        <div class="uav" style="width:80px !important; height:80px !important; margin:0 auto 12px; font-size:32px;">
+          ${user.avatar_url ? `<img src="${esc(user.avatar_url)}">` : esc((user.display_name || 'U').charAt(0))}
+        </div>
+        <h2 style="margin:0 0 4px; font-size:20px;">${esc(user.display_name)}</h2>
+        <div class="muted" style="margin-bottom:8px;">@${esc(user.username || '')}</div>
+        ${user.country ? `<span class="tag">${esc(user.country)}</span>` : ''}
+        <p style="margin:12px 0; color:var(--muted); font-size:14px;">${esc(user.bio || '')}</p>
+        
+        <div class="ext-bio-box" style="text-align:left;">
+          <div><b>${t('lbl_edu')}</b> <span>${esc(user.education || t('not_added'))}</span></div>
+          <div><b>${t('lbl_rel')}</b> <span>${esc(user.marital_status || t('not_added'))}</span></div>
+          <div><b>${t('lbl_relig')}</b> <span>${esc(user.religion || t('not_added'))}</span></div>
+          <div><b>${t('lbl_hobby')}</b> <span>${esc(user.hobbies || t('not_added'))}</span></div>
+          <div><b>${t('lbl_city')}</b> <span>${esc(user.city || t('not_added'))}</span></div>
+        </div>
+
+        <div style="margin-top:20px; text-align:left;">
+          <h4 style="margin-bottom:10px;">${t('posts_h')}</h4>
+          <div id="upm-posts">
+            ${posts && posts.length > 0 ? posts.map(cardHtml).join('') : `<div class="muted" style="text-align:center; padding:20px;">${t('none_yet')}</div>`}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('upm-close').onclick = () => modal.classList.add('hidden');
+};
 
 // Profile Visitors Modal
 window.openProfileVisitorsModal = async function() {
