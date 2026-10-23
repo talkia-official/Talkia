@@ -1,4 +1,4 @@
-const CACHE = 'talkia-v15';
+const CACHE = 'talkia-v16';
 const SHELL = ['./', 'index.html', 'batch3.js', 'batch4.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo-wordmark.png'];
 
 self.addEventListener('install', e => {
