@@ -96,3 +96,22 @@ window.openCreateGroupModal = function() {
   `;
   document.body.appendChild(modal);
 };
+
+// ৩. গ্লোবাল ক্লিক ইন্টারসেপ্টর (ক্যাশ করা পুরনো ইনবক্স বা বেল বাটন ক্লিক ওভাররাইড করতে)
+document.addEventListener('click', function(e) {
+  const inboxBtn = e.target.closest('#btn-inbox');
+  if (inboxBtn) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    window.openCreateGroupModal();
+    return;
+  }
+
+  const bellBtn = e.target.closest('#btn-bell');
+  if (bellBtn) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    window.openNotificationsList();
+    return;
+  }
+}, true);
