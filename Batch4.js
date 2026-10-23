@@ -5,24 +5,33 @@ console.log("Talkia Batch 4 loaded successfully");
 window.openNotificationsList = async function() {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(0,0,0,0.8)';
+  modal.style.zIndex = '999';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.padding = '16px';
+
   modal.innerHTML = `
-    <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl p-5 max-h-[80vh] flex flex-col">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-white">🔔 নোটিফিকেশন</h3>
-        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white text-xl">✕</button>
+    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:16px; padding:20px; max-height:80vh; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-between; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:18px; color:#fff;">🔔 নোটিফিকেশন</h3>
+        <button onclick="this.closest('.fixed').remove()" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;">✕</button>
       </div>
-      <div id="notif-list-container" class="space-y-3 overflow-y-auto flex-1">
-        <p class="text-center text-gray-400 py-4">লোড হচ্ছে...</p>
+      <div id="notif-list-container" style="overflow-y:auto; flex:1;">
+        <p style="text-align:center; color:#8b97b3; padding:16px 0;">লোড হচ্ছে...</p>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await sb.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
@@ -31,7 +40,7 @@ window.openNotificationsList = async function() {
 
     const container = document.getElementById('notif-list-container');
     if (error || !data || data.length === 0) {
-      container.innerHTML = `<p class="text-center text-gray-500 py-4">কোনো নোটিফিকেশন নেই</p>`;
+      container.innerHTML = `<p style="text-align:center; color:#8b97b3; padding:16px 0;">কোনো নোটিফিকেশন নেই</p>`;
       return;
     }
 
@@ -43,77 +52,31 @@ window.openNotificationsList = async function() {
       
       const time = new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       return `
-        <div class="bg-gray-800/60 p-3 rounded-xl border border-gray-700/50 flex justify-between items-center">
+        <div style="background:#1a2234; padding:12px; border-radius:12px; border:1px solid #26314a; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <p class="text-sm text-white">${text}</p>
-            <span class="text-xs text-gray-400">${time}</span>
+            <p style="margin:0; text-align:start; font-size:14px; color:#fff;">${text}</p>
+            <span style="font-size:12px; color:#8b97b3;">${time}</span>
           </div>
-          ${!n.read_at ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+          ${!n.read_at ? '<span style="width:8px; height:8px; background:#2f6bff; border-radius:50%; display:inline-block;"></span>' : ''}
         </div>
       `;
     }).join('');
 
-    // Mark as read
-    await supabase.from('notifications').update({ read_at: new Date() }).eq('user_id', user.id).is('read_at', null);
+    await sb.from('notifications').update({ read_at: new Date() }).eq('user_id', user.id).is('read_at', null);
   } catch (err) {
     console.error('Error loading notifications:', err);
   }
 };
 
-// ২. গ্রুপ চ্যাট তৈরির পপআপ ও লজিক
-window.openCreateGroupModal = function() {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4';
-  modal.innerHTML = `
-    <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl p-5">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-white">👥 নতুন গ্রুপ চ্যাট তৈরি করুন</h3>
-        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white text-xl">✕</button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">গ্রুপের নাম</label>
-          <input type="text" id="group-name-input" placeholder="যেমন: আড্ডা জোন" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-        </div>
-        <button onclick="createChatGroup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">গ্রুপ তৈরি করুন</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-};
-
-window.createChatGroup = async function() {
-  const nameInput = document.getElementById('group-name-input');
-  const name = nameInput.value.trim();
-  if (!name) {
-    alert('দয়া করে গ্রুপের নাম দিন');
-    return;
+// ২. বেল বাটন ও ইনবক্স বাটনের সাথে কানেক্ট
+document.addEventListener('DOMContentLoaded', () => {
+  const bellBtn = document.getElementById('btn-bell');
+  if (bellBtn) {
+    bellBtn.onclick = () => window.openNotificationsList();
   }
+});
 
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Create group
-    const { data: groupData, error: groupErr } = await supabase
-      .from('chat_groups')
-      .insert({ name, created_by: user.id })
-      .select()
-      .single();
-
-    if (groupErr) throw groupErr;
-
-    // Add creator as member
-    await supabase.from('group_members').insert({
-      group_id: groupData.id,
-      user_id: user.id
-    });
-
-    alert('গ্রুপ সফলভাবে তৈরি হয়েছে!');
-    document.querySelector('.fixed.inset-0').remove();
-    if (typeof loadInbox === 'function') loadInbox();
-  } catch (err) {
-    console.error('Error creating group:', err);
-    alert('গ্রুপ তৈরি করতে সমস্যা হয়েছে: ' + err.message);
-  }
-};
+// পেজ আগে থেকেই লোড হয়ে থাকলে সাথে সাথে অন-ক্লিক বসানো
+if (document.getElementById('btn-bell')) {
+  document.getElementById('btn-bell').onclick = () => window.openNotificationsList();
+}
