@@ -243,7 +243,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 <div id="people" class="sheet hidden">
   <div class="sheet-in" style="height:90%;text-align:start">
     <h3 data-i18n="people"></h3>
-    <div class="field"><input id="pp-q" type="search" data-i18n-ph="search_ph" autocomplete="off"></div>
+    <form id="pp-form" class="field" style="display:flex;gap:8px"><input id="pp-q" type="search" data-i18n-ph="search_ph" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit" data-i18n="search_btn" style="width:auto;padding:0 18px;font-size:15px"></button></form>
     <div id="pp-results"></div>
     <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
     <div class="sec-h" data-i18n="friends"></div><div id="pp-friends"></div>
@@ -271,7 +271,7 @@ const I18N = {
     edit_profile:'প্রোফাইল এডিট', username:'ইউজারনেম (ইংরেজি অক্ষর, সংখ্যা, _)', bio:'আপনার সম্পর্কে', country:'দেশ', save:'সেভ করুন',
     saved:'সেভ হয়েছে', people:'বন্ধু ও সার্চ', search_ph:'নাম বা ইউজারনেম লিখে খুঁজুন', requests:'বন্ধুর অনুরোধ', friends:'বন্ধুরা', blocked_list:'ব্লক করা', none_yet:'এখনো কেউ নেই', no_results:'কাউকে পাওয়া যায়নি',
     add_friend:'বন্ধু হোন', cancel_req:'অনুরোধ বাতিল', accept:'গ্রহণ করুন', decline:'প্রত্যাখ্যান', unfriend:'আনফ্রেন্ড', block:'ব্লক করুন', unblock:'আনব্লক করুন', report:'রিপোর্ট করুন', report_ask:'রিপোর্টের কারণ লিখুন', reported:'রিপোর্ট পাঠানো হয়েছে', dm_priv:'কে আপনাকে মেসেজ পাঠাতে পারবে', dm_friends:'শুধু বন্ধু', dm_everyone:'সবাই', done:'হয়েছে', err:'সমস্যা: ',
-    avatar_change:'ছবি বদলান', settings:'সেটিংস', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে: a-z, ০-৯ ও _ চলবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।'
+    avatar_change:'ছবি বদলান', settings:'সেটিংস', search_btn:'খুঁজুন', min2:'কমপক্ষে ২টা অক্ষর লিখুন', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে: a-z, ০-৯ ও _ চলবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।'
   },
   en: {
     tagline:'The Voice Universe', login:'Log in', signup:'Sign up', name:'Your name', email:'Email', password:'Password (min 6 characters)',
@@ -283,7 +283,7 @@ const I18N = {
     edit_profile:'Edit profile', username:'Username (a-z, 0-9, _)', bio:'About you', country:'Country', save:'Save changes',
     saved:'Saved', people:'Friends & search', search_ph:'Search by name or username', requests:'Friend requests', friends:'Friends', blocked_list:'Blocked', none_yet:'Nobody yet', no_results:'No one found',
     add_friend:'Add friend', cancel_req:'Cancel request', accept:'Accept', decline:'Decline', unfriend:'Unfriend', block:'Block', unblock:'Unblock', report:'Report', report_ask:'Why are you reporting this person?', reported:'Report sent', dm_priv:'Who can message you', dm_friends:'Friends only', dm_everyone:'Everyone', done:'Done', err:'Problem: ',
-    avatar_change:'Change photo', settings:'Settings', uploading:'Uploading photo...', upload_fail:'Upload failed: ', bad_username:'Username must be 3-20 characters: a-z, 0-9 and _ only.', taken:'That username is already taken.'
+    avatar_change:'Change photo', settings:'Settings', search_btn:'Search', min2:'Type at least 2 characters', uploading:'Uploading photo...', upload_fail:'Upload failed: ', bad_username:'Username must be 3-20 characters: a-z, 0-9 and _ only.', taken:'That username is already taken.'
   },
   ar: {
     tagline:'عالم الأصوات', login:'تسجيل الدخول', signup:'إنشاء حساب', name:'اسمك', email:'البريد الإلكتروني', password:'كلمة المرور (٦ أحرف على الأقل)',
@@ -536,18 +536,20 @@ $('people').onclick = e => {
 };
 
 let searchTimer;
-$('pp-q').oninput = () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(async () => {
+async function doSearch() {
+  {
     const q = $('pp-q').value.trim().replace(/[,()%*\\]/g, ' ').trim();
     const box = $('pp-results');
-    if (q.length < 2) { box.innerHTML = ''; return; }
+    if (q.length < 2) { box.innerHTML = '<div class="muted">' + esc(t('min2')) + '</div>'; return; }
+    box.innerHTML = '<div class="muted">' + esc(t('loading')) + '</div>';
     const { data, error } = await sb.from('profiles').select(PCOLS)
       .or('display_name.ilike.%' + q + '%,username.ilike.%' + q + '%').neq('id', currentUser.id).limit(20);
     if (error) { box.innerHTML = '<div class="muted">' + esc(error.message) + '</div>'; return; }
     box.innerHTML = data.length ? data.map(urow).join('') : '<div class="muted">' + esc(t('no_results')) + '</div>';
-  }, 300);
-};
+  }
+}
+$('pp-q').oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 400); };
+$('pp-form').onsubmit = e => { e.preventDefault(); clearTimeout(searchTimer); doSearch(); };
 
 async function openUser(uid) {
   const { data: p } = await sb.from('profiles').select(PCOLS).eq('id', uid).maybeSingle();
