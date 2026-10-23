@@ -1,4 +1,4 @@
-const CACHE = 'talkia-v19';
+const CACHE = 'talkia-v20';
 const SHELL = ['./', 'index.html', 'batch3.js', 'batch4.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo-wordmark.png'];
 
 self.addEventListener('install', e => {
@@ -13,8 +13,6 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Network first for our own files (so updates show up), cache as offline fallback.
-// Supabase and other cross-origin requests are never touched.
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
