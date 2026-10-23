@@ -78,6 +78,17 @@ h2{margin:0 0 12px;font-size:20px}
 .avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 12px;background:var(--surface2);border:2px solid var(--accent);
   display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text)}
 .profile-top h2{margin:0}
+.avatar{position:relative;overflow:hidden;cursor:pointer}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.field select{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
+.urow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.uav{width:44px;height:44px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;overflow:hidden;font-weight:700;color:var(--accent-text);flex:none}
+.uav img{width:100%;height:100%;object-fit:cover}
+.uinfo{flex:1;min-width:0}
+.sec-h{margin:18px 0 4px;font-size:15px;color:var(--muted)}
+.btn.sm{padding:11px;font-size:15px;margin-top:8px}
+#user-sheet{z-index:35}
+.avatar-hint{font-size:13px;color:var(--accent-text);margin-bottom:10px;cursor:pointer}
 .p-bio{margin:10px 0 0;line-height:1.5}
 .p-meta{margin-top:8px}
 .profile-top .btn{margin-top:14px;width:auto;padding:10px 22px;font-size:15px}
@@ -138,6 +149,9 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <button class="icon-btn" id="btn-bell" aria-label="Notifications">
         <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 20a2 2 0 0 0 3.4 0"/></svg>
       </button>
+      <button class="icon-btn" id="btn-settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -159,18 +173,16 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
     <section id="tab-profile" class="tab">
       <div class="profile-top">
         <div class="avatar" id="p-avatar">T</div>
+        <div class="avatar-hint" id="avatar-hint" data-i18n="avatar_change"></div>
+        <input type="file" id="avatar-input" accept="image/*" class="hidden">
         <h2 id="p-name"></h2>
         <div class="muted" id="p-username"></div>
         <div class="muted" id="p-email"></div>
         <div class="p-meta" id="p-country"></div>
         <p class="p-bio" id="p-bio"></p>
         <button class="btn ghost" id="btn-edit" data-i18n="edit_profile"></button>
+        <button class="btn ghost" id="btn-people" data-i18n="people" style="margin-inline-start:8px"></button>
       </div>
-      <div class="card">
-        <div class="muted" style="margin-bottom:8px" data-i18n="language"></div>
-        <div class="langs" style="margin:0;justify-content:flex-start" data-langs></div>
-      </div>
-      <button class="btn danger" id="btn-logout" data-i18n="logout"></button>
     </section>
   </main>
 
@@ -212,12 +224,34 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div class="field"><label data-i18n="username"></label><input id="e-username" type="text" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
       <div class="field"><label data-i18n="bio"></label><textarea id="e-bio" maxlength="200"></textarea></div>
       <div class="field"><label data-i18n="country"></label><input id="e-country" type="text" maxlength="40"></div>
+      <div class="field"><label data-i18n="dm_priv"></label><select id="e-dm"><option value="friends" data-i18n="dm_friends"></option><option value="everyone" data-i18n="dm_everyone"></option></select></div>
       <div id="edit-msg" class="msg"></div>
       <button class="btn" id="edit-save" type="submit" data-i18n="save"></button>
       <button class="btn ghost" id="edit-cancel" type="button" data-i18n="close"></button>
     </form>
   </div>
 </div>
+<div id="settings" class="sheet hidden">
+  <div class="sheet-in" style="text-align:start">
+    <h3 data-i18n="settings"></h3>
+    <div class="muted" style="margin-bottom:8px" data-i18n="language"></div>
+    <div class="langs" style="margin:0 0 22px;justify-content:flex-start" data-langs></div>
+    <button class="btn danger" id="btn-logout" data-i18n="logout"></button>
+    <button class="btn ghost sm" id="settings-close" data-i18n="close" style="margin-top:12px"></button>
+  </div>
+</div>
+<div id="people" class="sheet hidden">
+  <div class="sheet-in" style="height:90%;text-align:start">
+    <h3 data-i18n="people"></h3>
+    <div class="field"><input id="pp-q" type="search" data-i18n-ph="search_ph" autocomplete="off"></div>
+    <div id="pp-results"></div>
+    <div class="sec-h" data-i18n="requests"></div><div id="pp-req"></div>
+    <div class="sec-h" data-i18n="friends"></div><div id="pp-friends"></div>
+    <div class="sec-h" data-i18n="blocked_list"></div><div id="pp-blocked"></div>
+    <button class="btn ghost sm" id="pp-close" data-i18n="close" style="margin-top:20px"></button>
+  </div>
+</div>
+<div id="user-sheet" class="sheet hidden"><div class="sheet-in" id="user-in"></div></div>
 <div id="toast" class="hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -235,7 +269,9 @@ const I18N = {
     soon:'শীঘ্রই আসছে', check_email:'আপনার ইমেইলে পাঠানো লিংকে ক্লিক করে অ্যাকাউন্ট নিশ্চিত করুন।', loading:'লোড হচ্ছে...',
     sec:'সেকেন্ড', anon:'বেনামী', user:'ব্যবহারকারী',
     edit_profile:'প্রোফাইল এডিট', username:'ইউজারনেম (ইংরেজি অক্ষর, সংখ্যা, _)', bio:'আপনার সম্পর্কে', country:'দেশ', save:'সেভ করুন',
-    saved:'সেভ হয়েছে', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে: a-z, ০-৯ ও _ চলবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।'
+    saved:'সেভ হয়েছে', people:'বন্ধু ও সার্চ', search_ph:'নাম বা ইউজারনেম লিখে খুঁজুন', requests:'বন্ধুর অনুরোধ', friends:'বন্ধুরা', blocked_list:'ব্লক করা', none_yet:'এখনো কেউ নেই', no_results:'কাউকে পাওয়া যায়নি',
+    add_friend:'বন্ধু হোন', cancel_req:'অনুরোধ বাতিল', accept:'গ্রহণ করুন', decline:'প্রত্যাখ্যান', unfriend:'আনফ্রেন্ড', block:'ব্লক করুন', unblock:'আনব্লক করুন', report:'রিপোর্ট করুন', report_ask:'রিপোর্টের কারণ লিখুন', reported:'রিপোর্ট পাঠানো হয়েছে', dm_priv:'কে আপনাকে মেসেজ পাঠাতে পারবে', dm_friends:'শুধু বন্ধু', dm_everyone:'সবাই', done:'হয়েছে', err:'সমস্যা: ',
+    avatar_change:'ছবি বদলান', settings:'সেটিংস', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে: a-z, ০-৯ ও _ চলবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।'
   },
   en: {
     tagline:'The Voice Universe', login:'Log in', signup:'Sign up', name:'Your name', email:'Email', password:'Password (min 6 characters)',
@@ -245,7 +281,9 @@ const I18N = {
     soon:'Coming soon', check_email:'Please confirm your account using the link sent to your email.', loading:'Loading...',
     sec:'sec', anon:'Anonymous', user:'User',
     edit_profile:'Edit profile', username:'Username (a-z, 0-9, _)', bio:'About you', country:'Country', save:'Save changes',
-    saved:'Saved', bad_username:'Username must be 3-20 characters: a-z, 0-9 and _ only.', taken:'That username is already taken.'
+    saved:'Saved', people:'Friends & search', search_ph:'Search by name or username', requests:'Friend requests', friends:'Friends', blocked_list:'Blocked', none_yet:'Nobody yet', no_results:'No one found',
+    add_friend:'Add friend', cancel_req:'Cancel request', accept:'Accept', decline:'Decline', unfriend:'Unfriend', block:'Block', unblock:'Unblock', report:'Report', report_ask:'Why are you reporting this person?', reported:'Report sent', dm_priv:'Who can message you', dm_friends:'Friends only', dm_everyone:'Everyone', done:'Done', err:'Problem: ',
+    avatar_change:'Change photo', settings:'Settings', uploading:'Uploading photo...', upload_fail:'Upload failed: ', bad_username:'Username must be 3-20 characters: a-z, 0-9 and _ only.', taken:'That username is already taken.'
   },
   ar: {
     tagline:'عالم الأصوات', login:'تسجيل الدخول', signup:'إنشاء حساب', name:'اسمك', email:'البريد الإلكتروني', password:'كلمة المرور (٦ أحرف على الأقل)',
@@ -255,7 +293,7 @@ const I18N = {
     soon:'قريباً', check_email:'يرجى تأكيد حسابك عبر الرابط المرسل إلى بريدك.', loading:'جارٍ التحميل...',
     sec:'ث', anon:'مجهول', user:'مستخدم',
     edit_profile:'تعديل الملف الشخصي', username:'اسم المستخدم (a-z, 0-9, _)', bio:'نبذة عنك', country:'البلد', save:'حفظ',
-    saved:'تم الحفظ', bad_username:'اسم المستخدم من ٣ إلى ٢٠ حرفاً: a-z و 0-9 و _ فقط.', taken:'اسم المستخدم مستخدم بالفعل.'
+    saved:'تم الحفظ', avatar_change:'تغيير الصورة', settings:'الإعدادات', uploading:'جارٍ رفع الصورة...', upload_fail:'فشل الرفع: ', bad_username:'اسم المستخدم من ٣ إلى ٢٠ حرفاً: a-z و 0-9 و _ فقط.', taken:'اسم المستخدم مستخدم بالفعل.'
   }
 };
 const LANG_NAMES = { bn:'বাংলা', en:'English', ar:'العربية' };
@@ -330,7 +368,10 @@ $('auth-form').onsubmit = async e => {
   }
 };
 
-$('btn-logout').onclick = async () => { await sb.auth.signOut(); };
+$('btn-logout').onclick = async () => { $('settings').classList.add('hidden'); await sb.auth.signOut(); };
+$('btn-settings').onclick = () => $('settings').classList.remove('hidden');
+$('settings-close').onclick = () => $('settings').classList.add('hidden');
+$('settings').onclick = e => { if (e.target.id === 'settings') $('settings').classList.add('hidden'); };
 
 async function onSession(session) {
   currentUser = session ? session.user : null;
@@ -361,8 +402,50 @@ function renderProfile() {
   $('p-email').textContent = currentUser.email || '';
   $('p-country').innerHTML = p.country ? '<span class="tag">' + esc(p.country) + '</span>' : '';
   $('p-bio').textContent = p.bio || '';
-  $('p-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'T';
+  const av = $('p-avatar');
+  if (p.avatar_url) { av.innerHTML = '<img alt="" src="' + esc(p.avatar_url) + '">'; }
+  else { av.textContent = name.trim().charAt(0).toUpperCase() || 'T'; }
 }
+
+/* ---------- avatar upload ---------- */
+function compressImage(file, maxSide, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const side = Math.min(img.width, img.height);
+      const out = Math.min(maxSide, side);
+      const c = document.createElement('canvas'); c.width = c.height = out;
+      const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+      c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, out, out);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('compress')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+    img.src = url;
+  });
+}
+$('p-avatar').onclick = () => $('avatar-input').click();
+$('avatar-hint').onclick = () => $('avatar-input').click();
+$('avatar-input').onchange = async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  toast(t('uploading'));
+  try {
+    const blob = await compressImage(file, 512, 0.85);
+    const path = currentUser.id + '/avatar.jpg';
+    const { error } = await sb.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+    if (error) throw error;
+    const { data } = sb.storage.from('images').getPublicUrl(path);
+    const url = data.publicUrl + '?v=' + Date.now();
+    const { error: e2 } = await sb.from('profiles').update({ avatar_url: url }).eq('id', currentUser.id);
+    if (e2) throw e2;
+    await loadProfile();
+    toast(t('saved'));
+  } catch (err) {
+    toast(t('upload_fail') + (err.message || err));
+  }
+};
 
 /* ---------- profile edit ---------- */
 $('btn-edit').onclick = () => {
@@ -371,6 +454,7 @@ $('btn-edit').onclick = () => {
   $('e-username').value = p.username || '';
   $('e-bio').value = p.bio || '';
   $('e-country').value = p.country || '';
+  $('e-dm').value = p.dm_privacy || 'friends';
   $('edit-msg').textContent = '';
   $('edit-sheet').classList.remove('hidden');
 };
@@ -386,7 +470,8 @@ $('edit-form').onsubmit = async e => {
     display_name: $('e-name').value.trim() || t('user'),
     username: uname || null,
     bio: $('e-bio').value.trim() || null,
-    country: $('e-country').value.trim() || null
+    country: $('e-country').value.trim() || null,
+    dm_privacy: $('e-dm').value
   };
   $('edit-save').disabled = true;
   try {
@@ -399,6 +484,120 @@ $('edit-form').onsubmit = async e => {
     msg.textContent = (err.code === '23505') ? t('taken') : (err.message || String(err));
   } finally {
     $('edit-save').disabled = false;
+  }
+};
+
+
+/* ---------- people: search, friends, block, report ---------- */
+const PCOLS = 'id,display_name,username,avatar_url,bio,country';
+const uav = p => '<div class="uav">' + (p.avatar_url ? '<img alt="" src="' + esc(p.avatar_url) + '">' : esc((p.display_name || 'T').trim().charAt(0).toUpperCase())) + '</div>';
+const urow = p => '<div class="urow" data-uid="' + esc(p.id) + '">' + uav(p) + '<div class="uinfo"><div>' + esc(p.display_name || t('user')) + '</div><div class="muted" style="font-size:13px">' + (p.username ? '@' + esc(p.username) : '') + (p.country ? ' · ' + esc(p.country) : '') + '</div></div></div>';
+let rel = { fr: [], blocks: [], profiles: {} };
+
+async function loadRelations() {
+  const me = currentUser.id;
+  const [a, b] = await Promise.all([
+    sb.from('friendships').select('*').or('requester_id.eq.' + me + ',addressee_id.eq.' + me),
+    sb.from('blocks').select('*').eq('blocker_id', me)]);
+  rel.fr = a.data || []; rel.blocks = b.data || [];
+  const ids = new Set();
+  rel.fr.forEach(f => { ids.add(f.requester_id); ids.add(f.addressee_id); });
+  rel.blocks.forEach(x => ids.add(x.blocked_id));
+  ids.delete(me);
+  rel.profiles = {};
+  if (ids.size) {
+    const { data } = await sb.from('profiles').select(PCOLS).in('id', [...ids]);
+    (data || []).forEach(p => rel.profiles[p.id] = p);
+  }
+}
+function relOf(uid) {
+  const me = currentUser.id;
+  if (rel.blocks.some(b => b.blocked_id === uid)) return { s: 'blocked' };
+  const f = rel.fr.find(f => (f.requester_id === uid && f.addressee_id === me) || (f.requester_id === me && f.addressee_id === uid));
+  if (!f || f.status === 'declined') return { s: 'none', f };
+  if (f.status === 'accepted') return { s: 'friends', f };
+  return { s: f.requester_id === me ? 'sent' : 'received', f };
+}
+async function renderPeople() {
+  await loadRelations();
+  const me = currentUser.id;
+  const other = f => rel.profiles[f.requester_id === me ? f.addressee_id : f.requester_id];
+  const list = arr => arr.length ? arr.map(urow).join('') : '<div class="muted">' + esc(t('none_yet')) + '</div>';
+  $('pp-req').innerHTML = list(rel.fr.filter(f => f.status === 'pending' && f.addressee_id === me).map(other).filter(Boolean));
+  $('pp-friends').innerHTML = list(rel.fr.filter(f => f.status === 'accepted').map(other).filter(Boolean));
+  $('pp-blocked').innerHTML = list(rel.blocks.map(b => rel.profiles[b.blocked_id]).filter(Boolean));
+}
+$('btn-people').onclick = async () => { $('people').classList.remove('hidden'); $('pp-q').value = ''; $('pp-results').innerHTML = ''; await renderPeople(); };
+$('pp-close').onclick = () => $('people').classList.add('hidden');
+$('people').onclick = e => {
+  if (e.target.id === 'people') { $('people').classList.add('hidden'); return; }
+  const row = e.target.closest('.urow');
+  if (row) openUser(row.dataset.uid);
+};
+
+let searchTimer;
+$('pp-q').oninput = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    const q = $('pp-q').value.trim().replace(/[,()%*\\]/g, ' ').trim();
+    const box = $('pp-results');
+    if (q.length < 2) { box.innerHTML = ''; return; }
+    const { data, error } = await sb.from('profiles').select(PCOLS)
+      .or('display_name.ilike.%' + q + '%,username.ilike.%' + q + '%').neq('id', currentUser.id).limit(20);
+    if (error) { box.innerHTML = '<div class="muted">' + esc(error.message) + '</div>'; return; }
+    box.innerHTML = data.length ? data.map(urow).join('') : '<div class="muted">' + esc(t('no_results')) + '</div>';
+  }, 300);
+};
+
+async function openUser(uid) {
+  const { data: p } = await sb.from('profiles').select(PCOLS).eq('id', uid).maybeSingle();
+  if (!p) return;
+  const r = relOf(uid);
+  const b = (a, k, cls) => '<button class="btn sm ' + (cls || '') + '" data-act="' + a + '">' + esc(t(k)) + '</button>';
+  let btns = '';
+  if (r.s === 'none') btns += b('add', 'add_friend');
+  if (r.s === 'sent') btns += b('cancel', 'cancel_req', 'ghost');
+  if (r.s === 'received') btns += b('accept', 'accept') + b('decline', 'decline', 'ghost');
+  if (r.s === 'friends') btns += b('unfriend', 'unfriend', 'ghost');
+  btns += r.s === 'blocked' ? b('unblock', 'unblock', 'ghost') : b('block', 'block', 'danger');
+  btns += b('report', 'report', 'danger');
+  $('user-in').innerHTML = '<div class="avatar" style="cursor:default">' + (p.avatar_url ? '<img alt="" src="' + esc(p.avatar_url) + '">' : esc((p.display_name || 'T').trim().charAt(0).toUpperCase())) + '</div>'
+    + '<h3>' + esc(p.display_name || t('user')) + '</h3><div class="muted">' + (p.username ? '@' + esc(p.username) : '') + '</div>'
+    + (p.country ? '<div class="p-meta"><span class="tag">' + esc(p.country) + '</span></div>' : '')
+    + (p.bio ? '<p class="p-bio">' + esc(p.bio) + '</p>' : '')
+    + '<div data-uid="' + esc(uid) + '" id="user-btns">' + btns + '</div>'
+    + '<button class="btn ghost sm" id="user-close">' + esc(t('close')) + '</button>';
+  $('user-sheet').classList.remove('hidden');
+}
+$('user-sheet').onclick = async e => {
+  if (e.target.id === 'user-sheet' || e.target.id === 'user-close') { $('user-sheet').classList.add('hidden'); return; }
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const uid = $('user-btns').dataset.uid, a = btn.dataset.act, me = currentUser.id, r = relOf(uid);
+  btn.disabled = true;
+  let res = {};
+  try {
+    if (a === 'add') res = await sb.from('friendships').insert({ requester_id: me, addressee_id: uid, status: 'pending' });
+    else if (a === 'accept') res = await sb.from('friendships').update({ status: 'accepted' }).eq('id', r.f.id);
+    else if (a === 'decline') res = await sb.from('friendships').update({ status: 'declined' }).eq('id', r.f.id);
+    else if (a === 'cancel' || a === 'unfriend') res = await sb.from('friendships').delete().eq('id', r.f.id);
+    else if (a === 'block') {
+      res = await sb.from('blocks').insert({ blocker_id: me, blocked_id: uid });
+      if (!res.error && r.f) await sb.from('friendships').delete().eq('id', r.f.id);
+    }
+    else if (a === 'unblock') res = await sb.from('blocks').delete().eq('blocker_id', me).eq('blocked_id', uid);
+    else if (a === 'report') {
+      const reason = prompt(t('report_ask'));
+      if (reason === null) { btn.disabled = false; return; }
+      res = await sb.from('reports').insert({ reporter_id: me, target_type: 'profile', target_id: uid, reason: reason.trim() || '-' });
+    }
+    if (res.error) throw res.error;
+    toast(a === 'report' ? t('reported') : t('done'));
+    await renderPeople();
+    if (a === 'report') $('user-sheet').classList.add('hidden'); else openUser(uid);
+  } catch (err) {
+    btn.disabled = false;
+    toast(t('err') + (err.message || err));
   }
 };
 
