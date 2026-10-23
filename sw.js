@@ -1,54 +1,34 @@
-const CACHE_NAME = 'talkia-v26';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/batch3.js',
-  '/batch4.js',
-  '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/logo.png',
-  '/logo-wordmark.png'
-];
+const CACHE = 'talkia-v28';
+// Relative paths: works under /Talkia/ on GitHub Pages. Missing files never break install.
+const SHELL = ['./', 'index.html', 'batch3.js', 'batch4.js', 'batch5.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo-wordmark.png'];
 
-// ১. ইনস্টল ইভেন্ট: ক্যাশ ফাইলগুলো ব্রাউজারে সেভ করা
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE)
+      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// ২. অ্যাক্টিভেট ইভেন্ট: পুরোনো ক্যাশ ক্লিন করা
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clientsClaim();
 });
 
-// ৩. ফেচ ইভেন্ট: অফলাইন বা ক্যাশ থেকে ফাইল লোড করা
+// Network first for our own files (updates show up), cache only as offline fallback.
+// Supabase and other cross-origin requests are never touched.
 self.addEventListener('fetch', e => {
-  // Supabase বা এক্সটার্নাল এপিআই রিকোয়েস্ট হলে ক্যাশ এড়িয়ে সরাসরি নেটওয়ার্ক কল করবে
-  if (e.request.url.includes('supabase.co')) {
-    return;
-  }
-  
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(cachedResponse => {
-      return cachedResponse || fetch(e.request).catch(() => {
-        // অফলাইন থাকলে প্রয়োজনে ফলব্যাক দিতে পারেন
-      });
-    })
+    fetch(req)
+      .then(res => {
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+        return res;
+      })
+      .catch(() => caches.match(req).then(r => r || caches.match('index.html') || Response.error()))
   );
 });
