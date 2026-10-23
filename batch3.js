@@ -1,4 +1,4 @@
-/* Talkia batch3: Photos, Voice Filters (fully localized), Emoji Reactions */
+/* Talkia batch3: Photos, Voice Filters, Emoji Reactions Bar */
 (function () {
   const st = document.createElement('style');
   st.textContent = '.b3row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);text-align:start}'
@@ -6,7 +6,7 @@
     + '.b3i{flex:1;min-width:0;overflow-wrap:anywhere}.b3d{flex:none;padding:6px 10px;color:var(--danger)}'
     + '.b3img{width:100%;max-height:350px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}'
     + '.voice-filter-select { background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px; border-radius:8px; margin-left:8px; font-size:12px; outline:none; }'
-    + '.reaction-bar { display: none; position: absolute; top: -45px; left: 10px; background: #121826; border: 1px solid #26314a; border-radius: 30px; padding: 4px 8px; gap: 8px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }'
+    + '.reaction-bar { display: none; position: absolute; bottom: 35px; left: 0; background: #121826; border: 1px solid #26314a; border-radius: 30px; padding: 4px 10px; gap: 8px; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }'
     + '.reaction-bar span { font-size: 20px; cursor: pointer; transition: transform 0.2s; }'
     + '.reaction-bar span:hover { transform: scale(1.3); }';
   document.head.appendChild(st);
@@ -24,11 +24,11 @@
   window.emojiBarHtml = function(postId) {
     return `
       <div class="reaction-bar" id="react-bar-${postId}">
-        <span data-react="❤️" data-id="${postId}">❤️</span>
-        <span data-react="😂" data-id="${postId}">😂</span>
-        <span data-react="😮" data-id="${postId}">😮</span>
-        <span data-react="😢" data-id="${postId}">😢</span>
-        <span data-react="🔥" data-id="${postId}">🔥</span>
+        <span data-react="❤️" data-id="${postId}" title="Love">❤️</span>
+        <span data-react="😂" data-id="${postId}" title="Haha">😂</span>
+        <span data-react="😮" data-id="${postId}" title="Wow">😮</span>
+        <span data-react="😢" data-id="${postId}" title="Sad">😢</span>
+        <span data-react="🔥" data-id="${postId}" title="Fire">🔥</span>
       </div>
     `;
   };
@@ -45,9 +45,12 @@
       const bar = document.getElementById('react-bar-' + id);
       if (bar) bar.style.display = 'none';
       
-      const btn = document.querySelector(`[data-like="${id}"], [data-plike="${id}"]`);
+      const btn = document.querySelector(`[data-like="${id}"]`);
       if (btn) {
-        btn.firstChild.textContent = emoji + ' ';
+        const span = btn.querySelector('span');
+        let cnt = Number(span.textContent || 0) + 1;
+        btn.classList.add('on');
+        btn.innerHTML = `${emoji} <span>${cnt}</span>`;
         toast('Reaction: ' + emoji);
       }
       return;
