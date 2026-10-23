@@ -37,17 +37,9 @@
     const g = s => e.target.closest(s);
     let b;
     if ((b = g('.b3p'))) return playBtn(b);
-    
-    if ((b = g('[data-like]')) || (b = g('[data-plike]'))) {
-      const id = b.dataset.like || b.dataset.plike;
-      const bar = document.getElementById('react-bar-' + id);
-      if (bar) {
-        bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
-      }
-      return;
-    }
 
     if (e.target.dataset.react) {
+      e.stopPropagation();
       const emoji = e.target.dataset.react;
       const id = e.target.dataset.id;
       const bar = document.getElementById('react-bar-' + id);
@@ -62,7 +54,6 @@
     }
   });
 
-  // Inject Voice Filter Selection with I18N support
   document.addEventListener('DOMContentLoaded', () => {
     const recContainer = document.getElementById('voice-rec-area');
     if (recContainer && !document.getElementById('v-filter')) {
