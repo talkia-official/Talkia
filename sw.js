@@ -1,4 +1,4 @@
-const CACHE_NAME = 'talkia-v25';
+const CACHE_NAME = 'talkia-v26';
 const ASSETS = [
   '/',
   '/index.html',
