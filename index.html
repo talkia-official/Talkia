@@ -685,8 +685,10 @@ function showTab(name) {
   document.querySelector('main').scrollTop = 0;
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-$('btn-inbox').onclick = () => toast(t('soon'));
-$('btn-bell').onclick = () => toast(t('soon'));
+
+// ইনবক্স ও বেল আইকন ইভেন্ট আপডেট (Batch 4-এর সাথে কানেক্টেড)
+$('btn-inbox').onclick = () => { if (window.openCreateGroupModal) window.openCreateGroupModal(); else toast(t('soon')); };
+$('btn-bell').onclick = () => { if (window.openNotificationsList) window.openNotificationsList(); else toast(t('soon')); };
 
 function todayISO() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
@@ -867,7 +869,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
-  <script src="batch3.js"></script>
+<script src="batch3.js"></script>
 <script src="batch4.js"></script>
 </body>
 </html>
