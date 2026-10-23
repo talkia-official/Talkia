@@ -23,11 +23,10 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
   font-family:"Hind Siliguri","Noto Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px}
-button,input,select{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
 .hidden{display:none !important}
 
-/* ---------- Auth ---------- */
 #auth{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px 20px}
 .auth-card{width:100%;max-width:400px}
 .brand{text-align:center;margin-bottom:28px}
@@ -41,8 +40,10 @@ button{cursor:pointer;border:0;background:none}
 .seg button{padding:10px;border-radius:9px;color:var(--muted);font-weight:600}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
 .field{margin-bottom:12px}
-.field input{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
-.field input:focus{border-color:var(--accent)}
+.field label{display:block;margin-bottom:4px;font-size:13px;color:var(--muted)}
+.field input,.field textarea{width:100%;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);outline:none}
+.field textarea{resize:none;min-height:84px}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
 .btn{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px}
 .btn:disabled{opacity:.6}
 .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
@@ -53,7 +54,6 @@ button{cursor:pointer;border:0;background:none}
 .langs button{padding:7px 14px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-size:14px}
 .langs button.on{border-color:var(--accent);color:var(--accent-text)}
 
-/* ---------- App shell ---------- */
 #app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;position:relative}
 header{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
   border-bottom:1px solid var(--line);background:var(--bg)}
@@ -78,9 +78,10 @@ h2{margin:0 0 12px;font-size:20px}
 .avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 12px;background:var(--surface2);border:2px solid var(--accent);
   display:grid;place-items:center;font-size:38px;font-weight:700;color:var(--accent-text)}
 .profile-top h2{margin:0}
-.row{display:flex;gap:10px;margin-top:10px}
+.p-bio{margin:10px 0 0;line-height:1.5}
+.p-meta{margin-top:8px}
+.profile-top .btn{margin-top:14px;width:auto;padding:10px 22px;font-size:15px}
 
-/* ---------- Bottom nav ---------- */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-content:center;pointer-events:none}
 .nav-in{pointer-events:auto;width:100%;max-width:560px;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
   padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);
@@ -93,18 +94,18 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   box-shadow:0 6px 24px rgba(47,107,255,.5);border:4px solid var(--bg)}
 .nav-rec .dot svg{width:28px;height:28px;stroke:var(--accent-ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* ---------- Sheet + toast ---------- */
-#sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
-.sheet-in{width:100%;max-width:560px;background:var(--surface);border-radius:22px 22px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;border-top:1px solid var(--line)}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{width:100%;max-width:560px;max-height:90%;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;border-top:1px solid var(--line)}
 .sheet-in h3{margin:0 0 8px;font-size:20px}
 .sheet-in p{color:var(--muted);margin:0 0 18px}
+.sheet-in form{text-align:start}
+.sheet-in .btn{margin-top:8px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 30px + env(safe-area-inset-bottom));z-index:40;
   background:var(--surface2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;max-width:90%}
 </style>
 </head>
 <body>
 
-<!-- ================= AUTH ================= -->
 <section id="auth" class="hidden">
   <div class="auth-card">
     <div class="brand">
@@ -127,7 +128,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </div>
 </section>
 
-<!-- ================= APP ================= -->
 <div id="app" class="hidden">
   <header>
     <div class="hbadge"><img src="logo-wordmark.png" alt="Talkia"></div>
@@ -160,7 +160,11 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
       <div class="profile-top">
         <div class="avatar" id="p-avatar">T</div>
         <h2 id="p-name"></h2>
+        <div class="muted" id="p-username"></div>
         <div class="muted" id="p-email"></div>
+        <div class="p-meta" id="p-country"></div>
+        <p class="p-bio" id="p-bio"></p>
+        <button class="btn ghost" id="btn-edit" data-i18n="edit_profile"></button>
       </div>
       <div class="card">
         <div class="muted" style="margin-bottom:8px" data-i18n="language"></div>
@@ -192,11 +196,26 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </nav>
 </div>
 
-<div id="sheet" class="hidden">
+<div id="sheet" class="sheet hidden">
   <div class="sheet-in">
     <h3 data-i18n="rec_title"></h3>
     <p data-i18n="rec_soon"></p>
     <button class="btn ghost" id="sheet-close" data-i18n="close"></button>
+  </div>
+</div>
+
+<div id="edit-sheet" class="sheet hidden">
+  <div class="sheet-in">
+    <h3 data-i18n="edit_profile"></h3>
+    <form id="edit-form" autocomplete="off">
+      <div class="field"><label data-i18n="name"></label><input id="e-name" type="text" maxlength="40"></div>
+      <div class="field"><label data-i18n="username"></label><input id="e-username" type="text" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label data-i18n="bio"></label><textarea id="e-bio" maxlength="200"></textarea></div>
+      <div class="field"><label data-i18n="country"></label><input id="e-country" type="text" maxlength="40"></div>
+      <div id="edit-msg" class="msg"></div>
+      <button class="btn" id="edit-save" type="submit" data-i18n="save"></button>
+      <button class="btn ghost" id="edit-cancel" type="button" data-i18n="close"></button>
+    </form>
   </div>
 </div>
 <div id="toast" class="hidden"></div>
@@ -207,7 +226,6 @@ const SUPABASE_URL = 'https://kqgteeykuflyawbtddyk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RO0xP9_bKNIc2ARIBqDmYA_nPVI-5y5';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ---------- i18n ---------- */
 const I18N = {
   bn: {
     tagline:'আওয়াজের ভুবন', login:'লগইন', signup:'সাইন আপ', name:'আপনার নাম', email:'ইমেইল', password:'পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)',
@@ -215,7 +233,9 @@ const I18N = {
     answer_prompt:'ভয়েসে উত্তর দিন', no_prompt:'আজকের প্রশ্ন শীঘ্রই আসছে।', feed_empty:'এখনো কোনো পোস্ট নেই। প্রথম আওয়াজটা আপনার হোক!',
     language:'ভাষা', logout:'লগআউট', rec_title:'রেকর্ড', rec_soon:'ভয়েস রেকর্ডিং ধাপ ৩-এ যোগ হবে।', close:'বন্ধ করুন',
     soon:'শীঘ্রই আসছে', check_email:'আপনার ইমেইলে পাঠানো লিংকে ক্লিক করে অ্যাকাউন্ট নিশ্চিত করুন।', loading:'লোড হচ্ছে...',
-    sec:'সেকেন্ড', anon:'বেনামী', user:'ব্যবহারকারী'
+    sec:'সেকেন্ড', anon:'বেনামী', user:'ব্যবহারকারী',
+    edit_profile:'প্রোফাইল এডিট', username:'ইউজারনেম (ইংরেজি অক্ষর, সংখ্যা, _)', bio:'আপনার সম্পর্কে', country:'দেশ', save:'সেভ করুন',
+    saved:'সেভ হয়েছে', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে: a-z, ০-৯ ও _ চলবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।'
   },
   en: {
     tagline:'The Voice Universe', login:'Log in', signup:'Sign up', name:'Your name', email:'Email', password:'Password (min 6 characters)',
@@ -223,7 +243,9 @@ const I18N = {
     answer_prompt:'Answer with your voice', no_prompt:"Today's prompt is coming soon.", feed_empty:'No posts yet. Be the first voice!',
     language:'Language', logout:'Log out', rec_title:'Record', rec_soon:'Voice recording arrives in Step 3.', close:'Close',
     soon:'Coming soon', check_email:'Please confirm your account using the link sent to your email.', loading:'Loading...',
-    sec:'sec', anon:'Anonymous', user:'User'
+    sec:'sec', anon:'Anonymous', user:'User',
+    edit_profile:'Edit profile', username:'Username (a-z, 0-9, _)', bio:'About you', country:'Country', save:'Save changes',
+    saved:'Saved', bad_username:'Username must be 3-20 characters: a-z, 0-9 and _ only.', taken:'That username is already taken.'
   },
   ar: {
     tagline:'عالم الأصوات', login:'تسجيل الدخول', signup:'إنشاء حساب', name:'اسمك', email:'البريد الإلكتروني', password:'كلمة المرور (٦ أحرف على الأقل)',
@@ -231,7 +253,9 @@ const I18N = {
     answer_prompt:'أجب بصوتك', no_prompt:'سؤال اليوم قادم قريباً.', feed_empty:'لا توجد منشورات بعد. كن أول صوت!',
     language:'اللغة', logout:'تسجيل الخروج', rec_title:'تسجيل', rec_soon:'سيتم إضافة التسجيل الصوتي في الخطوة 3.', close:'إغلاق',
     soon:'قريباً', check_email:'يرجى تأكيد حسابك عبر الرابط المرسل إلى بريدك.', loading:'جارٍ التحميل...',
-    sec:'ث', anon:'مجهول', user:'مستخدم'
+    sec:'ث', anon:'مجهول', user:'مستخدم',
+    edit_profile:'تعديل الملف الشخصي', username:'اسم المستخدم (a-z, 0-9, _)', bio:'نبذة عنك', country:'البلد', save:'حفظ',
+    saved:'تم الحفظ', bad_username:'اسم المستخدم من ٣ إلى ٢٠ حرفاً: a-z و 0-9 و _ فقط.', taken:'اسم المستخدم مستخدم بالفعل.'
   }
 };
 const LANG_NAMES = { bn:'বাংলা', en:'English', ar:'العربية' };
@@ -263,7 +287,6 @@ function setLang(code) {
   applyLang();
 }
 
-/* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let toastTimer;
@@ -272,7 +295,6 @@ function toast(msg) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('hidden'), 2200);
 }
 
-/* ---------- auth ---------- */
 let mode = 'login', currentUser = null, currentProfile = null, currentTab = 'feed';
 
 function setMode(m) {
@@ -332,11 +354,53 @@ async function loadProfile() {
 }
 function renderProfile() {
   if (!currentUser) return;
-  const name = (currentProfile && currentProfile.display_name) || t('user');
+  const p = currentProfile || {};
+  const name = p.display_name || t('user');
   $('p-name').textContent = name;
+  $('p-username').textContent = p.username ? '@' + p.username : '';
   $('p-email').textContent = currentUser.email || '';
+  $('p-country').innerHTML = p.country ? '<span class="tag">' + esc(p.country) + '</span>' : '';
+  $('p-bio').textContent = p.bio || '';
   $('p-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'T';
 }
+
+/* ---------- profile edit ---------- */
+$('btn-edit').onclick = () => {
+  const p = currentProfile || {};
+  $('e-name').value = p.display_name || '';
+  $('e-username').value = p.username || '';
+  $('e-bio').value = p.bio || '';
+  $('e-country').value = p.country || '';
+  $('edit-msg').textContent = '';
+  $('edit-sheet').classList.remove('hidden');
+};
+$('edit-cancel').onclick = () => $('edit-sheet').classList.add('hidden');
+$('edit-sheet').onclick = e => { if (e.target.id === 'edit-sheet') $('edit-sheet').classList.add('hidden'); };
+
+$('edit-form').onsubmit = async e => {
+  e.preventDefault();
+  const msg = $('edit-msg'); msg.className = 'msg'; msg.textContent = '';
+  const uname = $('e-username').value.trim().toLowerCase();
+  if (uname && !/^[a-z0-9_]{3,20}$/.test(uname)) { msg.textContent = t('bad_username'); return; }
+  const upd = {
+    display_name: $('e-name').value.trim() || t('user'),
+    username: uname || null,
+    bio: $('e-bio').value.trim() || null,
+    country: $('e-country').value.trim() || null
+  };
+  $('edit-save').disabled = true;
+  try {
+    const { error } = await sb.from('profiles').update(upd).eq('id', currentUser.id);
+    if (error) throw error;
+    await loadProfile();
+    $('edit-sheet').classList.add('hidden');
+    toast(t('saved'));
+  } catch (err) {
+    msg.textContent = (err.code === '23505') ? t('taken') : (err.message || String(err));
+  } finally {
+    $('edit-save').disabled = false;
+  }
+};
 
 /* ---------- tabs ---------- */
 function showTab(name) {
@@ -356,7 +420,6 @@ $('btn-inbox').onclick = () => toast(t('soon'));
 $('btn-bell').onclick = () => toast(t('soon'));
 $('prompt-answer').onclick = () => $('sheet').classList.remove('hidden');
 
-/* ---------- daily prompt ---------- */
 function todayISO() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
   return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
@@ -369,7 +432,6 @@ async function loadPrompt() {
   el.textContent = data[field] || data.text_bn;
 }
 
-/* ---------- feed ---------- */
 async function loadFeed() {
   const box = $('feed-list');
   box.innerHTML = '<div class="empty">' + esc(t('loading')) + '</div>';
@@ -388,7 +450,6 @@ async function loadFeed() {
     </div>`).join('');
 }
 
-/* ---------- boot ---------- */
 applyLang();
 setMode('login');
 if ('serviceWorker' in navigator) {
