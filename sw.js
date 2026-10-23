@@ -1,5 +1,5 @@
 const CACHE = 'talkia-v9';
-const SHELL = ['./', 'index.html', 'batch3.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo-wordmark.png'];
+const SHELL = ['./', 'index.html', 'batch3.js', 'batch4.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo-wordmark.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
