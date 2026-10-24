@@ -59,23 +59,58 @@ function openActiveGroupRoom(roomId, roomName) {
 
   let roomModal = document.createElement('div');
   roomModal.id = 'active-room-modal';
-  roomModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1200; display:flex; flex-direction:column; padding:20px;';
+  roomModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1200; display:flex; flex-direction:column; overflow-y:auto;';
+  
   roomModal.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 style="margin:0; color:#fff; font-size:20px;">🎙️ ${esc(roomName)}</h2>
-      <button id="leave-room-btn" style="background:#e74c3c; color:#fff; border:0; padding:8px 16px; border-radius:10px; cursor:pointer; font-weight:600;">Leave Room</button>
+    <!-- Header / Cover Section -->
+    <div style="position:relative; width:100%; height:160px; background:linear-gradient(135deg, #2b3a55, #121826);">
+      <button id="leave-room-btn" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); color:#fff; border:0; padding:6px 14px; border-radius:20px; cursor:pointer; font-weight:600; font-size:13px;">✕ Leave</button>
     </div>
-    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-      <div style="font-size:60px; margin-bottom:20px;">🎧</div>
-      <p style="color:#8b97b3; font-size:16px;">You are in the live voice room.</p>
-      <p style="color:#fff; font-size:14px; margin-top:5px;">(Live audio & speaking features coming soon)</p>
+
+    <!-- Group Info Section -->
+    <div style="padding:16px; background:#121826; border-bottom:1px solid #26314a;">
+      <h2 id="room-title-heading" style="margin:0 0 6px 0; color:#fff; font-size:22px;">${esc(roomName)}</h2>
+      <div style="color:#8b97b3; font-size:13px; margin-bottom:14px;">Public group · 1 member</div>
+      
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="btn-manage-group" style="flex:1; background:#26314a; color:#fff; border:0; padding:10px; border-radius:10px; font-weight:600; cursor:pointer;">⚙️ Manage</button>
+        <button class="btn" id="btn-invite-group" style="flex:1; background:var(--accent, #1877f2); color:#fff; border:0; padding:10px; border-radius:10px; font-weight:600; cursor:pointer;">➕ Invite</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div style="display:flex; gap:8px; padding:10px 16px; background:#121826; overflow-x:auto; border-bottom:1px solid #26314a; white-space:nowrap;">
+      <button class="g-tab" style="background:#26314a; color:#fff; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Featured</button>
+      <button class="g-tab" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Photos</button>
+      <button class="g-tab" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Events</button>
+      <button class="g-tab" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Files</button>
+      <button class="g-tab" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Albums</button>
+      <button class="g-tab" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;">Reels</button>
+    </div>
+
+    <!-- Room Body / Content Area -->
+    <div style="flex:1; padding:20px; text-align:center; color:#8b97b3;">
+      <div style="font-size:50px; margin-bottom:10px;">🎙️</div>
+      <p style="font-size:15px; margin:0;">Live voice chat space is ready here.</p>
     </div>
   `;
+  
   document.body.appendChild(roomModal);
 
+  // Leave button action
   document.getElementById('leave-room-btn').onclick = () => {
     roomModal.remove();
     if (typeof loadGroupRooms === 'function') loadGroupRooms();
+  };
+
+  // Manage button action placeholder
+  document.getElementById('btn-manage-group').onclick = () => {
+    alert('Manage group panel coming up next!');
+  };
+
+  // Invite button action placeholder
+  document.getElementById('btn-invite-group').onclick = () => {
+    alert('Invite options coming up next!');
   };
 }
 
