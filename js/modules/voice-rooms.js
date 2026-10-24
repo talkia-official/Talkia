@@ -38,7 +38,7 @@ window.openCreateGroupRoomModal = function() {
   };
 };
 
-window.joinGroupRoom = async function(roomId) {
+window.joinGroupRoom = async function(roomId, roomName) {
   if (!currentUser) return toast(t('login'));
   try {
     const { error } = await sb.from('group_members').insert({ group_id: roomId, user_id: currentUser.id });
@@ -46,6 +46,9 @@ window.joinGroupRoom = async function(roomId) {
       throw error;
     }
     toast(t('room_joined'));
+    
+    // রুমের ভেতরে যাওয়ার জন্য এই ফাংশনটি কল করা হলো
+    openActiveGroupRoom(roomId, roomName);
   } catch (err) {
     toast('Error: ' + err.message);
   }
