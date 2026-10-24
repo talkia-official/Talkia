@@ -76,7 +76,7 @@ h2{margin:0 0 12px;font-size:18px;font-weight:600;padding:0 16px}
 
 /* Instagram Style Profile Layout */
 .profile-card{background:var(--bg);margin-bottom:10px}
-.cover-box{height:0;background:transparent;position:relative;display:none} /* Clean IG look hides traditional header cover */
+.cover-box{height:0;background:transparent;position:relative;display:none}
 .visitor-btn{position:absolute;top:10px;right:16px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:#fff;font-size:16px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,0.15);cursor:pointer;z-index:10}
 
 .profile-top{padding:16px;text-align:left}
@@ -453,7 +453,7 @@ const I18N = {
     saved:'সেভ হয়েছে', people:'My Friends', recent:'সাম্প্রতিক সার্চ', clear:'মুছুন', posts_h:'Posts', people_h:'মানুষ', search_ph:'নাম বা ইউজারনেম লিখে খুঁজুন', requests:'অনুরোধ', friends:'Friends', blocked_list:'ব্লক করা', none_yet:'এখনো কেউ নেই', no_results:'কাউকে পাওয়া যায়নি',
     add_friend:'🤝 Add Friend', cancel_req:'অনুরোধ বাতিল', accept:'গ্রহণ করুন', decline:'প্রত্যাখ্যান', unfriend:'আনফ্রেন্ড', block:'ব্লক করুন', unblock:'আনব্লক করুন', report:'রিপোর্ট করুন', report_ask:'রিপোর্টের কারণ লিখুন', reported:'রিপোর্ট পাঠানো হয়েছে',
     avatar_change:'ছবি বদলান', settings:'সেটিংস', rec_start:'রেকর্ড শুরু করুন', rec_stop:'থামান', rec_again:'আবার রেকর্ড করুন', rec_post:'পোস্ট করুন', rec_cap:'ক্যাপশন বা আপনার পোস্ট...', anon_toggle:'বেনামে পোস্ট করুন', all:'সব', comments_h:'কমেন্ট', cm_ph:'কমেন্ট লিখুন...', send:'পাঠান', mic_err:'মাইক্রোফোন চালু করা যায়নি।', too_short:'কমপক্ষে ৩ সেকেন্ড রেকর্ড করুন।', too_big:'রেকর্ডিং বেশি বড়।', posted:'পোস্ট হয়েছে',
-    c_BD:'বাংলাদেশ', c_IN:'ভারত', c_SA:'সৌদি', c_AE:'আমিরাত', c_GLOBAL:'বিশ্ব', l_bn:'বাংলা', l_en:'English', l_ar:'العربية', l_hi:'हिन्दी', search_btn:'খুঁজুন', min2:'কমপক্ষে ২টা অক্ষর লিখুন', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।',
+    c_BD:'বাংলাদেশ', c_IN:'ভারত', c_SA:'সৌদি', c_AE:'আমিরাত', c_GLOBAL:'বিশ্ব', l_bn:'বাংলা', l_en:'English', l_ar:'العربية', l_hi:'हिन्दी', search_btn:'খুঁজুন', min2:'কমপক্ষে ২টা অক্ষর লিখুন', uploading:'ছবি আপলোড হচ্ছে...', upload_fail:'ছবি আপলোড হয়নি: ', bad_username:'ইউজারনেম ৩-২০ অক্ষরের হতে হবে।', taken:'এই ইউজারনেম আগে থেকেই আছে।',
     cover_change:'📷 কভার ছবি', lbl_edu:'🎓 শিক্ষা:', lbl_rel:'💍 সম্পর্ক:', lbl_relig:'🕌 ধর্ম:', lbl_hobby:'🎨 শখ:', lbl_city:'📍 বর্তমান শহর:', not_added:'Not added', all_cats:'সকল ক্যাটাগরি', all_countries:'সকল দেশ', p_info:'Personal Information', privacy_pass:'Privacy Settings',
     posts_tab:'Posts', photos_tab:'Photos', img_opts:'ছবির অপশন', view_large:'🔍 বড় করে দেখুন', chg_photo:'📷 ছবি পরিবর্তন করুন', no_img:'কোনো ছবি নেই',
     lbl_text:'লেখা', lbl_voice:'ভয়েস', lbl_image:'ছবি', post_ph:'আপনার মনে কি চলছে, তা এখানে লিখুন...',
@@ -781,6 +781,61 @@ window.toggleLike = async function(postId, emoji = '❤️') {
   if (typeof loadFeed === 'function') loadFeed(false);
 };
 
+// Post Owner Menu & Actions (Edit/Delete - Safely managed via DOM)
+window.togglePostMenu = function (postId) {
+  document.querySelectorAll('[id^="post-menu-"]').forEach(m => {
+    if (m.id !== `post-menu-${postId}`) m.classList.add('hidden');
+  });
+  const menu = document.getElementById(`post-menu-${postId}`);
+  if (menu) menu.classList.toggle('hidden');
+};
+
+window.deletePost = async function (postId) {
+  if (!confirm('Are you sure you want to delete this post?')) return;
+  try {
+    const { error } = await sb.from('voice_posts').delete().eq('id', postId);
+    if (error) throw error;
+    toast('Post deleted successfully');
+    if (typeof loadFeed === 'function') loadFeed();
+    if (currentUser && typeof loadUserMyPostsAndPhotos === 'function') loadUserMyPostsAndPhotos(currentUser.id);
+  } catch (err) {
+    console.error('[Talkia] Delete error:', err);
+    toast('Failed to delete post');
+  }
+};
+
+window.editPost = async function (postId) {
+  const menu = document.getElementById(`post-menu-${postId}`);
+  if (menu) menu.classList.add('hidden');
+
+  const postCard = document.getElementById(`post-${postId}`);
+  const captionEl = postCard ? postCard.querySelector('.post-caption') : null;
+  const currentCaption = captionEl ? captionEl.textContent : '';
+
+  const newCaption = prompt('Edit your post caption:', currentCaption);
+  if (newCaption === null) return;
+
+  try {
+    const { error } = await sb.from('voice_posts')
+      .update({ caption: newCaption.trim() })
+      .eq('id', postId);
+
+    if (error) throw error;
+    toast('Post updated successfully');
+    if (typeof loadFeed === 'function') loadFeed();
+    if (currentUser && typeof loadUserMyPostsAndPhotos === 'function') loadUserMyPostsAndPhotos(currentUser.id);
+  } catch (err) {
+    console.error('[Talkia] Edit error:', err);
+    toast('Failed to update post');
+  }
+};
+
+window.addEventListener('click', (e) => {
+  if (!e.target.closest('[id^="post-menu-"]') && !e.target.closest('button[onclick^="togglePostMenu"]')) {
+    document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.classList.add('hidden'));
+  }
+});
+
 function cardHtml(p) {
   const c = cats.find(x => x.id === p.category_id);
   const posterId = p.user_id;
@@ -797,13 +852,25 @@ function cardHtml(p) {
   }
 
   const views = p.view_count || 0;
+  const isAuthor = currentUser && currentUser.id === posterId;
+
+  const authorActions = isAuthor ? `
+    <div style="position:relative; display:inline-block;">
+      <button onclick="togglePostMenu('${esc(p.id)}')" style="background:none; border:0; color:var(--muted); font-size:18px; cursor:pointer; padding:0 4px;">⋮</button>
+      <div id="post-menu-${esc(p.id)}" class="hidden" style="position:absolute; right:0; top:24px; background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:4px; z-index:10; min-width:100px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+        <button onclick="editPost('${esc(p.id)}')" style="display:block; width:100%; text-align:left; padding:6px 10px; font-size:12px; background:none; border:0; color:var(--text); cursor:pointer; border-bottom:1px solid var(--line);">Edit</button>
+        <button onclick="deletePost('${esc(p.id)}')" style="display:block; width:100%; text-align:left; padding:6px 10px; font-size:12px; background:none; border:0; color:var(--danger); cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  ` : '';
 
   return '<div class="card post" id="post-' + esc(p.id) + '" data-id="' + esc(p.id) + '">'
     + '<div style="display:flex; justify-content:space-between; align-items:center; position:relative; margin-bottom:8px;">'
     + '<div class="phead" style="display:flex; align-items:center; gap:10px;">' + av + '<div><div data-profile-id="' + esc(posterId) + '" style="cursor:pointer; font-weight:600; font-size:14px;">' + esc(authorName) + '</div><div class="muted" style="font-size:11px">' + esc(timeAgo(p.created_at)) + ' • 👁️ ' + views + ' ' + t('views_count') + '</div></div></div>'
+    + authorActions
     + '</div>'
     + '<div style="margin-bottom:6px;">' + (c ? '<span class="tag">' + esc(catName(c)) + '</span>' : '') + (p.country ? '<span class="tag">' + esc(t('c_' + p.country) === 'c_' + p.country ? p.country : t('c_' + p.country)) + '</span>' : '') + (p.language ? '<span class="tag">' + esc(p.language) + '</span>' : '') + '</div>'
-    + (p.caption ? '<div style="margin-top:4px; font-size:14px; line-height:1.4;">' + esc(p.caption) + '</div>' : '')
+    + (p.caption ? '<div class="post-caption" style="margin-top:4px; font-size:14px; line-height:1.4; white-space: pre-wrap;">' + esc(p.caption) + '</div>' : '')
     + mediaHtml
     + '<div class="acts" style="position:relative; margin-top:8px; display:flex; gap:16px; align-items:center;"><button data-like="' + esc(p.id) + '" style="cursor:pointer; background:none; border:0; color:var(--text); font-size:14px; display:flex; align-items:center; gap:4px;">❤️ <span>' + Number(p.like_count || 0) + '</span></button><button data-cm="' + esc(p.id) + '" style="cursor:pointer; background:none; border:0; color:var(--text); font-size:14px; display:flex; align-items:center; gap:4px;">💬 <span>' + Number(p.comment_count || 0) + '</span></button></div></div>';
 }
