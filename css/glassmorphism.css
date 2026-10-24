@@ -1,0 +1,14 @@
+/* Glass surfaces + dark/light themes */
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.icon-btn svg{width:21px;height:21px;stroke:var(--text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.visitor-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:#fff;font-size:18px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:10}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{width:100%;max-width:560px;max-height:90%;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;border-top:1px solid var(--line)}
+.sheet-in h3{margin:0 0 8px;font-size:20px}
+.sheet-in p{color:var(--muted);margin:0 0 18px}
+.sheet-in form{text-align:start}
+.sheet-in .btn{margin-top:8px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 30px + env(safe-area-inset-bottom));z-index:40;
+  background:var(--surface2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;max-width:90%}
+.sheet,#settings-sheet{backdrop-filter:blur(6px)}
+[data-theme="light"]{--bg:#f4f6fb;--surface:#fff;--surface2:#eef1f8;--line:#d9dfec;--text:#141a2a;--muted:#5d6985;--accent-text:#2f6bff}
