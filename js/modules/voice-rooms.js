@@ -96,7 +96,7 @@ window.loadGroupRooms = async function() {
         <div style="font-weight:600; font-size:16px; color:var(--text);">${esc(room.name)}</div>
         <div class="muted" style="font-size:12px;">${t('member_limit')}</div>
       </div>
-      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="joinGroupRoom('${room.id}')">${t('g_join')}</button>
+      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="joinGroupRoom('${room.id}', '${esc(room.name)}')">${t('g_join')}</button>
     </div>
   `).join('');
 };
