@@ -1,40 +1,43 @@
-const CACHE = 'talkia-v32'; // কোড আপডেট করলে এখানে v31 থেকে v32, v33 এভাবে বাড়াবেন
-// Relative paths support deployment under /Talkia/ on GitHub Pages.
-const SHELL = [
-  './', 'index.html', 'batch3.js', 'batch4.js', 'batch6.js', // batch5.js বাদ দেওয়া হলো
-  'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo-wordmark.png'
-];
+const CACHE_NAME = 'talkia-auto-cache';
 
+// ইন্সটল করার সময় কোনো ভারী প্রি-ক্যাশ করার দরকার নেই, যাতে ক্যাশ ভার্সন বদলাতে না হয়
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache => Promise.all(SHELL.map(path => cache.add(path).catch(() => {}))))
-      .then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
+// পুরনো কোনো ক্যাশ থাকলে তা স্বয়ংক্রিয়ভাবে মুছে ফেলা
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
-// Network-first for same-origin GET requests; use cache only as offline fallback.
+// নেটওয়ার্ক-ফার্স্ট (Network-First) স্ট্র্যাটেজি
 self.addEventListener('fetch', event => {
-  const request = event.request;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(request).then(response => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(request, copy)).catch(() => {});
-      }
-      return response;
-    }).catch(() =>
-      caches.match(request).then(cached => cached || caches.match('index.html') || Response.error())
-    )
+    fetch(event.request)
+      .then(networkResponse => {
+        // যদি ইন্টারনেট বা নেটওয়ার্ক থেকে সফলভাবে লেটেস্ট ফাইল পাওয়া যায়, 
+        // তবে সেটি স্বয়ংক্রিয়ভাবে ক্যাশে আপডেট হয়ে যাবে!
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // যদি ইন্টারনেট না থাকে (অফলাইন থাকেন), তখন ক্যাশ থেকে ফাইল দেখাবে
+        return caches.match(event.request).then(cachedResponse => {
+          return cachedResponse || caches.match('./index.html');
+        });
+      })
   );
 });
