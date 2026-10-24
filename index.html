@@ -351,9 +351,11 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
 <div id="toast" class="hidden"></div>
 
+<!-- সঠিক সিরিয়ালে সবকটি ব্যাচ ফাইল যুক্ত করা হয়েছে -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="batch3.js"></script>
 <script src="batch4.js"></script>
+<script src="batch5.js"></script>
 <script src="batch6.js"></script>
 
 <script>
@@ -428,7 +430,7 @@ function applyLang() {
   document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
   document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
-  if (currentUser) { renderProfile(); if (currentTab === 'prompt') loadPrompt(); if (currentTab === 'home') loadFeed(); }
+  if (currentUser) { renderProfile(); if (currentTab === 'prompt') loadPrompt(); if (currentTab === 'home' && typeof loadFeed === 'function') loadFeed(); }
 }
 function setLang(code) {
   lang = code;
@@ -441,7 +443,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let toastTimer;
 function toast(msg) {
-  const el = $('toast'); el.textContent = msg; el.classList.remove('hidden');
+  const el = $('toast'); if(!el) return;
+  el.textContent = msg; el.classList.remove('hidden');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('hidden'), 2200);
 }
 
@@ -456,46 +459,50 @@ let currentTab = 'home';
 
 function setMode(m) {
   mode = m;
-  $('mode-login').classList.toggle('on', m === 'login');
-  $('mode-signup').classList.toggle('on', m === 'signup');
-  $('name-field').classList.toggle('hidden', m !== 'signup');
-  $('auth-submit').textContent = t(m === 'login' ? 'login' : 'signup');
-  $('password').autocomplete = m === 'login' ? 'current-password' : 'new-password';
-  $('auth-msg').textContent = '';
+  if($('mode-login')) $('mode-login').classList.toggle('on', m === 'login');
+  if($('mode-signup')) $('mode-signup').classList.toggle('on', m === 'signup');
+  if($('name-field')) $('name-field').classList.toggle('hidden', m !== 'signup');
+  if($('auth-submit')) $('auth-submit').textContent = t(m === 'login' ? 'login' : 'signup');
+  if($('password')) $('password').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+  if($('auth-msg')) $('auth-msg').textContent = '';
   renderLangButtons();
 }
-$('mode-login').onclick = () => setMode('login');
-$('mode-signup').onclick = () => setMode('signup');
+if($('mode-login')) $('mode-login').onclick = () => setMode('login');
+if($('mode-signup')) $('mode-signup').onclick = () => setMode('signup');
 
-$('auth-form').onsubmit = async e => {
-  e.preventDefault();
-  const email = $('email').value.trim(), password = $('password').value, msg = $('auth-msg');
-  msg.className = 'msg'; msg.textContent = '';
-  $('auth-submit').disabled = true;
-  try {
-    if (mode === 'signup') {
-      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name: $('name').value.trim() || t('user') } } });
-      if (error) throw error;
-      if (!data.session) { msg.className = 'msg ok'; msg.textContent = t('check_email'); }
-    } else {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+if($('auth-form')) {
+  $('auth-form').onsubmit = async e => {
+    e.preventDefault();
+    const email = $('email').value.trim(), password = $('password').value, msg = $('auth-msg');
+    msg.className = 'msg'; msg.textContent = '';
+    $('auth-submit').disabled = true;
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name: $('name').value.trim() || t('user') } } });
+        if (error) throw error;
+        if (!data.session) { msg.className = 'msg ok'; msg.textContent = t('check_email'); }
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      }
+    } catch (err) {
+      msg.textContent = err.message || String(err);
+    } finally {
+      $('auth-submit').disabled = false;
     }
-  } catch (err) {
-    msg.textContent = err.message || String(err);
-  } finally {
-    $('auth-submit').disabled = false;
-  }
-};
+  };
+}
 
 async function onSession(session) {
   currentUser = session ? session.user : null;
   if (!currentUser) {
     currentProfile = null;
-    $('app').classList.add('hidden'); $('auth').classList.remove('hidden');
+    if($('app')) $('app').classList.add('hidden'); 
+    if($('auth')) $('auth').classList.remove('hidden');
     setMode(mode); return;
   }
-  $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
+  if($('auth')) $('auth').classList.add('hidden'); 
+  if($('app')) $('app').classList.remove('hidden');
   await loadProfile();
   showTab('home');
 }
@@ -503,20 +510,21 @@ sb.auth.onAuthStateChange((_evt, session) => { setTimeout(() => onSession(sessio
 sb.auth.getSession().then(({ data }) => onSession(data ? data.session : null));
 
 async function loadProfile() {
+  if(!currentUser) return;
   const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
   currentProfile = data;
   renderProfile();
-  loadUserMyPostsAndPhotos(currentUser.id);
+  if(typeof loadUserMyPostsAndPhotos === 'function') loadUserMyPostsAndPhotos(currentUser.id);
 }
 
 function renderProfile() {
   if (!currentUser) return;
   const p = currentProfile || {};
   const name = p.display_name || t('user');
-  $('p-name').textContent = name;
-  $('p-username').textContent = p.username ? '@' + p.username : '';
-  $('p-country').innerHTML = p.country ? '<span class="tag">' + esc(p.country) + '</span>' : '';
-  $('p-bio').textContent = p.bio || '';
+  if($('p-name')) $('p-name').textContent = name;
+  if($('p-username')) $('p-username').textContent = p.username ? '@' + p.username : '';
+  if($('p-country')) $('p-country').innerHTML = p.country ? '<span class="tag">' + esc(p.country) + '</span>' : '';
+  if($('p-bio')) $('p-bio').textContent = p.bio || '';
   
   if ($('p-edu')) $('p-edu').textContent = p.education || t('not_added');
   if ($('p-rel')) $('p-rel').textContent = p.marital_status || t('not_added');
@@ -525,8 +533,10 @@ function renderProfile() {
   if ($('p-city')) $('p-city').textContent = p.city || t('not_added');
 
   const av = $('p-avatar');
-  if (p.avatar_url) { av.innerHTML = '<img alt="" src="' + esc(p.avatar_url) + '">'; }
-  else { av.textContent = name.trim().charAt(0).toUpperCase() || 'T'; }
+  if (av) {
+    if (p.avatar_url) { av.innerHTML = '<img alt="" src="' + esc(p.avatar_url) + '">'; }
+    else { av.textContent = name.trim().charAt(0).toUpperCase() || 'T'; }
+  }
 
   if ($('p-cover-img')) {
     if (p.cover_url) {
@@ -538,7 +548,7 @@ function renderProfile() {
   }
 }
 
-// --- FULL SETTINGS MODAL (PERSONAL INFO & PRIVACY) ---
+// --- FULL SETTINGS MODAL ---
 window.openSettingsModal = function() {
   let modal = document.getElementById('settings-modal');
   if (!modal) {
@@ -710,7 +720,7 @@ window.toggleLike = async function(postId, emoji = '❤️') {
   }
 
   toast('রিঅ্যাকশন সেভ হয়েছে!');
-  loadFeed(false);
+  if(typeof loadFeed === 'function') loadFeed(false);
 };
 
 function cardHtml(p) {
@@ -746,10 +756,11 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
   if (name === 'prompt') loadPrompt();
-  if (name === 'home') loadFeed();
+  if (name === 'home' && typeof loadFeed === 'function') loadFeed();
   if (name === 'groups' && typeof window.loadGroupRooms === 'function') window.loadGroupRooms();
-  if (name === 'profile') { renderProfile(); loadUserMyPostsAndPhotos(currentUser.id); }
-  document.querySelector('main').scrollTop = 0;
+  if (name === 'profile') { renderProfile(); if(typeof loadUserMyPostsAndPhotos === 'function') loadUserMyPostsAndPhotos(currentUser.id); }
+  const mainEl = document.querySelector('main');
+  if(mainEl) mainEl.scrollTop = 0;
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = (e) => { e.preventDefault(); showTab(b.dataset.tab); });
 
@@ -758,7 +769,7 @@ function todayISO() {
   return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 }
 async function loadPrompt() {
-  const el = $('prompt-text');
+  const el = $('prompt-text'); if(!el) return;
   const { data } = await sb.from('daily_prompts').select('*').eq('prompt_date', todayISO()).maybeSingle();
   if (!data) { el.textContent = t('no_prompt'); return; }
   const field = { bn: 'text_bn', en: 'text_en', ar: 'text_ar' }[lang];
@@ -786,33 +797,11 @@ function populateFilterDropdowns() {
   }
 }
 
-$('feed-cat-select').onchange = () => loadFeed();
-$('feed-country-select').onchange = () => loadFeed();
+if($('feed-cat-select')) $('feed-cat-select').onchange = () => { if(typeof loadFeed === 'function') loadFeed(); };
+if($('feed-country-select')) $('feed-country-select').onchange = () => { if(typeof loadFeed === 'function') loadFeed(); };
 
 let feedPage = 0; const PAGE = 10;
 const playSvg = '<path d="M7 4l13 8-13 8z"/>', pauseSvg = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
-
-async function loadFeed(more) {
-  await loadCats();
-  const box = $('feed-list');
-  if (!more) { feedPage = 0; box.innerHTML = '<div class="empty">' + esc(t('loading')) + '</div>'; }
-  
-  const feedCat = $('feed-cat-select')?.value || '';
-  const feedCountry = $('feed-country-select')?.value || '';
-
-  let q = sb.from('voice_feed').select('*').order('created_at', { ascending: false }).range(feedPage * PAGE, feedPage * PAGE + PAGE - 1);
-  if (feedCat) q = q.eq('category_id', Number(feedCat));
-  if (feedCountry) q = q.eq('country', feedCountry);
-
-  const { data, error } = await q;
-  const old = $('feed-more'); if (old) old.remove();
-  if (error) { box.innerHTML = '<div class="empty">' + esc(error.message) + '</div>'; return; }
-  if (!data.length && !more) { box.innerHTML = '<div class="empty"><div class="big">🎙️</div>' + esc(t('feed_empty')) + '</div>'; return; }
-  
-  if (!more) box.innerHTML = '';
-  box.insertAdjacentHTML('beforeend', data.map(cardHtml).join(''));
-  if (data.length === PAGE) box.insertAdjacentHTML('beforeend', '<button class="btn ghost sm" id="feed-more">' + esc(t('more')) + '</button>');
-}
 
 function timeAgo(dateString) {
   if (!dateString) return t('time_just_now');
@@ -833,43 +822,51 @@ function stopIcon() { if (activeIcon) activeIcon.querySelector('svg').innerHTML 
 audio.ontimeupdate = () => { if (activeBar && audio.duration) activeBar.style.width = (audio.currentTime / audio.duration * 100) + '%'; };
 audio.onended = () => { stopIcon(); if (activeBar) activeBar.style.width = '0'; };
 
-$('feed-list').onclick = async e => {
-  if (e.target.closest('#feed-more')) { feedPage++; loadFeed(true); return; }
+const feedListEl = $('feed-list');
+if(feedListEl) {
+  feedListEl.onclick = async e => {
+    if (e.target.closest('#feed-more')) { feedPage++; if(typeof loadFeed === 'function') loadFeed(true); return; }
 
-  const pl = e.target.closest('[data-play]');
-  if (pl) {
-    if (activeIcon === pl && !audio.paused) { audio.pause(); stopIcon(); return; }
-    if (activeIcon !== pl) { stopIcon(); if (activeBar) activeBar.style.width = '0'; activeIcon = pl; activeBar = pl.parentNode.querySelector('.wave b'); audio.src = pl.dataset.play; }
-    audio.play().then(() => { pl.querySelector('svg').innerHTML = pauseSvg; }).catch(() => toast('Audio play error'));
-    return;
-  }
+    const pl = e.target.closest('[data-play]');
+    if (pl) {
+      if (activeIcon === pl && !audio.paused) { audio.pause(); stopIcon(); return; }
+      if (activeIcon !== pl) { stopIcon(); if (activeBar) activeBar.style.width = '0'; activeIcon = pl; activeBar = pl.parentNode.querySelector('.wave b'); audio.src = pl.dataset.play; }
+      audio.play().then(() => { pl.querySelector('svg').innerHTML = pauseSvg; }).catch(() => toast('Audio play error'));
+      return;
+    }
 
-  const lk = e.target.closest('[data-like]');
-  if (lk) {
-    window.toggleLike(lk.dataset.like);
-    return;
-  }
-  
-  const cm = e.target.closest('[data-cm]');
-  if (cm) openComments(cm.dataset.cm, cm.querySelector('span'));
-};
+    const lk = e.target.closest('[data-like]');
+    if (lk) {
+      window.toggleLike(lk.dataset.like);
+      return;
+    }
+    
+    const cm = e.target.closest('[data-cm]');
+    if (cm) openComments(cm.dataset.cm, cm.querySelector('span'));
+  };
+}
 
 let cmPost = null, cmSpan = null;
 async function loadComments() {
   const { data, error } = await sb.from('comment_feed').select('*').eq('voice_post_id', cmPost).order('created_at', { ascending: true }).limit(50);
-  $('cm-list').innerHTML = error ? esc(error.message) : (data.length ? data.map(c => '<div class="cm" style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;"><div class="uav">' + (c.avatar_url ? `<img src="${esc(c.avatar_url)}">` : esc((c.display_name || 'U').charAt(0))) + '</div><div><b>' + esc(c.display_name || t('user')) + '</b><div>' + esc(c.body || '') + '</div></div></div>').join('') : '<div class="muted">' + esc(t('none_yet')) + '</div>');
+  const cmList = $('cm-list');
+  if(cmList) {
+    cmList.innerHTML = error ? esc(error.message) : (data && data.length ? data.map(c => '<div class="cm" style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;"><div class="uav">' + (c.avatar_url ? `<img src="${esc(c.avatar_url)}">` : esc((c.display_name || 'U').charAt(0))) + '</div><div><b>' + esc(c.display_name || t('user')) + '</b><div>' + esc(c.body || '') + '</div></div></div>').join('') : '<div class="muted">' + esc(t('none_yet')) + '</div>');
+  }
 }
-function openComments(id, span) { cmPost = id; cmSpan = span; $('cm-list').innerHTML = ''; $('cm-sheet').classList.remove('hidden'); loadComments(); }
-$('cm-close').onclick = () => $('cm-sheet').classList.add('hidden');
+function openComments(id, span) { cmPost = id; cmSpan = span; const cl = $('cm-list'); if(cl) cl.innerHTML = ''; const cs = $('cm-sheet'); if(cs) cs.classList.remove('hidden'); loadComments(); }
+if($('cm-close')) $('cm-close').onclick = () => { const cs = $('cm-sheet'); if(cs) cs.classList.add('hidden'); };
 
-$('cm-form').onsubmit = async e => {
-  e.preventDefault();
-  const body = $('cm-in').value.trim(); if (!body) return;
-  const { error } = await sb.from('comments').insert({ user_id: currentUser.id, voice_post_id: cmPost, body });
-  if (error) { toast(error.message); return; }
-  $('cm-in').value = ''; if (cmSpan) cmSpan.textContent = Number(cmSpan.textContent) + 1;
-  loadComments();
-};
+if($('cm-form')) {
+  $('cm-form').onsubmit = async e => {
+    e.preventDefault();
+    const body = $('cm-in').value.trim(); if (!body) return;
+    const { error } = await sb.from('comments').insert({ user_id: currentUser.id, voice_post_id: cmPost, body });
+    if (error) { toast(error.message); return; }
+    $('cm-in').value = ''; if (cmSpan) cmSpan.textContent = Number(cmSpan.textContent) + 1;
+    loadComments();
+  };
+}
 
 function logout() {
   sb.auth.signOut().then(() => {
@@ -883,5 +880,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
+<!-- মোবাইল কনসোল দেখার জন্য Eruda স্ক্রিপ্ট -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </body>
 </html>
