@@ -1,4 +1,4 @@
-// Group rooms list + create (live audio, hand raise and co-host are not built yet)
+// Group rooms list + create + join logic
 window.openCreateGroupRoomModal = function() {
   let modal = document.createElement('div');
   modal.id = 'group-modal';
@@ -23,8 +23,12 @@ window.openCreateGroupRoomModal = function() {
     const name = document.getElementById('group-room-name').value.trim();
     if (!name) { toast('Enter room name'); return; }
     try {
-      const { error } = await sb.from('group_rooms').insert({ name, creator_id: currentUser.id });
+      const { data, error } = await sb.from('group_rooms').insert({ name, creator_id: currentUser.id }).select().single();
       if (error) throw error;
+      
+      // Auto creator ke group_members e add korar jonno
+      await sb.from('group_members').insert({ group_id: data.id, user_id: currentUser.id });
+
       toast(t('g_success'));
       modal.remove();
       if (typeof loadGroupRooms === 'function') loadGroupRooms();
@@ -32,6 +36,19 @@ window.openCreateGroupRoomModal = function() {
       toast('Error: ' + err.message);
     }
   };
+};
+
+window.joinGroupRoom = async function(roomId) {
+  if (!currentUser) return toast(t('login'));
+  try {
+    const { error } = await sb.from('group_members').insert({ group_id: roomId, user_id: currentUser.id });
+    if (error && error.code !== '23505') {
+      throw error;
+    }
+    toast(t('room_joined'));
+  } catch (err) {
+    toast('Error: ' + err.message);
+  }
 };
 
 window.loadGroupRooms = async function() {
@@ -51,8 +68,7 @@ window.loadGroupRooms = async function() {
         <div style="font-weight:600; font-size:16px; color:var(--text);">${esc(room.name)}</div>
         <div class="muted" style="font-size:12px;">${t('member_limit')}</div>
       </div>
-      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="toast('${t('room_joined')}')">${t('g_join')}</button>
+      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="joinGroupRoom('${room.id}')">${t('g_join')}</button>
     </div>
   `).join('');
 };
-
