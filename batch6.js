@@ -1,122 +1,138 @@
-/* Talkia Batch 6 — Ultimate Production-Ready Version */
+/* Talkia Batch 6 — Home Feed, Filtering, Pagination & Profile Visitors (Optimized) */
 (function () {
   'use strict';
 
-  // 1) Tab State Management & Persistence on Refresh
-  try {
-    if (!localStorage.getItem('talkia_tab')) {
-      window.currentTab = 'home';
-      localStorage.setItem('talkia_tab', 'home');
-    } else {
-      window.currentTab = localStorage.getItem('talkia_tab');
+  let feedPage = 0;
+  const PAGE_SIZE = 10;
+
+  // 1) Load Home Feed with Filters & Pagination
+  window.loadFeed = async function (append = false) {
+    if (typeof sb === 'undefined') return;
+    const feedList = document.getElementById('feed-list');
+    if (!feedList) return;
+
+    if (!append) {
+      feedPage = 0;
+      feedList.innerHTML = '<div class="muted" style="text-align:center; padding:30px;">Loading feed...</div>';
     }
-  } catch (_) {}
 
-  // Hook into showTab to continuously sync active tab with localStorage for smooth refresh
-  if (typeof window.showTab !== 'undefined' || typeof showTab !== 'undefined') {
-    const targetShowTab = window.showTab || showTab;
-    window.showTab = function (tabName) {
-      if (typeof targetShowTab === 'function') {
-        targetShowTab.apply(this, arguments);
-      }
-      try {
-        window.currentTab = tabName;
-        localStorage.setItem('talkia_tab', tabName);
-      } catch (_) {}
-    };
-  }
-
-  // 2) Robust RenderProfile Fix (Bulletproof against script loading order & return safety)
-  let _originalRenderProfile = window.renderProfile;
-  Object.defineProperty(window, 'renderProfile', {
-    get: function() {
-      return function() {
-        let result;
-        if (typeof _originalRenderProfile === 'function') {
-          result = _originalRenderProfile.apply(this, arguments);
-        }
-        const relationship = document.getElementById('p-rel');
-        if (relationship) {
-          const profile = typeof currentProfile !== 'undefined' && currentProfile ? currentProfile : {};
-          const missing = typeof t === 'function' ? t('not_added') : 'Not added yet';
-          relationship.textContent = profile.marital_status || missing;
-        }
-        return result;
-      };
-    },
-    set: function(fn) {
-      _originalRenderProfile = fn;
-    },
-    configurable: true
-  });
-
-  // 3) Move Profile Actions above tabs safely
-  function moveProfileActions() {
-    const edit = document.getElementById('btn-edit');
-    const friends = document.getElementById('btn-people');
-    const tabs = document.querySelector('.profile-tabs');
-    if (!edit || !friends || !tabs || !tabs.parentNode) return;
-
-    let actions = document.getElementById('profile-action-buttons');
-    if (!actions) {
-      actions = document.createElement('div');
-      actions.id = 'profile-action-buttons';
-      actions.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;';
-    }
-    actions.append(edit, friends);
-    tabs.parentNode.insertBefore(actions, tabs);
-  }
-
-  // 4) Safe Edit Post Logic
-  window.editPost = async function (postId) {
-    if (!postId || typeof sb === 'undefined' || typeof currentUser === 'undefined' || !currentUser) {
-      if (typeof toast === 'function') toast('Please sign in first');
-      return;
-    }
     try {
-      const result = await sb.from('voice_posts')
-        .select('caption,user_id')
-        .eq('id', postId)
-        .maybeSingle();
-      if (result.error) throw result.error;
-      if (!result.data) throw new Error('Post not found');
-      if (result.data.user_id !== currentUser.id) throw new Error('You can only edit your own post');
+      const catId = document.getElementById('feed-cat-select')?.value;
+      const countryVal = document.getElementById('feed-country-select')?.value;
 
-      const updated = prompt('Edit your post text/caption:', result.data.caption || '');
-      if (updated === null) return;
-      const { error } = await sb.from('voice_posts')
-        .update({ caption: updated })
-        .eq('id', postId)
-        .eq('user_id', currentUser.id);
+      let query = sb.from('voice_posts')
+        .select('*, profiles(display_name, avatar_url)')
+        .order('created_at', { ascending: false })
+        .range(feedPage * PAGE_SIZE, (feedPage + 1) * PAGE_SIZE - 1);
+
+      if (catId) query = query.eq('category_id', Number(catId));
+      if (countryVal) query = query.eq('country', countryVal);
+
+      const { data, error } = await query;
       if (error) throw error;
 
-      if (typeof toast === 'function') toast('Post updated successfully!');
-      if (typeof loadFeed === 'function') await loadFeed();
-      if (typeof currentTab !== 'undefined' && currentTab === 'profile' &&
-          typeof loadUserMyPostsAndPhotos === 'function') {
-        await loadUserMyPostsAndPhotos(currentUser.id);
+      if (!data || data.length === 0) {
+        if (!append) {
+          feedList.innerHTML = `<div class="empty"><div class="big">🎙️</div>${typeof t === 'function' ? t('feed_empty') : 'No posts yet.'}</div>`;
+        }
+        return;
       }
-    } catch (error) {
-      console.error('[Talkia] editPost failed:', error);
-      if (typeof toast === 'function') toast(error.message || 'Failed to update post');
+
+      let html = '';
+      data.forEach(p => {
+        const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles;
+        p.display_name = prof?.display_name;
+        p.avatar_url = prof?.avatar_url;
+        html += (typeof cardHtml === 'function' ? cardHtml(p) : '');
+      });
+
+      if (append) {
+        const moreBtn = document.getElementById('feed-more');
+        if (moreBtn) moreBtn.remove();
+        feedList.insertAdjacentHTML('beforeend', html);
+      } else {
+        feedList.innerHTML = html;
+      }
+
+      if (data.length === PAGE_SIZE) {
+        feedList.insertAdjacentHTML('beforeend', `<div style="padding:16px; text-align:center;"><button id="feed-more" class="btn ghost" style="width:auto; padding:8px 20px; font-size:13px;" onclick="feedPage++; loadFeed(true);">Load More</button></div>`);
+      }
+
+    } catch (err) {
+      console.error('[Talkia] Load feed error:', err);
+      if (!append) feedList.innerHTML = '<div class="empty">Failed to load feed</div>';
     }
   };
 
-  // 5) Safe Global Profile Click Delegator
-  document.addEventListener('click', function (event) {
-    const target = event.target && event.target.closest ? event.target.closest('[data-profile-id]') : null;
-    if (!target) return;
-    const userId = target.dataset.profileId;
-    if (!userId || typeof window.openUserProfileModal !== 'function') return;
-    
-    event.preventDefault();
-    event.stopPropagation();
-    window.openUserProfileModal(userId);
-  }, false);
+  // 2) Profile Visitors Modal Logic
+  const btnVisitors = document.getElementById('btn-visitors');
+  if (btnVisitors) {
+    btnVisitors.onclick = async () => {
+      if (!currentUser) return toast('Please login');
+      let vModal = document.getElementById('visitors-modal');
+      if (!vModal) {
+        vModal = document.createElement('div');
+        vModal.id = 'visitors-modal';
+        vModal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1400; display:flex; align-items:center; justify-content:center; padding:16px;';
+        document.body.appendChild(vModal);
+      }
+      vModal.classList.remove('hidden');
+      vModal.innerHTML = `
+        <div style="max-width:400px; width:100%; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px;" onclick="event.stopPropagation()">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="margin:0; font-size:16px;">Profile Visitors</h3>
+            <button onclick="document.getElementById('visitors-modal').classList.add('hidden')" style="background:none; border:0; color:var(--muted); font-size:18px; cursor:pointer;">✕</button>
+          </div>
+          <div id="visitors-list" style="max-height:250px; overflow-y:auto;">Loading visitors...</div>
+        </div>
+      `;
+      vModal.onclick = () => vModal.classList.add('hidden');
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', moveProfileActions, { once: true });
-  } else {
-    moveProfileActions();
+      try {
+        const { data: visitors, error } = await sb.from('profile_visitors')
+          .select('visited_at, profiles(display_name, avatar_url, username)')
+          .eq('profile_id', currentUser.id)
+          .order('visited_at', { ascending: false })
+          .limit(30);
+
+        const vList = document.getElementById('visitors-list');
+        if (vList) {
+          if (error || !visitors || visitors.length === 0) {
+            vList.innerHTML = '<div class="muted" style="font-size:12px;">No visitors today.</div>';
+          } else {
+            vList.innerHTML = visitors.map(v => {
+              const prof = Array.isArray(v.profiles) ? v.profiles[0] : v.profiles;
+              return `
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="uav">${prof?.avatar_url ? `<img src="${esc(prof.avatar_url)}">` : esc((prof?.display_name || 'U').charAt(0))}</div>
+                    <div>
+                      <div style="font-size:13px; font-weight:600;">${esc(prof?.display_name || 'User')}</div>
+                      <div class="muted" style="font-size:11px;">@${esc(prof?.username || '')}</div>
+                    </div>
+                  </div>
+                  <span class="muted" style="font-size:11px;">${new Date(v.visited_at).toLocaleDateString()}</span>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      } catch (e) {
+        console.error('[Talkia] Visitors error:', e);
+        const vList = document.getElementById('visitors-list');
+        if (vList) vList.innerHTML = '<div class="muted" style="font-size:12px;">No visitors yet.</div>';
+      }
+    };
   }
+
+  // Initial load triggers
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof loadCats === 'function') loadCats();
+    if (typeof loadFeed === 'function') loadFeed();
+  });
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
 })();
