@@ -53,6 +53,31 @@ window.joinGroupRoom = async function(roomId, roomName) {
     toast('Error: ' + err.message);
   }
 };
+function openActiveGroupRoom(roomId, roomName) {
+  let existingRoom = document.getElementById('active-room-modal');
+  if (existingRoom) existingRoom.remove();
+
+  let roomModal = document.createElement('div');
+  roomModal.id = 'active-room-modal';
+  roomModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1200; display:flex; flex-direction:column; padding:20px;';
+  roomModal.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; color:#fff; font-size:20px;">🎙️ ${esc(roomName)}</h2>
+      <button id="leave-room-btn" style="background:#e74c3c; color:#fff; border:0; padding:8px 16px; border-radius:10px; cursor:pointer; font-weight:600;">Leave Room</button>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+      <div style="font-size:60px; margin-bottom:20px;">🎧</div>
+      <p style="color:#8b97b3; font-size:16px;">You are in the live voice room.</p>
+      <p style="color:#fff; font-size:14px; margin-top:5px;">(Live audio & speaking features coming soon)</p>
+    </div>
+  `;
+  document.body.appendChild(roomModal);
+
+  document.getElementById('leave-room-btn').onclick = () => {
+    roomModal.remove();
+    if (typeof loadGroupRooms === 'function') loadGroupRooms();
+  };
+}
 
 window.loadGroupRooms = async function() {
   const list = document.getElementById('group-rooms-list');
