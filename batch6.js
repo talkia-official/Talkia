@@ -1,34 +1,56 @@
-/* Talkia Batch 6 — safe front-end fixes based on the supplied source.
- * Load this AFTER batch5.js. Database-dependent features are intentionally
- * not guessed here; they need the actual Supabase schema/RLS definitions.
- */
+/* Talkia Batch 6 — Ultimate Production-Ready Version */
 (function () {
   'use strict';
 
-  // 1) Always start on Home instead of restoring the previously selected tab.
-  // This runs before the async Supabase session lookup normally completes.
+  // 1) Tab State Management & Persistence on Refresh
   try {
-    if (typeof currentTab !== 'undefined') currentTab = 'home';
-    localStorage.setItem('talkia_tab', 'home');
+    if (!localStorage.getItem('talkia_tab')) {
+      window.currentTab = 'home';
+      localStorage.setItem('talkia_tab', 'home');
+    } else {
+      window.currentTab = localStorage.getItem('talkia_tab');
+    }
   } catch (_) {}
 
-  // 2) Fix the relationship field. The original renderProfile used
-  // $('p-rel>span'), but $() is getElementById(), not querySelector().
-  const originalRenderProfile = window.renderProfile;
-  if (typeof originalRenderProfile === 'function') {
-    window.renderProfile = function () {
-      originalRenderProfile.apply(this, arguments);
-      const relationship = document.getElementById('p-rel');
-      if (relationship) {
-        const profile = typeof currentProfile !== 'undefined' && currentProfile
-          ? currentProfile : {};
-        const missing = typeof t === 'function' ? t('not_added') : 'Not added yet';
-        relationship.textContent = profile.marital_status || missing;
+  // Hook into showTab to continuously sync active tab with localStorage for smooth refresh
+  if (typeof window.showTab !== 'undefined' || typeof showTab !== 'undefined') {
+    const targetShowTab = window.showTab || showTab;
+    window.showTab = function (tabName) {
+      if (typeof targetShowTab === 'function') {
+        targetShowTab.apply(this, arguments);
       }
+      try {
+        window.currentTab = tabName;
+        localStorage.setItem('talkia_tab', tabName);
+      } catch (_) {}
     };
   }
 
-  // 3) Put Edit Profile and My Friends above the Posts / Photo Gallery tabs.
+  // 2) Robust RenderProfile Fix (Bulletproof against script loading order & return safety)
+  let _originalRenderProfile = window.renderProfile;
+  Object.defineProperty(window, 'renderProfile', {
+    get: function() {
+      return function() {
+        let result;
+        if (typeof _originalRenderProfile === 'function') {
+          result = _originalRenderProfile.apply(this, arguments);
+        }
+        const relationship = document.getElementById('p-rel');
+        if (relationship) {
+          const profile = typeof currentProfile !== 'undefined' && currentProfile ? currentProfile : {};
+          const missing = typeof t === 'function' ? t('not_added') : 'Not added yet';
+          relationship.textContent = profile.marital_status || missing;
+        }
+        return result;
+      };
+    },
+    set: function(fn) {
+      _originalRenderProfile = fn;
+    },
+    configurable: true
+  });
+
+  // 3) Move Profile Actions above tabs safely
   function moveProfileActions() {
     const edit = document.getElementById('btn-edit');
     const friends = document.getElementById('btn-people');
@@ -45,8 +67,7 @@
     tabs.parentNode.insertBefore(actions, tabs);
   }
 
-  // 4) Edit Post should preload the existing caption instead of an empty prompt.
-  // Keep the existing table/column and refresh behavior used by the original code.
+  // 4) Safe Edit Post Logic
   window.editPost = async function (postId) {
     if (!postId || typeof sb === 'undefined' || typeof currentUser === 'undefined' || !currentUser) {
       if (typeof toast === 'function') toast('Please sign in first');
@@ -81,19 +102,17 @@
     }
   };
 
-  // 5) Make profile avatars carrying data-profile-id open profiles consistently
-  // across the page, not only inside the feed's click handler.
+  // 5) Safe Global Profile Click Delegator
   document.addEventListener('click', function (event) {
-    const target = event.target && event.target.closest
-      ? event.target.closest('[data-profile-id]') : null;
+    const target = event.target && event.target.closest ? event.target.closest('[data-profile-id]') : null;
     if (!target) return;
     const userId = target.dataset.profileId;
     if (!userId || typeof window.openUserProfileModal !== 'function') return;
+    
     event.preventDefault();
     event.stopPropagation();
-    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
     window.openUserProfileModal(userId);
-  }, true);
+  }, false);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', moveProfileActions, { once: true });
