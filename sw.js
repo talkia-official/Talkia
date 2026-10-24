@@ -1,34 +1,41 @@
-const CACHE = 'talkia-v28';
-// Relative paths: works under /Talkia/ on GitHub Pages. Missing files never break install.
-const SHELL = ['./', 'index.html', 'batch3.js', 'batch4.js', 'batch5.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo-wordmark.png'];
+const CACHE = 'talkia-v29';
+// Relative paths support deployment under /Talkia/ on GitHub Pages.
+const SHELL = [
+  './', 'index.html', 'batch3.js', 'batch4.js', 'batch5.js', 'batch6.js',
+  'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo-wordmark.png'
+];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
+self.addEventListener('install', event => {
+  event.waitUntil(
     caches.open(CACHE)
-      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
+      .then(cache => Promise.all(SHELL.map(path => cache.add(path).catch(() => {}))))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
 
-// Network first for our own files (updates show up), cache only as offline fallback.
-// Supabase and other cross-origin requests are never touched.
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  e.respondWith(
-    fetch(req)
-      .then(res => {
-        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
-        return res;
-      })
-      .catch(() => caches.match(req).then(r => r || caches.match('index.html') || Response.error()))
+// Network-first for same-origin GET requests; use cache only as offline fallback.
+// Cross-origin services (including Supabase) are left untouched.
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  event.respondWith(
+    fetch(request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(request, copy)).catch(() => {});
+      }
+      return response;
+    }).catch(() =>
+      caches.match(request).then(cached => cached || caches.match('index.html') || Response.error())
+    )
   );
 });
