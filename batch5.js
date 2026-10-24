@@ -12,7 +12,9 @@
     if (!rows.length) return rows;
     const { data } = await sb.from('voice_posts').select('id,image_url').in('id', rows.map(p => p.id));
     const im = {}; (data || []).forEach(r => im[r.id] = r.image_url);
-    rows.forEach(p => { p.image_url = im[p.id] || null; if (p.is_mine && !p.user_id) p.user_id = currentUser.id; });
+    const lk = await sb.from('likes').select('voice_post_id,reaction').eq('user_id', currentUser.id).in('voice_post_id', rows.map(p => p.id));
+    const rx = {}; (lk.data || []).forEach(r => rx[r.voice_post_id] = r.reaction);
+    rows.forEach(p => { p.image_url = im[p.id] || null; p.my_reaction = rx[p.id] || null; if (p.is_mine && !p.user_id) p.user_id = currentUser.id; });
     return rows;
   }
 
@@ -39,7 +41,7 @@
   async function like(id, on, emoji) {
     const bar = $('react-bar-' + id); if (bar) bar.style.display = 'none';
     const btn = document.querySelector('[data-like="' + id + '"]'), sp = btn && btn.querySelector('span');
-    const r = on ? await sb.from('likes').insert({ user_id: currentUser.id, voice_post_id: id }) : await sb.from('likes').delete().eq('user_id', currentUser.id).eq('voice_post_id', id);
+    const r = on ? await sb.from('likes').insert({ user_id: currentUser.id, voice_post_id: id, reaction: emoji || '❤️' }) : await sb.from('likes').delete().eq('user_id', currentUser.id).eq('voice_post_id', id);
     if (r.error && !(on && r.error.code === '23505')) { toast(t('err') + r.error.message); return; }
     if (btn && sp) { const n = Math.max(0, Number(sp.textContent) + (on ? 1 : -1)); btn.classList.toggle('on', on); btn.innerHTML = (on ? (emoji || '❤️') : '♡') + ' <span>' + n + '</span>'; }
   }
@@ -72,7 +74,7 @@
 
   /* ---- বন্ধু তালিকা ---- */
   const sbtn = (a, k, attrs, ghost) => '<button class="btn' + (ghost ? ' ghost' : '') + '" data-fa="' + a + '" ' + attrs + ' style="width:auto;padding:6px 12px;font-size:13px;margin-inline-start:6px">' + esc(t(k)) + '</button>';
-  const prow = (p, btns) => '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">' + av(p) + '<div style="flex:1;min-width:0"><div>' + esc(p.display_name || t('user')) + '</div><div class="muted" style="font-size:12px">' + (p.username ? '@' + esc(p.username) : '') + '</div></div>' + btns + '</div>';
+  const prow = (p, btns) => '<div data-profile-id="' + esc(p.id) + '" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">' + av(p) + '<div style="flex:1;min-width:0"><div>' + esc(p.display_name || t('user')) + '</div><div class="muted" style="font-size:12px">' + (p.username ? '@' + esc(p.username) : '') + '</div></div>' + btns + '</div>';
   async function loadPeople() {
     const me = currentUser.id;
     const [a, b] = await Promise.all([sb.from('friendships').select('*').or('requester_id.eq.' + me + ',addressee_id.eq.' + me), sb.from('blocks').select('blocked_id').eq('blocker_id', me)]);
@@ -115,7 +117,7 @@
     const ids = [...new Set(data.map(n => n.actor_id).filter(Boolean))], pm = {};
     if (ids.length) ((await sb.from('profiles').select('id,display_name,avatar_url').in('id', ids)).data || []).forEach(p => pm[p.id] = p);
     const T = NT[lang] || NT.en;
-    box.innerHTML = data.map(n => { const p = pm[n.actor_id] || {}; return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)' + (n.read_at ? '' : ';background:rgba(47,107,255,.08)') + '">' + av(p) + '<div style="flex:1"><b>' + esc(p.display_name || t('user')) + '</b> ' + esc(T[n.type] || n.type) + '<div class="muted" style="font-size:12px">' + esc(timeAgo(n.created_at)) + '</div></div></div>'; }).join('');
+    box.innerHTML = data.map(n => { const p = pm[n.actor_id] || {}; return '<div data-profile-id="' + esc(n.actor_id || '') + '" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)' + (n.read_at ? '' : ';background:rgba(47,107,255,.08)') + '">' + av(p) + '<div style="flex:1"><b>' + esc(p.display_name || t('user')) + '</b> ' + esc(T[n.type] || n.type) + '<div class="muted" style="font-size:12px">' + esc(timeAgo(n.created_at)) + '</div></div></div>'; }).join('');
     sb.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', currentUser.id).is('read_at', null).then(() => {});
   };
 
