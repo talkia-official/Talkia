@@ -1,4 +1,4 @@
-const CACHE = 'talkia-v29';
+const CACHE = 'talkia-v30';
 // Relative paths support deployment under /Talkia/ on GitHub Pages.
 const SHELL = [
   './', 'index.html', 'batch3.js', 'batch4.js', 'batch5.js', 'batch6.js',
