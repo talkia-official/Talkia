@@ -218,6 +218,12 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
             <div><b data-i18n="lbl_city"></b> <span id="p-city"></span></div>
           </div>
 
+          <!-- বাটনগুলো এখন পোস্ট/ফটো ট্যাবের ঠিক উপরে সুন্দরভাবে থাকবে -->
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:14px;">
+            <button class="btn ghost" id="btn-edit" data-i18n="edit_profile" style="margin:0"></button>
+            <button class="btn ghost" id="btn-people" data-i18n="people" style="margin:0"></button>
+          </div>
+
           <div class="profile-tabs">
             <button type="button" class="profile-tab-btn on" id="ptab-posts-btn" data-i18n="posts_tab" onclick="switchProfileTab('posts')"></button>
             <button type="button" class="profile-tab-btn" id="ptab-photos-btn" data-i18n="photos_tab" onclick="switchProfileTab('photos')"></button>
@@ -225,11 +231,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
           <div id="profile-posts-area" style="margin-top:14px; text-align:left;"></div>
           <div id="profile-photos-area" class="hidden" style="margin-top:14px; display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;"></div>
-
-          <div style="display:flex; gap:8px; justify-content:center; margin-top:14px;">
-            <button class="btn ghost" id="btn-edit" data-i18n="edit_profile" style="margin:0"></button>
-            <button class="btn ghost" id="btn-people" data-i18n="people" style="margin:0"></button>
-          </div>
         </div>
       </div>
     </section>
@@ -373,7 +374,9 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="batch3.js"></script>
 <script src="batch4.js"></script>
-  
+<script src="batch6.js"></script>
+
+<script>
 const SUPABASE_URL = 'https://kqgteeykuflyawbtddyk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RO0xP9_bKNIc2ARIBqDmYA_nPVI-5y5';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -466,7 +469,7 @@ function renderLangButtons() {
 }
 
 let mode = 'login', currentUser = null, currentProfile = null;
-let currentTab = localStorage.getItem('talkia_tab') || 'home';
+let currentTab = 'home';
 
 function setMode(m) {
   mode = m;
@@ -511,7 +514,7 @@ async function onSession(session) {
   }
   $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
   await loadProfile();
-  showTab(currentTab);
+  showTab('home');
 }
 sb.auth.onAuthStateChange((_evt, session) => { setTimeout(() => onSession(session), 0); });
 sb.auth.getSession().then(({ data }) => onSession(data.session));
@@ -533,7 +536,7 @@ function renderProfile() {
   $('p-bio').textContent = p.bio || '';
   
   if ($('p-edu')) $('p-edu').textContent = p.education || t('not_added');
-  if ($('p-rel')) $('p-rel>span') ? $('p-rel>span').textContent = p.marital_status || t('not_added') : '';
+  if ($('p-rel')) $('p-rel').textContent = p.marital_status || t('not_added');
   if ($('p-relig')) $('p-relig').textContent = p.religion || t('not_added');
   if ($('p-hobby')) $('p-hobby').textContent = p.hobbies || t('not_added');
   if ($('p-city')) $('p-city').textContent = p.city || t('not_added');
@@ -767,7 +770,6 @@ $('edit-form').onsubmit = async e => {
 
 function showTab(name) {
   currentTab = name;
-  try { localStorage.setItem('talkia_tab', name); } catch(e) {}
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
   if (name === 'prompt') loadPrompt();
@@ -945,7 +947,6 @@ function timeAgo(dateString) {
 let feedPage = 0; const PAGE = 10;
 const playSvg = '<path d="M7 4l13 8-13 8z"/>', pauseSvg = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
 
-// --- ONLINE STATUS & LAST SEEN BADGE ---
 window.renderOnlineStatusBadge = function(userProfile) {
   if (!userProfile || userProfile.online_status_visible === false) return '';
   const lastSeen = userProfile.last_seen ? new Date(userProfile.last_seen).getTime() : 0;
@@ -956,7 +957,7 @@ window.renderOnlineStatusBadge = function(userProfile) {
   return '';
 };
 
-// --- SETTINGS & PERSONAL INFORMATION (PHONE NUMBER) ---
+// --- SETTINGS (কেবলমাত্র Personal Information দেখাবে) ---
 window.openSettingsModal = function() {
   let modal = document.getElementById('settings-modal');
   if (!modal) {
@@ -976,9 +977,6 @@ window.openSettingsModal = function() {
       <div style="display:flex; flex-direction:column; gap:10px;">
         <button class="btn ghost" style="justify-content:space-between; text-align:left; padding:12px;" onclick="openPersonalInformation()">
           <span>👤 Personal Information</span> <span>›</span>
-        </button>
-        <button class="btn ghost" style="justify-content:space-between; text-align:left; padding:12px;" onclick="openPrivacySettings()">
-          <span>🔒 Privacy Settings</span> <span>›</span>
         </button>
         <div style="padding:10px 0; border-top:1px solid var(--line); margin-top:10px;">
           <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:6px;">Language</label>
@@ -1014,10 +1012,6 @@ window.openPersonalInformation = async function() {
           <input type="text" id="pi-name" value="${esc(currentProfile?.display_name || '')}" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text);">
         </div>
         <div>
-          <label style="font-size:12px; color:var(--muted);">Username</label>
-          <input type="text" id="pi-username" value="${esc(currentProfile?.username || '')}" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text);">
-        </div>
-        <div>
           <label style="font-size:12px; color:var(--muted);">Phone Number</label>
           <input type="text" id="pi-phone" value="${esc(currentProfile?.phone || '')}" placeholder="Add your phone number" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text);">
         </div>
@@ -1029,16 +1023,14 @@ window.openPersonalInformation = async function() {
 
 window.savePersonalInformation = async function() {
   const name = document.getElementById('pi-name').value.trim();
-  const username = document.getElementById('pi-username').value.trim();
   const phone = document.getElementById('pi-phone').value.trim();
 
-  const { error } = await sb.from('profiles').update({ display_name: name, username: username, phone: phone }).eq('id', currentUser.id);
+  const { error } = await sb.from('profiles').update({ display_name: name, phone: phone }).eq('id', currentUser.id);
   if (error) {
     toast('Error updating profile');
   } else {
     if (currentProfile) {
       currentProfile.display_name = name;
-      currentProfile.username = username;
       currentProfile.phone = phone;
     }
     toast('Profile updated successfully!');
@@ -1047,194 +1039,6 @@ window.savePersonalInformation = async function() {
   }
 };
 
-// --- COMPREHENSIVE PRIVACY SETTINGS ---
-window.openPrivacySettings = async function() {
-  const modal = document.getElementById('settings-modal');
-  const { data: profile } = await sb.from('profiles').select('privacy_posts, privacy_comments, privacy_messages, privacy_friend_requests, online_status_visible').eq('id', currentUser.id).single();
-  const p = profile || {};
-
-  const { data: blockedList } = await sb.from('blocks').select('blocked_id, profiles:blocked_id(display_name, username)').eq('blocker_id', currentUser.id);
-
-  modal.innerHTML = `
-    <div style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px;" onclick="event.stopPropagation()">
-      <div style="display:flex; align-items:center; margin-bottom:20px; gap:10px;">
-        <button onclick="openSettingsModal()" style="background:none; border:0; color:var(--text); font-size:18px; cursor:pointer;">←</button>
-        <h3 style="margin:0; font-size:18px;">Privacy Settings</h3>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        <div>
-          <label style="font-size:12px; color:var(--muted);">Who can see your posts</label>
-          <select id="priv-posts" style="width:100%; padding:10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; margin-top:4px;">
-            <option value="public" ${p.privacy_posts === 'public' ? 'selected' : ''}>Public</option>
-            <option value="friends" ${p.privacy_posts === 'friends' ? 'selected' : ''}>Friends Only</option>
-            <option value="only_me" ${p.privacy_posts === 'only_me' ? 'selected' : ''}>Only Me</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px; color:var(--muted);">Who can comment on your posts</label>
-          <select id="priv-comments" style="width:100%; padding:10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; margin-top:4px;">
-            <option value="everyone" ${p.privacy_comments !== 'friends' ? 'selected' : ''}>Everyone</option>
-            <option value="friends" ${p.privacy_comments === 'friends' ? 'selected' : ''}>Friends Only</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px; color:var(--muted);">Who can message you</label>
-          <select id="priv-messages" style="width:100%; padding:10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; margin-top:4px;">
-            <option value="everyone" ${p.privacy_messages !== 'friends' && p.privacy_messages !== 'nobody' ? 'selected' : ''}>Everyone</option>
-            <option value="friends" ${p.privacy_messages === 'friends' ? 'selected' : ''}>Friends Only</option>
-            <option value="nobody" ${p.privacy_messages === 'nobody' ? 'selected' : ''}>Nobody</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px; color:var(--muted);">Who can send friend requests</label>
-          <select id="priv-fr" style="width:100%; padding:10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; margin-top:4px;">
-            <option value="everyone" ${p.privacy_friend_requests !== 'friends_of_friends' ? 'selected' : ''}>Everyone</option>
-            <option value="friends_of_friends" ${p.privacy_friend_requests === 'friends_of_friends' ? 'selected' : ''}>Friends of Friends</option>
-          </select>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:4px 0;">
-          <span style="font-size:14px;">Show Online Activity Status</span>
-          <input type="checkbox" id="priv-online" ${p.online_status_visible !== false ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--primary);">
-        </div>
-
-        <div style="border-top:1px solid var(--line); padding-top:14px; margin-top:6px;">
-          <label style="font-size:13px; font-weight:600; display:block; margin-bottom:8px;">Blocked Users</label>
-          <div id="blocked-users-container" style="display:flex; flex-direction:column; gap:8px; max-height:120px; overflow-y:auto;">
-            ${blockedList && blockedList.length > 0 ? blockedList.map(b => `
-              <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:8px 10px; border-radius:8px;">
-                <span style="font-size:13px;">${esc(b.profiles?.display_name || 'User')}</span>
-                <button class="btn ghost" style="padding:4px 8px; font-size:11px;" onclick="unblockUser('${b.blocked_id}')">Unblock</button>
-              </div>
-            `).join('') : '<div style="color:var(--muted); font-size:12px;">No blocked users</div>'}
-          </div>
-        </div>
-
-        <button class="btn" style="margin-top:10px;" onclick="savePrivacySettings()">Save Privacy Settings</button>
-      </div>
-    </div>
-  `;
-};
-
-window.savePrivacySettings = async function() {
-  const privacy_posts = document.getElementById('priv-posts').value;
-  const privacy_comments = document.getElementById('priv-comments').value;
-  const privacy_messages = document.getElementById('priv-messages').value;
-  const privacy_friend_requests = document.getElementById('priv-fr').value;
-  const online_status_visible = document.getElementById('priv-online').checked;
-
-  const { error } = await sb.from('profiles').update({
-    privacy_posts,
-    privacy_comments,
-    privacy_messages,
-    privacy_friend_requests,
-    online_status_visible
-  }).eq('id', currentUser.id);
-
-  if (error) {
-    toast('Error saving privacy settings');
-  } else {
-    toast('Privacy settings updated!');
-    openSettingsModal();
-  }
-};
-
-window.unblockUser = async function(blockedId) {
-  const { error } = await sb.from('blocks').delete().eq('blocker_id', currentUser.id).eq('blocked_id', blockedId);
-  if (error) toast('Error unblocking user');
-  else {
-    toast('User unblocked');
-    openPrivacySettings();
-  }
-};
-
-// --- OTHER USER PROFILE MODAL ---
-window.openUserProfileModal = async function(userId) {
-  if (currentUser && userId === currentUser.id) {
-    showTab('profile');
-    return;
-  }
-
-  let modal = document.getElementById('user-profile-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'user-profile-modal';
-    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1150; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; overflow-y:auto;';
-    document.body.appendChild(modal);
-  }
-  modal.classList.remove('hidden');
-  modal.innerHTML = `<div style="text-align:center; color:#8b97b3; margin-top:50px;">Loading...</div>`;
-
-  const { data: user, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
-  if (error || !user) {
-    modal.innerHTML = `<div style="text-align:center; color:var(--danger); margin-top:50px;">User not found</div><button class="btn ghost" onclick="document.getElementById('user-profile-modal').classList.add('hidden')" style="margin-top:20px;">Back</button>`;
-    return;
-  }
-
-  const { data: posts } = await sb.from('voice_posts').select('*, profiles:user_id(display_name, avatar_url, username, online_status_visible, last_seen)').eq('user_id', userId).order('created_at', { ascending: false });
-
-  modal.innerHTML = `
-    <div style="max-width:560px; width:100%; max-height:92vh; background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow-y:auto; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5);" onclick="event.stopPropagation()">
-      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--surface); z-index:10;">
-        <h3 style="margin:0; font-size:18px;">${esc(user.display_name)}</h3>
-        <button id="upm-close" style="color:var(--muted); font-size:20px; background:none; border:0; cursor:pointer;">✕</button>
-      </div>
-      <div style="padding:20px; text-align:center; overflow-y:auto;">
-        <div class="uav" style="width:80px !important; height:80px !important; margin:0 auto 12px; font-size:32px; display:flex; align-items:center; justify-content:center; background:var(--line); border-radius:50%; overflow:hidden; position:relative;">
-          ${user.avatar_url ? `<img src="${esc(user.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : esc((user.display_name || 'U').charAt(0))}
-          ${window.renderOnlineStatusBadge ? window.renderOnlineStatusBadge(user) : ''}
-        </div>
-        <h2 style="margin:0 0 4px; font-size:20px;">${esc(user.display_name)}</h2>
-        <div class="muted" style="margin-bottom:8px;">@${esc(user.username || '')}</div>
-        ${user.country ? `<span class="tag">${esc(user.country)}</span>` : ''}
-        <p style="margin:12px 0; color:var(--muted); font-size:14px;">${esc(user.bio || '')}</p>
-        
-        <div style="display:flex; gap:10px; margin:16px 0;">
-          <button class="btn" id="upm-add-friend" style="flex:1; font-size:14px; padding:10px;">Add Friend</button>
-          <button class="btn ghost" id="upm-inbox" style="flex:1; font-size:14px; padding:10px;">💬 Inbox</button>
-        </div>
-
-        <div class="ext-bio-box" style="text-align:left; background:var(--bg); padding:14px; border-radius:12px; font-size:13px; display:flex; flex-direction:column; gap:6px;">
-          <div><b>Education:</b> <span>${esc(user.education || 'Not added')}</span></div>
-          <div><b>Relationship:</b> <span>${esc(user.marital_status || 'Not added')}</span></div>
-          <div><b>Religion:</b> <span>${esc(user.religion || 'Not added')}</span></div>
-          <div><b>Hobbies:</b> <span>${esc(user.hobbies || 'Not added')}</span></div>
-          <div><b>Current City:</b> <span>${esc(user.city || 'Not added')}</span></div>
-        </div>
-
-        <div style="margin-top:20px; text-align:left;">
-          <h4 style="margin-bottom:10px;">Posts</h4>
-          <div id="upm-posts">
-            ${posts && posts.length > 0 ? posts.map(cardHtml).join('') : `<div class="muted" style="text-align:center; padding:20px;">No posts yet</div>`}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('upm-close').onclick = () => modal.classList.add('hidden');
-  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
-  
-  document.getElementById('upm-add-friend').onclick = async () => {
-    try {
-      const { error } = await sb.from('friendships').insert({ requester_id: currentUser.id, addressee_id: userId, status: 'pending' });
-      if (error) throw error;
-      toast('Friend request sent!');
-    } catch (err) {
-      toast('Request already sent or error occurred');
-    }
-  };
-
-  document.getElementById('upm-inbox').onclick = () => {
-    modal.classList.add('hidden');
-    if (typeof window.openDirectChat === 'function') {
-      window.openDirectChat(user);
-    } else {
-      toast('Opening inbox...');
-    }
-  };
-};
-
-// --- POST SETTINGS ICON (⚙️) MENU & EDIT/DELETE ---
 window.renderPostSettingsMenu = function(postId, postUserId) {
   if (!currentUser || currentUser.id !== postUserId) return '';
   return `
@@ -1263,19 +1067,6 @@ window.deletePost = async function(postId) {
     const postEl = document.getElementById(`post-${postId}`);
     if (postEl) postEl.remove();
     else { loadFeed(); if (currentTab === 'profile') loadUserMyPostsAndPhotos(currentUser.id); }
-  }
-};
-
-window.editPost = async function(postId) {
-  const newContent = prompt('Edit your post text/caption:');
-  if (newContent === null) return;
-  const { error } = await sb.from('voice_posts').update({ caption: newContent }).eq('id', postId);
-  if (error) {
-    toast('Failed to update post');
-  } else {
-    toast('Post updated successfully!');
-    loadFeed();
-    if (currentTab === 'profile') loadUserMyPostsAndPhotos(currentUser.id);
   }
 };
 
@@ -1339,16 +1130,6 @@ audio.onended = () => { stopIcon(); if (activeBar) activeBar.style.width = '0'; 
 $('feed-list').onclick = async e => {
   if (e.target.closest('#feed-more')) { feedPage++; loadFeed(true); return; }
 
-  const profTarget = e.target.closest('[data-profile-id]');
-  if (profTarget) {
-    e.preventDefault();
-    const targetUserId = profTarget.dataset.profileId;
-    if (typeof window.openUserProfileModal === 'function') {
-      window.openUserProfileModal(targetUserId);
-    }
-    return;
-  }
-
   const pl = e.target.closest('[data-play]');
   if (pl) {
     if (activeIcon === pl && !audio.paused) { audio.pause(); stopIcon(); return; }
@@ -1388,13 +1169,17 @@ $('cm-form').onsubmit = async e => {
   loadComments();
 };
 
+function logout() {
+  sb.auth.signOut().then(() => {
+    window.location.reload();
+  });
+}
+
 applyLang();
 setMode('login');
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
-  <script src="batch5.js"></script>
-   <script src="batch6.js"></script>
 </body>
 </html>
