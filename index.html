@@ -431,6 +431,7 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
 <div id="toast" class="hidden"></div>
 
+<!-- এখানে ব্যাচ ফাইলগুলো নিখুঁত ক্রমানুসারে যুক্ত আছে -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="batch3.js"></script>
 <script src="batch4.js"></script>
@@ -630,7 +631,6 @@ function renderProfile() {
   }
 }
 
-// Avatar options modal (View / Change)
 window.openAvatarOptions = function() {
   let modal = document.getElementById('avatar-opt-modal');
   if (!modal) {
@@ -657,7 +657,6 @@ window.openAvatarOptions = function() {
   modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
 };
 
-// Edit Profile Modal Handler
 window.openEditProfileModal = function() {
   const sheet = document.getElementById('edit-sheet');
   if (!sheet) return;
@@ -707,7 +706,6 @@ if ($('edit-form')) {
   };
 }
 
-// File Upload Listeners for Avatar & Cover
 document.addEventListener('DOMContentLoaded', () => {
   const avatarInput = document.getElementById('avatar-input');
   if (avatarInput) {
