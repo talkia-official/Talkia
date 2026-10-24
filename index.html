@@ -284,6 +284,28 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
   </div>
 </div>
 
+<!-- Group Voice Room Active Sheet/Modal -->
+<div id="group-room-modal" class="sheet hidden">
+  <div class="sheet-in" style="height:85%; text-align:start; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <h3 id="gr-room-title" style="margin:0; font-size:20px;">Group Voice Room</h3>
+        <span class="muted" style="font-size:12px;">🎙️ Live Voice Chat</span>
+      </div>
+      <button onclick="leaveGroupRoom()" style="color:var(--muted); font-size:22px; border:0; background:none; cursor:pointer;">✕</button>
+    </div>
+    
+    <div id="gr-members-list" style="flex:1; overflow-y:auto; margin-bottom:16px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; align-content:start;">
+      <!-- সদস্যরা এখানে দেখাবে -->
+    </div>
+    
+    <div style="display:flex; gap:10px; margin-top:auto;">
+      <button class="btn ghost" id="gr-mic-btn" onclick="toggleGroupMic()" style="flex:1;">🎙️ Mute</button>
+      <button class="btn danger" onclick="leaveGroupRoom()" style="flex:1;">Leave Room</button>
+    </div>
+  </div>
+</div>
+
 <div id="edit-sheet" class="sheet hidden">
   <div class="sheet-in">
     <h3 data-i18n="edit_profile"></h3>
@@ -351,7 +373,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
 <div id="toast" class="hidden"></div>
 
-<!-- সঠিক সিরিয়ালে সবকটি ব্যাচ ফাইল যুক্ত করা হয়েছে -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="batch3.js"></script>
 <script src="batch4.js"></script>
@@ -689,7 +710,54 @@ window.savePrivacySettings = async function() {
   }
 };
 
-// --- GROUP ROOMS CREATION ---
+// --- GROUP ROOMS HANDLERS ---
+let currentRoomId = null;
+let isMicMuted = false;
+
+window.joinGroupRoom = function(roomId, roomName) {
+  if (!currentUser) return toast('লগইন করুন');
+  currentRoomId = roomId;
+
+  const titleEl = document.getElementById('gr-room-title');
+  if (titleEl) titleEl.textContent = roomName || 'Group Voice Room';
+
+  const membersList = document.getElementById('gr-members-list');
+  if (membersList) {
+    const myName = currentProfile ? (currentProfile.display_name || t('user')) : t('user');
+    const myAvatar = currentProfile && currentProfile.avatar_url ? `<img src="${esc(currentProfile.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : esc(myName.charAt(0).toUpperCase());
+
+    membersList.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; text-align:center; background:var(--surface2); padding:12px; border-radius:14px; border:1px solid var(--accent);">
+        <div class="uav" style="width:50px; height:50px; margin-bottom:6px;">${myAvatar}</div>
+        <span style="font-size:12px; font-weight:600; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(myName)}</span>
+        <span style="font-size:10px; color:var(--accent-text);">You</span>
+      </div>
+    `;
+  }
+
+  const modal = document.getElementById('group-room-modal');
+  if (modal) modal.classList.remove('hidden');
+
+  toast('Joined ' + (roomName || 'Group Room'));
+};
+
+window.leaveGroupRoom = function() {
+  currentRoomId = null;
+  const modal = document.getElementById('group-room-modal');
+  if (modal) modal.classList.add('hidden');
+  toast('Left Group Room');
+};
+
+window.toggleGroupMic = function() {
+  isMicMuted = !isMicMuted;
+  const btn = document.getElementById('gr-mic-btn');
+  if (btn) {
+    btn.textContent = isMicMuted ? '🔇 Unmute' : '🎙️ Mute';
+    btn.style.color = isMicMuted ? 'var(--danger)' : 'var(--text)';
+  }
+  toast(isMicMuted ? 'Muted' : 'Unmuted');
+};
+
 window.openCreateGroupModal = function() {
   const name = prompt('নতুন গ্রুপ রুমের নাম লিখুন:');
   if (!name || !name.trim()) return;
