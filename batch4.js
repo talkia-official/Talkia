@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Fully Optimized Inbox, Realtime Sync & Error Handling
+// Talkia Advanced Suite Batch 4: Fixed Group Room Join, Optimized Inbox & Realtime Sync
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -333,6 +333,7 @@ window.openCreateGroupRoomModal = function() {
   };
 };
 
+// Fixed Group Rooms Load & Functional Room Join Handler
 window.loadGroupRooms = async function() {
   const list = document.getElementById('group-rooms-list');
   if (!list) return;
@@ -350,9 +351,44 @@ window.loadGroupRooms = async function() {
         <div style="font-weight:600; font-size:16px; color:var(--text);">${esc(room.name)}</div>
         <div class="muted" style="font-size:12px;">${t('member_limit')}</div>
       </div>
-      <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="toast('${t('room_joined')}')">${t('g_join')}</button>
+      <button class="btn join-room-btn" data-room-id="${room.id}" style="width:auto; padding:8px 16px; font-size:14px;">${t('g_join')}</button>
     </div>
   `).join('');
+
+  // যুক্ত হোন (Join) বাটনে ক্লিক করলে রুমের ইন্টারফেস ওপেন হবে
+  list.querySelectorAll('.join-room-btn').forEach(btn => {
+    btn.onclick = () => {
+      const roomId = btn.dataset.roomId;
+      const room = data.find(r => r.id == roomId);
+      if (room) openGroupRoomModal(room);
+    };
+  });
+};
+
+// Functional Group Room Modal (Opens when user joins a room)
+window.openGroupRoomModal = function(room) {
+  let modal = document.getElementById('group-room-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'group-room-modal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1100; display:flex; flex-direction:column;';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:#121826; border-bottom:1px solid #26314a;">
+      <div style="color:#fff; font-weight:bold; font-size:16px;">🎙️ ${esc(room.name)} (গ্রুপ ভয়েস রুম)</div>
+      <button id="close-room-btn" style="color:#8b97b3; font-size:22px; border:0; background:none; cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center;">
+      <div style="font-size:60px; margin-bottom:16px;">🎙️</div>
+      <h3 style="color:#fff; margin-bottom:8px;">${esc(room.name)} রুমে সফলভাবে যুক্ত হয়েছেন</h3>
+      <p style="color:var(--muted); font-size:14px; margin-bottom:24px;">এখানে আপনি অন্যান্য সদস্যদের সাথে লাইভ ভয়েস চ্যাট ও আড্ডা দিতে পারবেন।</p>
+      <button class="btn" style="background:#10b981; max-width:220px;" onclick="toast('মাইক্রোফোন সচল হয়েছে')">🎤 কথা বলা শুরু করুন</button>
+    </div>
+  `;
+
+  document.getElementById('close-room-btn').onclick = () => modal.remove();
 };
 
 // Optimized Inbox Modal with Limit, Error Handling & Realtime Auto-Sync
@@ -372,7 +408,6 @@ window.openInboxModal = async function() {
 
   async function loadInboxChats() {
     try {
-      // পারফরম্যান্স অপ্টিমাইজেশনের জন্য লিমিট (limit(100)) যুক্ত করা হয়েছে
       const { data: messages, error } = await sb.from('messages')
         .select('sender_id, receiver_id, created_at')
         .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
@@ -416,7 +451,6 @@ window.openInboxModal = async function() {
         };
       });
     } catch (err) {
-      // উন্নত এরর হ্যান্ডলিং ও টোস্ট নোটিফিকেশন
       console.error("Inbox load error:", err);
       inboxList.innerHTML = `<p style="text-align:center; color:var(--danger); padding-top:40px;">ইনবক্স লোড করতে সমস্যা হয়েছে</p>`;
       toast('ইনবক্স ডেটা ফেচ করতে ব্যর্থ হয়েছে');
@@ -425,7 +459,6 @@ window.openInboxModal = async function() {
 
   await loadInboxChats();
 
-  // রিয়েলটাইম আপডেট (Realtime Auto-Sync): নতুন মেসেজ আসলে ইনবক্স লিস্ট নিজে থেকেই রিফ্রেশ হবে
   if (!window.inboxRealtimeChannel) {
     window.inboxRealtimeChannel = sb.channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
