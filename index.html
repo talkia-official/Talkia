@@ -218,7 +218,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
             <div><b data-i18n="lbl_city"></b> <span id="p-city"></span></div>
           </div>
 
-          <!-- বাটনগুলো এখন পোস্ট/ফটো ট্যাবের ঠিক উপরে সুন্দরভাবে থাকবে -->
           <div style="display:flex; gap:8px; justify-content:center; margin-top:14px;">
             <button class="btn ghost" id="btn-edit" data-i18n="edit_profile" style="margin:0"></button>
             <button class="btn ghost" id="btn-people" data-i18n="people" style="margin:0"></button>
@@ -375,7 +374,6 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 <script src="batch3.js"></script>
 <script src="batch4.js"></script>
 <script src="batch6.js"></script>
-
 <script>
 const SUPABASE_URL = 'https://kqgteeykuflyawbtddyk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RO0xP9_bKNIc2ARIBqDmYA_nPVI-5y5';
@@ -576,7 +574,7 @@ async function loadUserMyPostsAndPhotos(userId) {
   const photosArea = $('profile-photos-area');
   if (!postsArea || !photosArea) return;
 
-  const { data: posts } = await sb.from('voice_posts').select('*, profiles:user_id(display_name, avatar_url, username, online_status_visible, last_seen)').eq('user_id', userId).order('created_at', { ascending: false });
+  const { data: posts } = await sb.from('voice_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
   if (!posts || posts.length === 0) {
     postsArea.innerHTML = `<div class="muted" style="text-align:center; padding:20px;">${t('none_yet')}</div>`;
     photosArea.innerHTML = `<div class="muted" style="text-align:center; padding:20px; grid-column:span 3;">${t('none_yet')}</div>`;
@@ -957,7 +955,6 @@ window.renderOnlineStatusBadge = function(userProfile) {
   return '';
 };
 
-// --- SETTINGS (কেবলমাত্র Personal Information দেখাবে) ---
 window.openSettingsModal = function() {
   let modal = document.getElementById('settings-modal');
   if (!modal) {
@@ -1073,11 +1070,10 @@ window.deletePost = async function(postId) {
 function cardHtml(p) {
   const c = cats.find(x => x.id === p.category_id);
   const posterId = p.user_id;
-  const authorName = p.is_anonymous ? t('anon') : (p.display_name || (p.profiles && p.profiles.display_name) || t('user'));
-  const authorAvatar = p.avatar_url || (p.profiles && p.profiles.avatar_url);
-  const authorProfileData = p.profiles || { online_status_visible: p.online_status_visible, last_seen: p.last_seen };
+  const authorName = p.is_anonymous ? t('anon') : (p.display_name || t('user'));
+  const authorAvatar = p.avatar_url;
 
-  const av = p.is_anonymous ? '<div class="uav">?</div>' : `<div class="uav" data-profile-id="${esc(posterId)}" style="cursor:pointer; position:relative;">${authorAvatar ? `<img src="${esc(authorAvatar)}">` : esc((authorName || 'T').charAt(0).toUpperCase())}${window.renderOnlineStatusBadge ? window.renderOnlineStatusBadge(authorProfileData) : ''}</div>`;
+  const av = p.is_anonymous ? '<div class="uav">?</div>' : `<div class="uav" data-profile-id="${esc(posterId)}" style="cursor:pointer; position:relative;">${authorAvatar ? `<img src="${esc(authorAvatar)}">` : esc((authorName || 'T').charAt(0).toUpperCase())}${window.renderOnlineStatusBadge ? window.renderOnlineStatusBadge(p) : ''}</div>`;
   
   let mediaHtml = '';
   if (p.audio_url) {
@@ -1110,7 +1106,7 @@ async function loadFeed(more) {
   const feedCat = $('feed-cat-select')?.value || '';
   const feedCountry = $('feed-country-select')?.value || '';
 
-  let q = sb.from('voice_feed').select('*, profiles:user_id(display_name, avatar_url, username, online_status_visible, last_seen)').order('created_at', { ascending: false }).range(feedPage * PAGE, feedPage * PAGE + PAGE - 1);
+  let q = sb.from('voice_feed').select('*').order('created_at', { ascending: false }).range(feedPage * PAGE, feedPage * PAGE + PAGE - 1);
   if (feedCat) q = q.eq('category_id', Number(feedCat));
   if (feedCountry) q = q.eq('country', feedCountry);
 
