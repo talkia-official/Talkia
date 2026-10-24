@@ -1,9 +1,9 @@
-/* Talkia batch3: Photos, Voice Filters, Emoji Reactions Bar */
+/* Talkia batch3: Optimized Audio Playback & Voice Filter UI */
 (function () {
   const st = document.createElement('style');
   st.textContent = '.b3row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);text-align:start}'
-    + '.b3p{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;flex:none}'
-    + '.b3i{flex:1;min-width:0;overflow-wrap:anywhere}.b3d{flex:none;padding:6px 10px;color:var(--danger)}'
+    + '.b3p{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;flex:none;cursor:pointer;display:grid;place-items:center;}'
+    + '.b3i{flex:1;min-width:0;overflow-wrap:anywhere}.b3d{flex:none;padding:6px 10px;color:var(--danger);}'
     + '.b3img{width:100%;max-height:350px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}'
     + '.voice-filter-select { background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px; border-radius:8px; margin-left:8px; font-size:12px; outline:none; }'
     + '.reaction-bar { display: none; position: absolute; bottom: 35px; left: 0; background: #121826; border: 1px solid #26314a; border-radius: 30px; padding: 4px 10px; gap: 8px; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }'
@@ -11,14 +11,33 @@
     + '.reaction-bar span:hover { transform: scale(1.3); }';
   document.head.appendChild(st);
 
-  const pa = new Audio(); let pBtn = null;
-  pa.onended = () => { if (pBtn) pBtn.textContent = '▶'; };
+  const pa = new Audio(); 
+  let pBtn = null;
+
+  pa.onended = () => { 
+    if (pBtn) pBtn.textContent = '▶'; 
+  };
+
   function playBtn(b) {
-    try { if (typeof audio !== 'undefined') audio.pause(); } catch (e) {}
-    if (pBtn === b && !pa.paused) { pa.pause(); b.textContent = '▶'; return; }
+    try { 
+      if (typeof audio !== 'undefined') audio.pause(); 
+    } catch (e) {}
+
+    if (pBtn === b && !pa.paused) { 
+      pa.pause(); 
+      b.textContent = '▶'; 
+      return; 
+    }
+
     if (pBtn) pBtn.textContent = '▶';
-    pBtn = b; pa.src = b.dataset.src;
-    pa.play().then(() => { b.textContent = '⏸'; }).catch(() => toast('Audio error'));
+    pBtn = b; 
+    pa.src = b.dataset.src;
+    
+    pa.play().then(() => { 
+      b.textContent = '⏸'; 
+    }).catch(() => {
+      if (typeof toast === 'function') toast('অডিও প্লে করতে সমস্যা হয়েছে');
+    });
   }
 
   window.emojiBarHtml = function(postId) {
@@ -33,28 +52,9 @@
     `;
   };
 
-  document.addEventListener('click', async e => {
-    const g = s => e.target.closest(s);
-    let b;
-    if ((b = g('.b3p'))) return playBtn(b);
-
-    if (e.target.dataset.react) {
-      e.stopPropagation();
-      const emoji = e.target.dataset.react;
-      const id = e.target.dataset.id;
-      const bar = document.getElementById('react-bar-' + id);
-      if (bar) bar.style.display = 'none';
-      
-      const btn = document.querySelector(`[data-like="${id}"]`);
-      if (btn) {
-        const span = btn.querySelector('span');
-        let cnt = Number(span.textContent || 0) + 1;
-        btn.classList.add('on');
-        btn.innerHTML = `${emoji} <span>${cnt}</span>`;
-        toast('Reaction: ' + emoji);
-      }
-      return;
-    }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.b3p');
+    if (b) playBtn(b);
   });
 
   document.addEventListener('DOMContentLoaded', () => {
