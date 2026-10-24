@@ -74,9 +74,10 @@ h2{margin:0 0 12px;font-size:18px;font-weight:600;padding:0 16px}
 .post .play i svg{width:14px;height:14px;fill:var(--accent-ink)}
 .post .wave{flex:1;height:24px;background:repeating-linear-gradient(90deg,var(--line) 0 3px,transparent 3px 6px);border-radius:4px;opacity:.8}
 
-/* Instagram Style Profile Layout */
+/* Instagram Style Profile Layout with Restored Cover */
 .profile-card{background:var(--bg);margin-bottom:10px}
-.cover-box{height:0;background:transparent;position:relative;display:none}
+.cover-box{height:140px;background:var(--surface2);position:relative;display:block;border-radius:0 0 12px 12px;overflow:hidden}
+.cover-box img{width:100%;height:100%;object-fit:cover}
 .visitor-btn{position:absolute;top:10px;right:16px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:#fff;font-size:16px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,0.15);cursor:pointer;z-index:10}
 
 .profile-top{padding:16px;text-align:left}
@@ -215,15 +216,18 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
 
     <section id="tab-profile" class="tab">
       <div class="profile-card">
+        <!-- Restored Cover Photo Section -->
         <div class="cover-box">
           <img id="p-cover-img" src="" class="hidden">
           <button class="visitor-btn" id="btn-visitors" title="Visitors">👁️‍🗨️</button>
+          <button type="button" onclick="document.getElementById('cover-input').click()" style="position:absolute; bottom:10px; right:16px; background:rgba(0,0,0,0.6); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; border:1px solid rgba(255,255,255,0.2);">📷 Cover Photo</button>
           <input type="file" id="cover-input" accept="image/*" class="hidden">
         </div>
 
         <div class="profile-top">
           <div class="profile-header-ig">
-            <div class="avatar" id="p-avatar">T</div>
+            <!-- Clickable Avatar to open View/Change modal -->
+            <div class="avatar" id="p-avatar" onclick="openAvatarOptions()" title="Manage Profile Picture">T</div>
             <input type="file" id="avatar-input" accept="image/*" class="hidden">
             <div class="profile-stats-ig">
               <div>
@@ -257,8 +261,8 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-conte
           </div>
 
           <div class="profile-actions-ig">
-            <button class="btn ghost" id="btn-edit" data-i18n="edit_profile"></button>
-            <button class="btn ghost" id="btn-people" data-i18n="people"></button>
+            <button class="btn ghost" id="btn-edit" onclick="openEditProfileModal()" data-i18n="edit_profile">Edit Profile</button>
+            <button class="btn ghost" id="btn-people" data-i18n="people">My Friends</button>
           </div>
 
           <div class="profile-tabs">
@@ -608,7 +612,7 @@ function renderProfile() {
   if ($('p-bio')) $('p-bio').textContent = p.bio || '';
   
   if ($('p-edu')) $('p-edu').textContent = p.education || t('not_added');
-  if ($('p-rel')) $('p-rel').textContent = p.marital_status || t('not_added');
+  if ($('p-rel')) $('p-rel>span') ? $('p-rel>span').textContent = p.marital_status || t('not_added') : $('p-rel').textContent = p.marital_status || t('not_added');
   if ($('p-relig')) $('p-relig').textContent = p.religion || t('not_added');
   if ($('p-hobby')) $('p-hobby').textContent = p.hobbies || t('not_added');
   if ($('p-city')) $('p-city').textContent = p.city || t('not_added');
@@ -618,7 +622,139 @@ function renderProfile() {
     if (p.avatar_url) { av.innerHTML = '<img alt="" src="' + esc(p.avatar_url) + '">'; }
     else { av.textContent = name.trim().charAt(0).toUpperCase() || 'T'; }
   }
+
+  const cov = $('p-cover-img');
+  if (cov) {
+    if (p.cover_url) { cov.src = p.cover_url; cov.classList.remove('hidden'); }
+    else { cov.classList.add('hidden'); }
+  }
 }
+
+// Avatar options modal (View / Change)
+window.openAvatarOptions = function() {
+  let modal = document.getElementById('avatar-opt-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'avatar-opt-modal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1600; display:flex; align-items:center; justify-content:center; padding:15px;';
+    document.body.appendChild(modal);
+  }
+  modal.classList.remove('hidden');
+
+  const profile = currentProfile || {};
+  const avatarUrl = profile.avatar_url;
+
+  modal.innerHTML = `
+    <div style="max-width:320px; width:100%; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; text-align:center;" onclick="event.stopPropagation()">
+      <h3 style="margin:0 0 16px; font-size:16px;">Profile Photo Options</h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${avatarUrl ? `<button class="btn ghost" onclick="document.getElementById('avatar-opt-modal').classList.add('hidden'); openMediaViewer('${avatarUrl}')">🔍 View Profile Picture</button>` : ''}
+        <button class="btn" onclick="document.getElementById('avatar-opt-modal').classList.add('hidden'); document.getElementById('avatar-input').click()">📷 Change Profile Picture</button>
+        <button class="btn ghost" style="color:var(--danger);" onclick="document.getElementById('avatar-opt-modal').classList.add('hidden')">Cancel</button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+};
+
+// Edit Profile Modal Handler
+window.openEditProfileModal = function() {
+  const sheet = document.getElementById('edit-sheet');
+  if (!sheet) return;
+  const p = currentProfile || {};
+  if ($('e-name')) $('e-name').value = p.display_name || '';
+  if ($('e-username')) $('e-username').value = p.username || '';
+  if ($('e-bio')) $('e-bio').value = p.bio || '';
+  if ($('e-edu')) $('e-edu').value = p.education || '';
+  if ($('e-rel')) $('e-rel').value = p.marital_status || '';
+  if ($('e-relig')) $('e-relig').value = p.religion || '';
+  if ($('e-hobby')) $('e-hobby').value = p.hobbies || '';
+  if ($('e-city')) $('e-city').value = p.city || '';
+  if ($('e-country')) $('e-country').value = p.country || '';
+  sheet.classList.remove('hidden');
+};
+
+if ($('edit-cancel')) {
+  $('edit-cancel').onclick = () => {
+    const sheet = document.getElementById('edit-sheet');
+    if (sheet) sheet.classList.add('hidden');
+  };
+}
+
+if ($('edit-form')) {
+  $('edit-form').onsubmit = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    const updates = {
+      display_name: $('e-name').value.trim(),
+      username: $('e-username').value.trim().toLowerCase(),
+      bio: $('e-bio').value.trim(),
+      education: $('e-edu').value.trim(),
+      marital_status: $('e-rel').value.trim(),
+      religion: $('e-relig').value.trim(),
+      hobbies: $('e-hobby').value.trim(),
+      city: $('e-city').value.trim(),
+      country: $('e-country').value.trim()
+    };
+    const { error } = await sb.from('profiles').update(updates).eq('id', currentUser.id);
+    if (error) {
+      toast('Failed to update profile: ' + error.message);
+    } else {
+      toast('Profile updated successfully!');
+      document.getElementById('edit-sheet').classList.add('hidden');
+      loadProfile();
+    }
+  };
+}
+
+// File Upload Listeners for Avatar & Cover
+document.addEventListener('DOMContentLoaded', () => {
+  const avatarInput = document.getElementById('avatar-input');
+  if (avatarInput) {
+    avatarInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file || !currentUser) return;
+      toast('Uploading profile picture...');
+      try {
+        const fileName = `avatar_${currentUser.id}_${Date.now()}`;
+        const { error: uploadErr } = await sb.storage.from('avatars').upload(fileName, file, { upsert: true });
+        if (uploadErr) throw uploadErr;
+        const { data: publicURL } = sb.storage.from('avatars').getPublicUrl(fileName);
+        const avatar_url = publicURL.publicUrl;
+        const { error: updateErr } = await sb.from('profiles').update({ avatar_url }).eq('id', currentUser.id);
+        if (updateErr) throw updateErr;
+        toast('Profile picture updated successfully!');
+        loadProfile();
+      } catch (err) {
+        console.error('Avatar upload error:', err);
+        toast('Failed to upload profile picture');
+      }
+    };
+  }
+
+  const coverInput = document.getElementById('cover-input');
+  if (coverInput) {
+    coverInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file || !currentUser) return;
+      toast('Uploading cover photo...');
+      try {
+        const fileName = `cover_${currentUser.id}_${Date.now()}`;
+        const { error: uploadErr } = await sb.storage.from('covers').upload(fileName, file, { upsert: true });
+        if (uploadErr) throw uploadErr;
+        const { data: publicURL } = sb.storage.from('covers').getPublicUrl(fileName);
+        const cover_url = publicURL.publicUrl;
+        const { error: updateErr } = await sb.from('profiles').update({ cover_url }).eq('id', currentUser.id);
+        if (updateErr) throw updateErr;
+        toast('Cover photo updated successfully!');
+        loadProfile();
+      } catch (err) {
+        console.error('Cover upload error:', err);
+        toast('Failed to upload cover photo');
+      }
+    };
+  }
+});
 
 window.openSettingsModal = function() {
   let modal = document.getElementById('settings-modal');
@@ -781,7 +917,6 @@ window.toggleLike = async function(postId, emoji = '❤️') {
   if (typeof loadFeed === 'function') loadFeed(false);
 };
 
-// Post Owner Menu & Actions (Edit/Delete - Safely managed via DOM)
 window.togglePostMenu = function (postId) {
   document.querySelectorAll('[id^="post-menu-"]').forEach(m => {
     if (m.id !== `post-menu-${postId}`) m.classList.add('hidden');
