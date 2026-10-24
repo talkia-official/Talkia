@@ -1,7 +1,7 @@
-const CACHE = 'talkia-v31';
+const CACHE = 'talkia-v32'; // কোড আপডেট করলে এখানে v31 থেকে v32, v33 এভাবে বাড়াবেন
 // Relative paths support deployment under /Talkia/ on GitHub Pages.
 const SHELL = [
-  './', 'index.html', 'batch3.js', 'batch4.js', 'batch5.js', 'batch6.js',
+  './', 'index.html', 'batch3.js', 'batch4.js', 'batch6.js', // batch5.js বাদ দেওয়া হলো
   'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo-wordmark.png'
 ];
 
@@ -22,7 +22,6 @@ self.addEventListener('activate', event => {
 });
 
 // Network-first for same-origin GET requests; use cache only as offline fallback.
-// Cross-origin services (including Supabase) are left untouched.
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
