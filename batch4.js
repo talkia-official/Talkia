@@ -1,4 +1,4 @@
-// Talkia Advanced Suite Batch 4: Privacy Settings, Nested Personal Info, Clean Language Accordion & Profile Actions
+// Talkia Advanced Suite Batch 4: Fully Optimized Inbox, Realtime Sync & Error Handling
 console.log("Talkia Advanced Suite Batch 4 Loaded Correctly");
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Settings Dashboard with Nested Menons (Personal Info, Privacy Settings, Language Accordion)
 window.openSettingsDashboard = function() {
   let modal = document.getElementById('settings-dashboard-modal');
   if (!modal) {
@@ -195,7 +194,6 @@ window.openSettingsDashboard = function() {
   renderMainSettings();
 };
 
-// Open Other User's Profile Modal with Add Friend & Inbox Buttons
 window.openUserProfileModal = async function(userId) {
   if (currentUser && userId === currentUser.id) {
     showTab('profile');
@@ -357,6 +355,7 @@ window.loadGroupRooms = async function() {
   `).join('');
 };
 
+// Optimized Inbox Modal with Limit, Error Handling & Realtime Auto-Sync
 window.openInboxModal = async function() {
   const inboxSheet = document.getElementById('inbox-sheet');
   const inboxList = document.getElementById('inbox-list');
@@ -371,34 +370,73 @@ window.openInboxModal = async function() {
   if (!currentUser) return;
   const me = currentUser.id;
 
-  const { data: friendships } = await sb.from('friendships').select('*').or(`requester_id.eq.${me},addressee_id.eq.${me}`).eq('status', 'accepted');
-  if (!friendships || friendships.length === 0) {
-    inboxList.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('inbox_empty')}</p>`;
-    return;
+  async function loadInboxChats() {
+    try {
+      // পারফরম্যান্স অপ্টিমাইজেশনের জন্য লিমিট (limit(100)) যুক্ত করা হয়েছে
+      const { data: messages, error } = await sb.from('messages')
+        .select('sender_id, receiver_id, created_at')
+        .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      if (!messages || messages.length === 0) {
+        inboxList.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('inbox_empty')}</p>`;
+        return;
+      }
+
+      const chatUserIds = [...new Set(messages.map(m => m.sender_id === me ? m.receiver_id : m.sender_id))];
+      const { data: chatUsers, error: profileErr } = await sb.from('profiles').select('*').in('id', chatUserIds);
+
+      if (profileErr) throw profileErr;
+
+      if (!chatUsers || chatUsers.length === 0) {
+        inboxList.innerHTML = `<p style="text-align:center; color:#8b97b3; padding-top:40px;">${t('inbox_empty')}</p>`;
+        return;
+      }
+
+      inboxList.innerHTML = chatUsers.map(f => `
+        <div class="inbox-friend-item" data-id="${f.id}" style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #26314a; cursor:pointer;">
+          <div class="uav">
+            ${f.avatar_url ? `<img src="${esc(f.avatar_url)}">` : esc((f.display_name || 'U').charAt(0).toUpperCase())}
+          </div>
+          <div style="flex:1;">
+            <div style="color:#fff; font-weight:600; font-size:15px;">${esc(f.display_name)}</div>
+            <div style="color:#8b97b3; font-size:12px;">💬 চ্যাট দেখুন</div>
+          </div>
+        </div>
+      `).join('');
+
+      inboxList.querySelectorAll('.inbox-friend-item').forEach(item => {
+        item.onclick = () => {
+          const fid = item.dataset.id;
+          const fr = chatUsers.find(x => x.id === fid);
+          openDirectChat(fr);
+        };
+      });
+    } catch (err) {
+      // উন্নত এরর হ্যান্ডলিং ও টোস্ট নোটিফিকেশন
+      console.error("Inbox load error:", err);
+      inboxList.innerHTML = `<p style="text-align:center; color:var(--danger); padding-top:40px;">ইনবক্স লোড করতে সমস্যা হয়েছে</p>`;
+      toast('ইনবক্স ডেটা ফেচ করতে ব্যর্থ হয়েছে');
+    }
   }
 
-  const fIds = friendships.map(f => f.requester_id === me ? f.addressee_id : f.requester_id);
-  const { data: friends } = await sb.from('profiles').select('*').in('id', fIds);
+  await loadInboxChats();
 
-  inboxList.innerHTML = (friends || []).map(f => `
-    <div class="inbox-friend-item" data-id="${f.id}" style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #26314a; cursor:pointer;">
-      <div class="uav">
-        ${f.avatar_url ? `<img src="${esc(f.avatar_url)}">` : esc((f.display_name || 'U').charAt(0).toUpperCase())}
-      </div>
-      <div style="flex:1;">
-        <div style="color:#fff; font-weight:600; font-size:15px;">${esc(f.display_name)}</div>
-        <div style="color:#8b97b3; font-size:12px;">💬 ${t('start_chat_hint')}</div>
-      </div>
-    </div>
-  `).join('');
-
-  inboxList.querySelectorAll('.inbox-friend-item').forEach(item => {
-    item.onclick = () => {
-      const fid = item.dataset.id;
-      const fr = friends.find(x => x.id === fid);
-      openDirectChat(fr);
-    };
-  });
+  // রিয়েলটাইম আপডেট (Realtime Auto-Sync): নতুন মেসেজ আসলে ইনবক্স লিস্ট নিজে থেকেই রিফ্রেশ হবে
+  if (!window.inboxRealtimeChannel) {
+    window.inboxRealtimeChannel = sb.channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        if (payload.new.sender_id === me || payload.new.receiver_id === me) {
+          if (!inboxSheet.classList.contains('hidden')) {
+            loadInboxChats();
+          }
+        }
+      })
+      .subscribe();
+  }
 };
 
 window.openDirectChat = async function(friend) {
