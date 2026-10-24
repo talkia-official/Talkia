@@ -1,106 +1,46 @@
-/* Talkia Batch 6 — Home Feed, Filtering & Pagination (Bulletproof & Safe) */
+/* Talkia Batch 6 — Stable Fixes */
 (function () {
   'use strict';
 
-  window.loadFeed = async function(append = false) {
-    if (typeof sb === 'undefined') return;
-    const feedList = document.getElementById('feed-list');
-    if (!feedList) return;
+  // হোম পেজে ফিড রেন্ডারিং সুরক্ষিত রাখা
+  window.loadFeed = async function (more) {
+    if (typeof loadCats === 'function') await loadCats();
+    const box = document.getElementById('feed-list');
+    if (!box) return;
 
-    if (!append) {
-      if (typeof feedPage !== 'undefined') feedPage = 0;
-      feedList.innerHTML = '<div class="muted" style="text-align:center; padding:30px;">Loading feed...</div>';
+    if (!more) { 
+      if (typeof feedPage !== 'undefined') feedPage = 0; 
+      box.innerHTML = '<div class="empty">' + (typeof t === 'function' ? t('loading') : 'Loading...') + '</div>'; 
     }
+    
+    const feedCat = document.getElementById('feed-cat-select')?.value || '';
+    const feedCountry = document.getElementById('feed-country-select')?.value || '';
 
-    const catId = document.getElementById('feed-cat-select')?.value || '';
-    const country = document.getElementById('feed-country-select')?.value || '';
-    const currentPage = typeof feedPage !== 'undefined' ? feedPage : 0;
-    const pageSize = typeof PAGE !== 'undefined' ? PAGE : 10;
+    let q = sb.from('voice_feed').select('*').order('created_at', { ascending: false }).range((typeof feedPage !== 'undefined' ? feedPage : 0) * (typeof PAGE !== 'undefined' ? PAGE : 10), ((typeof feedPage !== 'undefined' ? feedPage : 0) + 1) * (typeof PAGE !== 'undefined' ? PAGE : 10) - 1);
+    
+    if (feedCat) q = q.eq('category_id', Number(feedCat));
+    if (feedCountry) q = q.eq('country', feedCountry);
 
-    try {
-      // Safe query without complex joins to prevent crashing
-      let query = sb.from('voice_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
-
-      if (catId) {
-        query = query.eq('category_id', Number(catId));
+    const { data, error } = await q;
+    const old = document.getElementById('feed-more'); 
+    if (old) old.remove();
+    
+    if (error) { 
+      box.innerHTML = '<div class="empty">' + esc(error.message) + '</div>'; 
+      return; 
+    }
+    
+    if ((!data || data.length === 0) && !more) { 
+      box.innerHTML = '<div class="empty"><div class="big">🎙️</div>' + (typeof t === 'function' ? t('feed_empty') : 'No posts yet.') + '</div>'; 
+      return; 
+    }
+    
+    if (!more) box.innerHTML = '';
+    if (data && data.length > 0) {
+      box.insertAdjacentHTML('beforeend', data.map(p => typeof cardHtml === 'function' ? cardHtml(p) : '').join(''));
+      if (data.length === (typeof PAGE !== 'undefined' ? PAGE : 10)) {
+        box.insertAdjacentHTML('beforeend', '<button class="btn ghost sm" id="feed-more" onclick="feedPage++; loadFeed(true);">More</button>');
       }
-      if (country) {
-        query = query.eq('country', country);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        if (!append) {
-          feedList.innerHTML = `<div class="empty"><div class="big">🎙️</div>${typeof t === 'function' ? t('feed_empty') : 'No posts yet. Be the first voice!'}</div>`;
-        } else {
-          const moreBtn = document.getElementById('feed-more');
-          if (moreBtn) moreBtn.remove();
-        }
-        return;
-      }
-
-      // Fetch profiles separately for 100% safety
-      const userIds = [...new Set(data.map(p => p.user_id))];
-      let profileMap = {};
-      if (userIds.length > 0) {
-        const { data: profilesData } = await sb.from('profiles').select('id, display_name, avatar_url').in('id', userIds);
-        if (profilesData) {
-          profilesData.forEach(pr => { profileMap[pr.id] = pr; });
-        }
-      }
-
-      const postsHtml = data.map(p => {
-        const prof = profileMap[p.user_id] || {};
-        const postObj = {
-          ...p,
-          display_name: p.is_anonymous ? (typeof t === 'function' ? t('anon') : 'Anonymous') : (prof.display_name || 'User'),
-          avatar_url: p.is_anonymous ? null : (prof.avatar_url || null)
-        };
-
-        if (typeof cardHtml === 'function') {
-          return cardHtml(postObj);
-        } else {
-          // Fallback UI if cardHtml is not defined
-          return `
-            <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:12px;">
-              <div style="font-weight:600; margin-bottom:6px;">${esc(postObj.display_name)}</div>
-              <div style="font-size:14px; margin-bottom:10px;">${esc(p.caption || '')}</div>
-              ${p.audio_url ? `<audio controls src="${esc(p.audio_url)}" style="width:100%; margin-top:8px;"></audio>` : ''}
-              ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:8px;">` : ''}
-            </div>
-          `;
-        }
-      }).join('');
-
-      if (append) {
-        const moreBtn = document.getElementById('feed-more');
-        if (moreBtn) moreBtn.remove();
-        feedList.insertAdjacentHTML('beforeend', postsHtml);
-      } else {
-        feedList.innerHTML = postsHtml;
-      }
-
-      if (data.length === pageSize) {
-        feedList.insertAdjacentHTML('beforeend', `
-          <div style="padding:16px; text-align:center;">
-            <button class="btn ghost" id="feed-more" style="width:100%; padding:10px;" onclick="feedPage = (typeof feedPage !== 'undefined' ? feedPage + 1 : 1); loadFeed(true);">Load More</button>
-          </div>
-        `);
-      }
-
-    } catch (err) {
-      console.error('[Talkia] Load feed error:', err);
-      feedList.innerHTML = `<div class="empty" style="padding:20px; color:var(--danger);">Failed to load feed. Please refresh.</div>`;
     }
   };
-
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
 })();
