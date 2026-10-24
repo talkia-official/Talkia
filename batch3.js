@@ -56,4 +56,20 @@
       return;
     }
   });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const recContainer = document.getElementById('voice-rec-area');
+    if (recContainer && !document.getElementById('v-filter')) {
+      recContainer.insertAdjacentHTML('beforeend', `
+        <div style="margin-top:10px; font-size:13px; color:#8b97b3;">
+          <span id="vf-label-text">Voice Filter</span>: 
+          <select class="voice-filter-select" id="v-filter">
+            <option value="normal" id="opt-normal">Normal</option>
+            <option value="deep" id="opt-deep">Deep Voice</option>
+            <option value="echo" id="opt-echo">Echo</option>
+          </select>
+        </div>
+      `);
+    }
+  });
 })();
