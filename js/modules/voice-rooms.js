@@ -37,7 +37,7 @@ window.openCreateGroupRoomModal = function() {
       modal.remove();
       if (typeof loadGroupRooms === 'function') loadGroupRooms();
     } catch (err) {
-      toast('Error: ' + err.message);
+      toast('Error creating room: ' + err.message);
     }
   };
 };
@@ -52,11 +52,11 @@ window.joinGroupRoom = async function(roomId, roomName) {
     toast(t('room_joined'));
     openActiveGroupRoom(roomId, roomName);
   } catch (err) {
-    toast('Error: ' + err.message);
+    toast('Error joining room: ' + err.message);
   }
 };
 
-// Active Group Room with Working Cover Photo, Manage Button & Full Posting System
+// Active Group Room with Fixed Cover Persistence, Manage Click & Robust Posting
 window.openActiveGroupRoom = async function(roomId, roomName) {
   let existingRoom = document.getElementById('active-room-modal');
   if (existingRoom) existingRoom.remove();
@@ -64,9 +64,12 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
   // Fetch latest room info from DB
   let roomData = {};
   try {
-    const { data } = await sb.from('group_rooms').select('*').eq('id', roomId).single();
+    const { data, error } = await sb.from('group_rooms').select('*').eq('id', roomId).single();
     if (data) roomData = data;
-  } catch (e) {}
+    if (error) console.error('Fetch room error:', error);
+  } catch (e) {
+    console.error(e);
+  }
 
   const currentRoomName = roomData.name || roomName;
   const coverBg = roomData.cover_url 
@@ -80,9 +83,9 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
   roomModal.innerHTML = `
     <!-- Header / Cover Section with Cover Upload & Back Button -->
     <div id="room-cover-div" style="position:relative; width:100%; height:160px; background:${coverBg};">
-      <button id="room-back-btn" style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.6); color:#fff; border:0; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;" title="Back">←</button>
+      <button id="room-back-btn" style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.6); color:#fff; border:0; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; z-index:10;" title="Back">←</button>
       
-      <label for="cover-upload-input" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.7); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px;">
+      <label for="cover-upload-input" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.7); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px; z-index:10;">
         📷 Change Cover
       </label>
       <input type="file" id="cover-upload-input" accept="image/*" style="display:none;">
@@ -114,7 +117,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
   
   document.body.appendChild(roomModal);
 
-  // Cover Photo Change Handler
+  // Cover Photo Change Handler with Error Feedback
   document.getElementById('cover-upload-input').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -123,13 +126,14 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const base64Url = event.target.result;
-        await sb.from('group_rooms').update({ cover_url: base64Url }).eq('id', roomId);
+        const { error } = await sb.from('group_rooms').update({ cover_url: base64Url }).eq('id', roomId);
+        if (error) throw error;
         document.getElementById('room-cover-div').style.background = `url('${base64Url}') center/cover no-repeat`;
-        toast('Cover photo updated successfully!');
+        toast('Cover photo updated & saved successfully!');
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      toast('Error uploading cover: ' + err.message);
+      toast('Cover upload error: ' + err.message);
     }
   };
 
@@ -147,12 +151,12 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
             <div style="display:flex; gap:8px;">
-              <button id="attach-photo-btn" style="background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;">📷 Photo</button>
+              <button id="attach-photo-btn" style="background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;" type="button">📷 Photo</button>
               <input type="file" id="post-photo-file" accept="image/*" style="display:none;">
 
-              <button id="record-voice-btn" style="background:#1a2234; color:#e74c3c; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;">🎤 Voice Post</button>
+              <button id="record-voice-btn" style="background:#1a2234; color:#e74c3c; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;" type="button">🎤 Voice Post</button>
             </div>
-            <button id="submit-group-post" class="btn" style="padding:6px 18px; font-size:14px;">Post</button>
+            <button id="submit-group-post" class="btn" style="padding:6px 18px; font-size:14px;" type="button">Post</button>
           </div>
           <div id="post-attachment-status" style="margin-top:8px; font-size:12px; color:#10b981;"></div>
         </div>
@@ -192,19 +196,19 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           <p style="color:#8b97b3; font-size:13px; margin-bottom:15px;">Select voice effect before recording</p>
           
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px;">
-            <button class="v-effect-btn" data-effect="normal" style="background:#26314a; color:#fff; border:1px solid #3b82f6; padding:8px; border-radius:8px; cursor:pointer;">Normal</button>
-            <button class="v-effect-btn" data-effect="robot" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;">Robot</button>
-            <button class="v-effect-btn" data-effect="deep" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;">Deep Voice</button>
-            <button class="v-effect-btn" data-effect="chipmunk" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;">Chipmunk</button>
+            <button class="v-effect-btn" data-effect="normal" style="background:#26314a; color:#fff; border:1px solid #3b82f6; padding:8px; border-radius:8px; cursor:pointer;" type="button">Normal</button>
+            <button class="v-effect-btn" data-effect="robot" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;" type="button">Robot</button>
+            <button class="v-effect-btn" data-effect="deep" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;" type="button">Deep Voice</button>
+            <button class="v-effect-btn" data-effect="chipmunk" style="background:#1a2234; color:#8b97b3; border:1px solid #26314a; padding:8px; border-radius:8px; cursor:pointer;" type="button">Chipmunk</button>
           </div>
 
           <div style="margin-bottom:15px; font-weight:600; color:#10b981;" id="rec-status-text">Ready to record</div>
 
           <div style="display:flex; gap:10px;">
-            <button id="start-rec-btn" class="btn" style="flex:1; background:#e74c3c;">Start Recording</button>
-            <button id="done-rec-btn" class="btn" style="flex:1; background:#10b981; display:none;">Attach Voice</button>
+            <button id="start-rec-btn" class="btn" style="flex:1; background:#e74c3c;" type="button">Start Recording</button>
+            <button id="done-rec-btn" class="btn" style="flex:1; background:#10b981; display:none;" type="button">Attach Voice</button>
           </div>
-          <button id="close-v-modal" style="background:none; border:0; color:#8b97b3; margin-top:15px; cursor:pointer;">Cancel</button>
+          <button id="close-v-modal" style="background:none; border:0; color:#8b97b3; margin-top:15px; cursor:pointer;" type="button">Cancel</button>
         </div>
       `;
       document.body.appendChild(voiceModal);
@@ -268,7 +272,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
       document.getElementById('close-v-modal').onclick = () => voiceModal.remove();
     };
 
-    // Post Submit Action
+    // Post Submit Action with Full Error Reporting
     document.getElementById('submit-group-post').onclick = async () => {
       const text = document.getElementById('group-post-text').value.trim();
       if (!text && !selectedPhotoBase64 && !recordedAudioBase64) {
@@ -277,8 +281,9 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
       }
       
       try {
-        const { data: roomData } = await sb.from('group_rooms').select('post_approval').eq('id', roomId).single();
-        const needsApproval = roomData && roomData.post_approval;
+        toast('Publishing post...');
+        const { data: roomInfo } = await sb.from('group_rooms').select('post_approval').eq('id', roomId).single();
+        const needsApproval = roomInfo && roomInfo.post_approval;
 
         const { error } = await sb.from('group_posts').insert({
           group_id: roomId,
@@ -289,6 +294,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           status: needsApproval ? 'pending' : 'published',
           created_at: new Date()
         });
+        
         if (error) throw error;
 
         document.getElementById('group-post-text').value = '';
@@ -304,6 +310,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
         fetchGroupPosts(roomId);
       } catch (err) {
         toast('Post error: ' + err.message);
+        console.error('Post error detail:', err);
       }
     };
   }
@@ -314,7 +321,9 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
 
     try {
       const { data: posts, error } = await sb.from('group_posts').select('*').eq('group_id', gId).eq('status', 'published').order('created_at', { ascending: false });
-      if (error || !posts || posts.length === 0) {
+      if (error) throw error;
+
+      if (!posts || posts.length === 0) {
         feed.innerHTML = `<div style="background:#121826; border:1px solid #26314a; border-radius:12px; padding:20px; text-align:center; color:#8b97b3;">No posts yet. Be the first to share something!</div>`;
         return;
       }
@@ -323,7 +332,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
         <div style="background:#121826; border:1px solid #26314a; border-radius:12px; padding:14px; margin-bottom:12px; text-align:left;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <span style="font-weight:600; color:#fff; font-size:14px;">Member</span>
-            ${p.user_id === currentUser.id ? `<button onclick="deleteGroupPost('${p.id}', '${roomId}')" style="background:none; border:0; color:#e74c3c; cursor:pointer; font-size:12px;">Delete</button>` : ''}
+            ${p.user_id === currentUser.id ? `<button onclick="deleteGroupPost('${p.id}', '${roomId}')" style="background:none; border:0; color:#e74c3c; cursor:pointer; font-size:12px;" type="button">Delete</button>` : ''}
           </div>
           ${p.content ? `<p style="margin:0 0 10px 0; color:#cbd5e1; font-size:14px; word-break:break-word;">${esc(p.content)}</p>` : ''}
           ${p.media_url ? `<img src="${p.media_url}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:10px;">` : ''}
@@ -331,18 +340,19 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
         </div>
       `).join('');
     } catch (err) {
-      feed.innerHTML = `<div style="color:#e74c3c; text-align:center;">Failed to load posts</div>`;
+      feed.innerHTML = `<div style="color:#e74c3c; text-align:center;">Failed to load posts: ${err.message}</div>`;
     }
   }
 
   window.deleteGroupPost = async function(postId, gId) {
     if (!confirm('Are you sure you want to delete this post?')) return;
     try {
-      await sb.from('group_posts').delete().eq('id', postId);
+      const { error } = await sb.from('group_posts').delete().eq('id', postId);
+      if (error) throw error;
       toast('Post deleted');
       fetchGroupPosts(gId);
     } catch (err) {
-      toast('Error deleting post');
+      toast('Error deleting post: ' + err.message);
     }
   };
 
@@ -380,18 +390,19 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
       <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; color:#fff;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
           <h3 style="margin:0; font-size:18px;">➕ Invite People</h3>
-          <button id="close-inv" style="background:none; border:0; color:#8b97b3; font-size:18px; cursor:pointer;">✕</button>
+          <button id="close-inv" style="background:none; border:0; color:#8b97b3; font-size:18px; cursor:pointer;" type="button">✕</button>
         </div>
         <input type="text" readonly value="${window.location.href}" style="width:100%; padding:10px; background:#1a2234; border:1px solid #26314a; border-radius:8px; color:#fff; margin-bottom:15px; outline:none;">
-        <button class="btn" style="width:100%; padding:10px;" onclick="toast('Link copied!'); document.body.lastChild.remove();">Copy Invite Link</button>
+        <button class="btn" style="width:100%; padding:10px;" onclick="toast('Link copied!'); document.body.lastChild.remove();" type="button">Copy Invite Link</button>
       </div>
     `;
     document.body.appendChild(inviteModal);
     document.getElementById('close-inv').onclick = () => inviteModal.remove();
   };
 
-  // Manage Button & Panel Click Handler Fix
+  // Fixed Manage Button & Panel Click Handler with Debugging Toast
   document.getElementById('btn-manage-group').onclick = () => {
+    toast('Opening Manage Panel...');
     let manageModal = document.createElement('div');
     manageModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1300; display:flex; flex-direction:column; overflow-y:auto; padding:20px; color:#fff;';
     
@@ -399,7 +410,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
       manageModal.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
           <h3 style="margin:0; font-size:18px;">⚙️ Manage Group</h3>
-          <button id="close-manage" style="background:none; border:0; color:#8b97b3; font-size:20px; cursor:pointer;">✕</button>
+          <button id="close-manage" style="background:none; border:0; color:#8b97b3; font-size:20px; cursor:pointer;" type="button">✕</button>
         </div>
         
         <div style="display:flex; flex-direction:column; gap:12px;">
@@ -422,7 +433,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           
           <hr style="border:0; border-top:1px solid #26314a; margin:10px 0;">
           
-          <button id="leave-group-perm-btn" style="background:#e74c3c; color:#fff; border:0; padding:12px; border-radius:12px; font-weight:600; cursor:pointer; text-align:center;">🚪 Leave Group</button>
+          <button id="leave-group-perm-btn" style="background:#e74c3c; color:#fff; border:0; padding:12px; border-radius:12px; font-weight:600; cursor:pointer; text-align:center;" type="button">🚪 Leave Group</button>
         </div>
       `;
 
@@ -451,7 +462,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
 
             manageModal.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
-                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;">←</button> Group Settings</h3>
+                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;" type="button">←</button> Group Settings</h3>
               </div>
               <div style="display:flex; flex-direction:column; gap:14px;">
                 <div>
@@ -465,7 +476,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
                     <option value="true" ${isApprovalOn ? 'selected' : ''}>On (Admin approval required)</option>
                   </select>
                 </div>
-                <button id="save-group-settings" class="btn" style="padding:10px;">Save Changes</button>
+                <button id="save-group-settings" class="btn" style="padding:10px;" type="button">Save Changes</button>
               </div>
             `;
             document.getElementById('back-to-manage').onclick = renderManageHome;
@@ -488,7 +499,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           else if (action === 'action-items') {
             manageModal.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
-                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;">←</button> Pending Posts</h3>
+                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;" type="button">←</button> Pending Posts</h3>
               </div>
               <div id="pending-posts-list" style="color:#8b97b3; font-size:14px; background:#121826; padding:15px; border-radius:12px; border:1px solid #26314a;">
                 Loading pending posts...
@@ -504,8 +515,8 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
                   <div style="background:#1a2234; padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #26314a;">
                     <p style="margin:0 0 10px 0; color:#fff; font-size:14px;">${esc(p.content || '[Media/Voice Post]')}</p>
                     <div style="display:flex; gap:8px;">
-                      <button onclick="approvePost('${p.id}', '${roomId}')" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Approve</button>
-                      <button onclick="rejectPost('${p.id}', '${roomId}')" style="background:#e74c3c; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Decline</button>
+                      <button onclick="approvePost('${p.id}', '${roomId}')" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;" type="button">Approve</button>
+                      <button onclick="rejectPost('${p.id}', '${roomId}')" style="background:#e74c3c; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;" type="button">Decline</button>
                     </div>
                   </div>
                 `).join('');
@@ -513,13 +524,13 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
                 pContainer.innerHTML = `✨ No pending posts waiting for approval.`;
               }
             } catch (err) {
-              document.getElementById('pending-posts-list').innerHTML = `Failed to load pending posts.`;
+              document.getElementById('pending-posts-list').innerHTML = `Failed to load pending posts: ${err.message}`;
             }
           }
           else if (action === 'people') {
             manageModal.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
-                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;">←</button> People & Members</h3>
+                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;" type="button">←</button> People & Members</h3>
               </div>
               <div id="manage-people-list" style="color:#8b97b3; font-size:14px; background:#121826; padding:15px; border-radius:12px; border:1px solid #26314a;">
                 Loading members...
@@ -547,7 +558,7 @@ window.openActiveGroupRoom = async function(roomId, roomName) {
           else {
             manageModal.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
-                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;">←</button> Activity Log</h3>
+                <h3 style="margin:0; font-size:18px;"><button id="back-to-manage" style="background:none; border:0; color:#fff; cursor:pointer; margin-right:10px;" type="button">←</button> Activity Log</h3>
               </div>
               <div style="color:#8b97b3; font-size:14px; background:#121826; padding:15px; border-radius:12px; border:1px solid #26314a;">
                 📊 Group created and activity initialized successfully.
@@ -570,9 +581,9 @@ window.approvePost = async function(postId, gId) {
     const { error } = await sb.from('group_posts').update({ status: 'published' }).eq('id', postId);
     if (error) throw error;
     toast('Post approved and published!');
-    document.body.lastChild.remove();
+    if (document.body.lastChild) document.body.lastChild.remove();
   } catch (err) {
-    toast('Error approving post');
+    toast('Error approving post: ' + err.message);
   }
 };
 
@@ -581,9 +592,9 @@ window.rejectPost = async function(postId, gId) {
     const { error } = await sb.from('group_posts').delete().eq('id', postId);
     if (error) throw error;
     toast('Post rejected and deleted');
-    document.body.lastChild.remove();
+    if (document.body.lastChild) document.body.lastChild.remove();
   } catch (err) {
-    toast('Error rejecting post');
+    toast('Error rejecting post: ' + err.message);
   }
 };
 
@@ -620,7 +631,7 @@ window.loadGroupRooms = async function() {
           <div style="font-weight:600; font-size:16px; color:var(--text);">${esc(room.name)}</div>
           <div class="muted" style="font-size:12px;">${t('member_limit')}</div>
         </div>
-        <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="${buttonAction}">${buttonText}</button>
+        <button class="btn" style="width:auto; padding:8px 16px; font-size:14px;" onclick="${buttonAction}" type="button">${buttonText}</button>
       </div>
     `;
   }).join('');
