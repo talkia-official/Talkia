@@ -1,317 +1,551 @@
-// Group rooms list + create + join logic
-window.openCreateGroupRoomModal = function() {
-  let modal = document.createElement('div');
-  modal.id = 'group-modal';
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1150; display:flex; align-items:center; justify-content:center;';
-  modal.innerHTML = `
-    <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:400px; border-radius:20px; padding:20px; text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; color:#fff; font-size:18px;">🎙️ ${t('g_modal_title')}</h3>
-        <button id="grp-close-x" style="color:#8b97b3; font-size:20px; border:0; background:none; cursor:pointer;" type="button">✕</button>
-      </div>
-      <div class="field" style="margin-bottom:12px;">
-        <label style="color:#8b97b3; font-size:13px; display:block; margin-bottom:4px;">${t('g_room_name_lbl')}</label>
-        <input type="text" id="group-room-name" placeholder="${t('g_placeholder')}" style="width:100%; padding:12px; background:#1a2234; border:1px solid #26314a; border-radius:12px; color:#fff; outline:none;">
-      </div>
-      <button class="btn" id="group-room-submit" style="width:100%;" type="button">${t('g_create')}</button>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  document.getElementById('grp-close-x').onclick = () => modal.remove();
-  
-  document.getElementById('group-room-submit').onclick = async () => {
-    const name = document.getElementById('group-room-name').value.trim();
-    if (!name) { toast('Enter room name'); return; }
-    try {
-      const { data, error } = await sb.from('group_rooms').insert({ 
-        name, 
-        creator_id: currentUser.id, 
-        post_approval: false,
-        cover_url: ''
-      }).select().single();
-      if (error) throw error;
-      
-      await sb.from('group_members').insert({ group_id: Number(data.id), user_id: currentUser.id });
-
-      toast(t('g_success'));
-      modal.remove();
-      if (typeof loadGroupRooms === 'function') loadGroupRooms();
-    } catch (err) {
-      toast('Error creating room: ' + err.message);
+// Groups: list, create, join, group page (text/photo/voice posts), manage (admin), leave.
+// Roles live in group_members.role ('admin' | 'member'); security is enforced by the SQL policies in groups-setup.sql.
+(function () {
+  const G = {
+    en: {
+      newroom: "New group",
+      gname: "Group name",
+      create: "Create",
+      join: "Join",
+      enter: "Enter",
+      none: "No groups yet",
+      members: "Members",
+      manage: "Manage",
+      cover: "Change cover",
+      write: "Write something...",
+      photo: "Photo",
+      voice: "Voice",
+      post: "Post",
+      noposts: "No posts yet.",
+      rec: "Record",
+      stop: "Stop",
+      leave: "Leave group",
+      leave_q: "Leave this group?",
+      admin_only: "Make another member admin before leaving.",
+      rename: "Save name",
+      del: "Delete group",
+      del_q: "Delete this group for everyone?",
+      remove: "Remove",
+      mkadmin: "Make admin",
+      admin: "Admin",
+      member: "Member",
+      nopost: "Write or attach something.",
+      delp: "Delete",
+      attached: "Attached ✓",
+      uploading: "Uploading...",
+    },
+    bn: {
+      newroom: "নতুন গ্রুপ",
+      gname: "গ্রুপের নাম",
+      create: "তৈরি করুন",
+      join: "যুক্ত হোন",
+      enter: "প্রবেশ",
+      none: "এখনো কোনো গ্রুপ নেই",
+      members: "সদস্য",
+      manage: "ম্যানেজ",
+      cover: "কভার বদলান",
+      write: "কিছু লিখুন...",
+      photo: "ছবি",
+      voice: "ভয়েস",
+      post: "পোস্ট",
+      noposts: "এখনো কোনো পোস্ট নেই।",
+      rec: "রেকর্ড",
+      stop: "থামান",
+      leave: "গ্রুপ ছাড়ুন",
+      leave_q: "গ্রুপ ছেড়ে যাবেন?",
+      admin_only: "ছাড়ার আগে অন্য কাউকে এডমিন বানান।",
+      rename: "নাম সেভ করুন",
+      del: "গ্রুপ মুছুন",
+      del_q: "সবার জন্য গ্রুপটি মুছে ফেলবেন?",
+      remove: "বের করুন",
+      mkadmin: "এডমিন বানান",
+      admin: "এডমিন",
+      member: "সদস্য",
+      nopost: "কিছু লিখুন বা সংযুক্ত করুন।",
+      delp: "মুছুন",
+      attached: "সংযুক্ত ✓",
+      uploading: "আপলোড হচ্ছে...",
+    },
+  };
+  const gx = (k) => (G[lang] || G.en)[k] || G.en[k] || k;
+  const q = (id) => document.getElementById(id);
+  const bg = (u) =>
+    'url("' +
+    String(u).replace(
+      /["\\()\s']/g,
+      (c) => "%" + c.charCodeAt(0).toString(16)
+    ) +
+    '")';
+  const safe = (u, kind) =>
+    u && (/^https?:\/\//.test(u) || u.startsWith("data:" + kind + "/"))
+      ? esc(u)
+      : "";
+  const names = async (ids) => {
+    const m = {};
+    if (ids.length) {
+      const { data } = await sb
+        .from("profiles")
+        .select("id,display_name,avatar_url")
+        .in("id", ids);
+      (data || []).forEach((p) => (m[p.id] = p));
     }
+    return m;
   };
-};
-
-window.joinGroupRoom = async function(roomId, roomName) {
-  if (!currentUser) return toast(t('login'));
-  try {
-    const { error } = await sb.from('group_members').insert({ group_id: Number(roomId), user_id: currentUser.id });
-    if (error && error.code !== '23505') throw error;
-    toast('Room joined!');
-    openActiveGroupRoom(roomId, roomName);
-  } catch (err) {
-    toast('Error joining room: ' + err.message);
-  }
-};
-
-// Active Group Room with Robust Event Binding
-window.openActiveGroupRoom = async function(roomId, roomName) {
-  let existingRoom = document.getElementById('active-room-modal');
-  if (existingRoom) existingRoom.remove();
-
-  let roomData = {};
-  try {
-    const { data } = await sb.from('group_rooms').select('*').eq('id', Number(roomId)).single();
-    if (data) roomData = data;
-  } catch (e) {}
-
-  const currentRoomName = roomData.name || roomName;
-  const coverBg = roomData.cover_url 
-    ? `url('${roomData.cover_url}') center/cover no-repeat` 
-    : 'linear-gradient(135deg, #2b3a55, #121826)';
-
-  let roomModal = document.createElement('div');
-  roomModal.id = 'active-room-modal';
-  roomModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1200; display:flex; flex-direction:column; overflow-y:auto;';
-  
-  roomModal.innerHTML = `
-    <div id="room-cover-div" style="position:relative; width:100%; height:160px; background:${coverBg};">
-      <button id="room-back-btn" style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.6); color:#fff; border:0; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; z-index:10;" type="button">←</button>
-      
-      <label for="cover-upload-input" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.7); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; z-index:10;">
-        📷 Change Cover
-      </label>
-      <input type="file" id="cover-upload-input" accept="image/*" style="display:none;">
-    </div>
-
-    <div style="padding:16px; background:#121826; border-bottom:1px solid #26314a;">
-      <h2 id="room-title-heading" style="margin:0 0 6px 0; color:#fff; font-size:22px;">${esc(currentRoomName)}</h2>
-      <div style="color:#8b97b3; font-size:13px; margin-bottom:14px;">Public group · Active member</div>
-      
-      <div style="display:flex; gap:10px;">
-        <button class="btn" id="btn-manage-group" style="flex:1; background:#26314a; color:#fff; border:0; padding:10px; border-radius:10px; font-weight:600; cursor:pointer;" type="button">⚙️ Manage</button>
-        <button class="btn" id="btn-invite-group" style="flex:1; background:var(--accent, #1877f2); color:#fff; border:0; padding:10px; border-radius:10px; font-weight:600; cursor:pointer;" type="button">➕ Invite</button>
-      </div>
-    </div>
-
-    <div style="display:flex; gap:8px; padding:10px 16px; background:#121826; overflow-x:auto; border-bottom:1px solid #26314a; white-space:nowrap;">
-      <button class="g-tab active-tab" data-tab="featured" style="background:#26314a; color:#fff; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;" type="button">Featured & Posts</button>
-      <button class="g-tab" data-tab="photos" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;" type="button">Photos</button>
-      <button class="g-tab" data-tab="events" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;" type="button">Events</button>
-      <button class="g-tab" data-tab="files" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;" type="button">Files</button>
-      <button class="g-tab" data-tab="reels" style="background:transparent; color:#8b97b3; border:0; padding:8px 16px; border-radius:20px; font-weight:600; cursor:pointer;" type="button">Reels / Voice</button>
-    </div>
-
-    <div id="room-tab-content" style="flex:1; padding:16px; text-align:center; color:#8b97b3;"></div>
-  `;
-  
-  document.body.appendChild(roomModal);
-
-  // Back button
-  document.getElementById('room-back-btn').onclick = () => {
-    roomModal.remove();
-    if (typeof loadGroupRooms === 'function') loadGroupRooms();
+  const overlay = (id, z, html) => {
+    const o = q(id);
+    if (o) o.remove();
+    const d = document.createElement("div");
+    d.id = id;
+    d.style.cssText =
+      "position:fixed;inset:0;z-index:" +
+      z +
+      ";background:var(--bg);overflow-y:auto;color:var(--text)";
+    d.innerHTML = html;
+    document.body.appendChild(d);
+    return d;
   };
 
-  // Cover photo change
-  document.getElementById('cover-upload-input').onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    toast('Uploading cover...');
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64Url = event.target.result;
-      await sb.from('group_rooms').update({ cover_url: base64Url }).eq('id', Number(roomId));
-      document.getElementById('room-cover-div').style.background = `url('${base64Url}') center/cover no-repeat`;
-      toast('Cover updated!');
+  // ---------- list ----------
+  window.loadGroupRooms = async function () {
+    const list = q("group-rooms-list");
+    if (!list) return;
+    list.innerHTML = '<div class="empty">' + esc(t("loading")) + "</div>";
+    const { data: rooms, error } = await sb
+      .from("group_rooms")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      list.innerHTML = '<div class="empty">' + esc(error.message) + "</div>";
+      return;
+    }
+    if (!rooms.length) {
+      list.innerHTML = '<div class="empty">' + esc(gx("none")) + "</div>";
+      return;
+    }
+    const { data: mine } = currentUser
+      ? await sb
+          .from("group_members")
+          .select("group_id")
+          .eq("user_id", currentUser.id)
+      : { data: [] };
+    const joined = new Set((mine || []).map((m) => m.group_id));
+    list.innerHTML = rooms
+      .map(
+        (r) =>
+          '<div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:14px;margin-bottom:10px"><b>' +
+          esc(r.name) +
+          "</b>" +
+          '<button class="btn" style="width:auto;padding:6px 14px" data-room="' +
+          esc(r.id) +
+          '" data-joined="' +
+          (joined.has(r.id) ? 1 : 0) +
+          '" type="button">' +
+          esc(gx(joined.has(r.id) ? "enter" : "join")) +
+          "</button></div>"
+      )
+      .join("");
+  };
+  q("group-rooms-list").onclick = async (e) => {
+    const b = e.target.closest("[data-room]");
+    if (!b) return;
+    if (b.dataset.joined === "1") return openActiveGroupRoom(b.dataset.room);
+    const { error } = await sb
+      .from("group_members")
+      .insert({
+        group_id: Number(b.dataset.room),
+        user_id: currentUser.id,
+        role: "member",
+      });
+    if (error && error.code !== "23505") return toast(t("err") + error.message);
+    openActiveGroupRoom(b.dataset.room);
+  };
+
+  // ---------- create ----------
+  window.openCreateGroupRoomModal = function () {
+    const o = overlay(
+      "group-modal",
+      1150,
+      '<div style="max-width:420px;margin:60px auto;padding:20px"><h3>🎙️ ' +
+        esc(gx("newroom")) +
+        '</h3><div class="field"><input id="gr-name" maxlength="60" placeholder="' +
+        esc(gx("gname")) +
+        '"></div>' +
+        '<button class="btn" id="gr-ok" type="button">' +
+        esc(gx("create")) +
+        '</button><button class="btn ghost" id="gr-x" type="button" style="margin-top:10px">' +
+        esc(t("btn_cancel")) +
+        "</button></div>"
+    );
+    q("gr-x").onclick = () => o.remove();
+    q("gr-ok").onclick = async () => {
+      const name = q("gr-name").value.trim();
+      if (!name) return;
+      q("gr-ok").disabled = true;
+      const { data, error } = await sb
+        .from("group_rooms")
+        .insert({ name, creator_id: currentUser.id })
+        .select()
+        .single();
+      if (error) {
+        q("gr-ok").disabled = false;
+        return toast(t("err") + error.message);
+      }
+      const m = await sb
+        .from("group_members")
+        .insert({ group_id: data.id, user_id: currentUser.id, role: "admin" });
+      if (m.error) toast(t("err") + m.error.message);
+      o.remove();
+      loadGroupRooms();
+      openActiveGroupRoom(data.id);
     };
-    reader.readAsDataURL(file);
   };
+  q("btn-create-room").onclick = openCreateGroupRoomModal;
 
-  let selectedPhotoBase64 = null;
-  let recordedAudioBase64 = null;
-
-  function loadFeaturedTab() {
-    const contentArea = document.getElementById('room-tab-content');
-    contentArea.innerHTML = `
-      <div style="max-width:600px; margin:0 auto; text-align:left;">
-        <div style="background:#121826; border:1px solid #26314a; border-radius:14px; padding:14px; margin-bottom:16px;">
-          <textarea id="group-post-text" placeholder="Write something..." style="width:100%; background:#1a2234; border:1px solid #26314a; border-radius:10px; padding:12px; color:#fff; resize:none; height:70px; outline:none; font-size:14px;"></textarea>
-          
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-            <div style="display:flex; gap:8px;">
-              <button id="attach-photo-btn" style="background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;" type="button">📷 Photo</button>
-              <input type="file" id="post-photo-file" accept="image/*" style="display:none;">
-              <button id="record-voice-btn" style="background:#1a2234; color:#e74c3c; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;" type="button">🎤 Voice</button>
-            </div>
-            <button id="submit-group-post" class="btn" style="padding:6px 18px; font-size:14px;" type="button">Post</button>
-          </div>
-          <div id="post-attachment-status" style="margin-top:8px; font-size:12px; color:#10b981;"></div>
-        </div>
-        <div id="group-posts-feed"><div style="text-align:center; padding:20px;">Loading posts...</div></div>
-      </div>
-    `;
-
-    fetchGroupPosts(roomId);
-
-    document.getElementById('attach-photo-btn').onclick = () => document.getElementById('post-photo-file').click();
-    document.getElementById('post-photo-file').onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        selectedPhotoBase64 = ev.target.result;
-        document.getElementById('post-attachment-status').innerText = `📷 Photo attached`;
+  // ---------- group page ----------
+  window.openActiveGroupRoom = async function (rid) {
+    const id = Number(rid);
+    const [r1, r2] = await Promise.all([
+      sb.from("group_rooms").select("*").eq("id", id).maybeSingle(),
+      sb
+        .from("group_members")
+        .select("role")
+        .eq("group_id", id)
+        .eq("user_id", currentUser.id)
+        .maybeSingle(),
+    ]);
+    const room = r1.data,
+      me = r2.data;
+    if (!room || !me)
+      return toast(
+        t("err") + (r1.error || r2.error || { message: "not a member" }).message
+      );
+    const admin = me.role === "admin";
+    const o = overlay(
+      "active-room-modal",
+      1200,
+      '<div id="rm-cover" style="position:relative;height:160px;background:linear-gradient(135deg,#2b3a55,#121826) center/cover"><button id="rm-back" type="button" style="position:absolute;top:12px;inset-inline-start:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff">←</button>' +
+        (admin
+          ? '<button id="rm-cover-btn" type="button" style="position:absolute;bottom:12px;inset-inline-end:12px;background:rgba(0,0,0,.7);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px">📷 ' +
+            esc(gx("cover")) +
+            '</button><input type="file" id="rm-cover-file" accept="image/*" hidden>'
+          : "") +
+        "</div>" +
+        '<div style="padding:16px;border-bottom:1px solid var(--line)"><h2 id="rm-title" style="margin:0 0 6px"></h2><div class="muted" style="font-size:13px;margin-bottom:12px">' +
+        esc(gx(admin ? "admin" : "member")) +
+        "</div>" +
+        '<button class="btn" id="rm-manage" type="button" style="background:var(--surface2);color:var(--text)">' +
+        (admin ? "⚙️ " + esc(gx("manage")) : esc(gx("leave"))) +
+        "</button></div>" +
+        '<div style="max-width:600px;margin:0 auto;padding:16px"><div class="card" style="padding:14px;margin-bottom:16px"><textarea id="gp-text" maxlength="1000" placeholder="' +
+        esc(gx("write")) +
+        '" style="width:100%;min-height:70px;padding:12px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);color:var(--text);outline:none"></textarea>' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:10px"><button class="btn ghost" id="gp-photo" type="button" style="width:auto;padding:6px 12px;font-size:13px">📷 ' +
+        esc(gx("photo")) +
+        '</button><input type="file" id="gp-file" accept="image/*" hidden>' +
+        '<button class="btn ghost" id="gp-voice" type="button" style="width:auto;padding:6px 12px;font-size:13px">🎤 ' +
+        esc(gx("voice")) +
+        '</button><span id="gp-st" class="muted" style="flex:1;font-size:12px"></span><button class="btn" id="gp-post" type="button" style="width:auto;padding:6px 18px">' +
+        esc(gx("post")) +
+        "</button></div></div>" +
+        '<div id="gp-feed"></div></div>'
+    );
+    q("rm-title").textContent = room.name;
+    if (room.cover_url)
+      q("rm-cover").style.backgroundImage = bg(room.cover_url);
+    q("rm-back").onclick = () => {
+      stopRec();
+      o.remove();
+      loadGroupRooms();
+    };
+    if (admin) {
+      q("rm-cover-btn").onclick = () => q("rm-cover-file").click();
+      q("rm-cover-file").onchange = async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        toast(gx("uploading"));
+        try {
+          const url = await uploadMedia(f, "grp-cover");
+          const { error } = await sb
+            .from("group_rooms")
+            .update({ cover_url: url })
+            .eq("id", id);
+          if (error) throw error;
+          q("rm-cover").style.backgroundImage = bg(url);
+          toast(t("saved"));
+        } catch (err) {
+          toast(t("err") + err.message);
+        }
       };
-      reader.readAsDataURL(file);
+    }
+    q("rm-manage").onclick = () => openManage(room, admin, o);
+
+    // attachments
+    let photo = null,
+      voice = null,
+      rec = null,
+      stream = null,
+      timer = null;
+    const st = () => {
+      q("gp-st").textContent = [
+        photo ? "📷 " + gx("attached") : "",
+        voice ? "🎤 " + gx("attached") : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
     };
-
-    // Voice Record Modal Trigger
-    document.getElementById('record-voice-btn').onclick = () => {
-      let vModal = document.createElement('div');
-      vModal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1400; display:flex; align-items:center; justify-content:center; padding:20px;';
-      vModal.innerHTML = `
-        <div style="background:#121826; border:1px solid #26314a; width:100%; max-width:320px; border-radius:20px; padding:20px; color:#fff; text-align:center;">
-          <h3 style="margin-top:0;">Record Voice</h3>
-          <button id="start-rec" class="btn" style="background:#e74c3c; width:100%; margin-bottom:10px;" type="button">Start Recording</button>
-          <button id="stop-rec" class="btn" style="background:#10b981; width:100%; display:none;" type="button">Done & Attach</button>
-          <button id="cancel-rec" style="background:none; border:0; color:#8b97b3; margin-top:10px; cursor:pointer;" type="button">Cancel</button>
-        </div>
-      `;
-      document.body.appendChild(vModal);
-
-      let mediaRec, chunks = [];
-      document.getElementById('start-rec').onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRec = new MediaRecorder(stream);
-        chunks = [];
-        mediaRec.ondataavailable = e => chunks.push(e.data);
-        mediaRec.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/webm' });
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            recordedAudioBase64 = reader.result;
-            document.getElementById('post-attachment-status').innerText = `🎤 Voice attached`;
-            vModal.remove();
-            toast('Voice attached!');
-          };
-          reader.readAsDataURL(blob);
-        };
-        mediaRec.start();
-        document.getElementById('start-rec').style.display = 'none';
-        document.getElementById('stop-rec').style.display = 'block';
-      };
-
-      document.getElementById('stop-rec').onclick = () => mediaRec && mediaRec.stop();
-      document.getElementById('cancel-rec').onclick = () => vModal.remove();
+    function stopRec() {
+      if (rec && rec.state === "recording") rec.stop();
+    }
+    q("gp-photo").onclick = () => q("gp-file").click();
+    q("gp-file").onchange = (e) => {
+      photo = e.target.files[0] || null;
+      st();
     };
-
-    // Submit Post
-    document.getElementById('submit-group-post').onclick = async () => {
-      const text = document.getElementById('group-post-text').value.trim();
-      if (!text && !selectedPhotoBase64 && !recordedAudioBase64) {
-        toast('Please write or attach something!');
+    q("gp-voice").onclick = async () => {
+      if (rec && rec.state === "recording") {
+        rec.stop();
         return;
       }
       try {
-        toast('Posting...');
-        const { error } = await sb.from('group_posts').insert({
-          group_id: Number(roomId),
-          user_id: currentUser.id,
-          content: text || '',
-          media_url: selectedPhotoBase64 || '',
-          audio_url: recordedAudioBase64 || '',
-          status: 'published',
-          created_at: new Date()
-        });
-        if (error) throw error;
-
-        document.getElementById('group-post-text').value = '';
-        selectedPhotoBase64 = null;
-        recordedAudioBase64 = null;
-        document.getElementById('post-attachment-status').innerText = '';
-        toast('Posted successfully!');
-        fetchGroupPosts(roomId);
-      } catch (err) {
-        toast('Post error: ' + err.message);
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        return toast(t("mic_err"));
       }
+      const ch = [];
+      rec = new MediaRecorder(stream);
+      rec.ondataavailable = (x) => ch.push(x.data);
+      rec.onstop = () => {
+        clearTimeout(timer);
+        stream.getTracks().forEach((tr) => tr.stop());
+        voice = new Blob(ch, { type: rec.mimeType || "audio/webm" });
+        q("gp-voice").textContent = "🎤 " + gx("voice");
+        st();
+      };
+      rec.start();
+      q("gp-voice").textContent = "⏹ " + gx("stop");
+      timer = setTimeout(stopRec, 120000);
     };
-  }
-
-  async function fetchGroupPosts(gId) {
-    const feed = document.getElementById('group-posts-feed');
-    if (!feed) return;
-    try {
-      const { data: posts, error } = await sb.from('group_posts').select('*').eq('group_id', Number(gId)).order('created_at', { ascending: false });
-      if (error) throw error;
-      if (!posts || posts.length === 0) {
-        feed.innerHTML = `<div style="padding:20px; color:#8b97b3;">No posts yet.</div>`;
+    q("gp-post").onclick = async () => {
+      const text = q("gp-text").value.trim();
+      if (!text && !photo && !voice) return toast(gx("nopost"));
+      q("gp-post").disabled = true;
+      q("gp-st").textContent = gx("uploading");
+      try {
+        const row = {
+          group_id: id,
+          user_id: currentUser.id,
+          content: text,
+          media_url: "",
+          audio_url: "",
+          status: "published",
+        };
+        if (photo) row.media_url = await uploadMedia(photo, "grp-img");
+        if (voice) row.audio_url = await uploadMedia(voice, "grp-voice");
+        const { error } = await sb.from("group_posts").insert(row);
+        if (error) throw error;
+        q("gp-text").value = "";
+        photo = voice = null;
+        q("gp-file").value = "";
+        st();
+        loadPosts();
+      } catch (err) {
+        toast(t("err") + err.message);
+      }
+      q("gp-post").disabled = false;
+    };
+    async function loadPosts() {
+      const feed = q("gp-feed");
+      if (!feed) return;
+      const { data: posts, error } = await sb
+        .from("group_posts")
+        .select("*")
+        .eq("group_id", id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) {
+        feed.innerHTML = '<div class="empty">' + esc(error.message) + "</div>";
         return;
       }
-      feed.innerHTML = posts.map(p => `
-        <div style="background:#121826; border:1px solid #26314a; border-radius:12px; padding:14px; margin-bottom:12px; text-align:left;">
-          <p style="margin:0 0 10px 0; color:#fff;">${esc(p.content || '')}</p>
-          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:8px;">` : ''}
-          ${p.audio_url ? `<audio controls src="${p.audio_url}" style="width:100%;"></audio>` : ''}
-        </div>
-      `).join('');
-    } catch (err) {
-      feed.innerHTML = `<div style="color:#e74c3c;">Error loading posts: ${err.message}</div>`;
+      if (!posts.length) {
+        feed.innerHTML = '<div class="empty">' + esc(gx("noposts")) + "</div>";
+        return;
+      }
+      const nm = await names([...new Set(posts.map((p) => p.user_id))]);
+      feed.innerHTML = posts
+        .map(
+          (p) =>
+            '<div class="card" style="padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><b data-profile-id="' +
+            esc(p.user_id) +
+            '" style="cursor:pointer">' +
+            esc((nm[p.user_id] || {}).display_name || t("user")) +
+            '</b><span class="muted">' +
+            esc(timeAgo(p.created_at)) +
+            "</span></div>" +
+            (p.content
+              ? '<p style="margin:0 0 10px;white-space:pre-wrap">' +
+                esc(p.content) +
+                "</p>"
+              : "") +
+            (safe(p.media_url, "image")
+              ? '<img alt="" src="' +
+                safe(p.media_url, "image") +
+                '" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:8px">'
+              : "") +
+            (safe(p.audio_url, "audio")
+              ? '<audio controls src="' +
+                safe(p.audio_url, "audio") +
+                '" style="width:100%"></audio>'
+              : "") +
+            (admin || p.user_id === currentUser.id
+              ? '<button class="btn danger" data-delp="' +
+                esc(p.id) +
+                '" type="button" style="width:auto;padding:4px 12px;font-size:12px;margin-top:8px">' +
+                esc(gx("delp")) +
+                "</button>"
+              : "") +
+            "</div>"
+        )
+        .join("");
     }
-  }
-
-  loadFeaturedTab();
-
-  // Manage Button Direct Click Handler
-  document.getElementById('btn-manage-group').onclick = () => {
-    let mModal = document.createElement('div');
-    mModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1300; display:flex; flex-direction:column; padding:20px; color:#fff;';
-    mModal.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h3 style="margin:0;">⚙️ Manage Group</h3>
-        <button id="close-m" style="background:none; border:0; color:#fff; font-size:20px; cursor:pointer;" type="button">✕</button>
-      </div>
-      <div style="background:#121826; padding:15px; border-radius:12px; border:1px solid #26314a; margin-bottom:10px;">Group Settings Active</div>
-      <button id="leave-grp" style="background:#e74c3c; color:#fff; border:0; padding:12px; border-radius:8px; cursor:pointer;" type="button">Leave Group</button>
-    `;
-    document.body.appendChild(mModal);
-    document.getElementById('close-m').onclick = () => mModal.remove();
-    document.getElementById('leave-grp').onclick = async () => {
-      if (!confirm('Leave group?')) return;
-      await sb.from('group_members').delete().eq('group_id', Number(roomId)).eq('user_id', currentUser.id);
-      mModal.remove();
-      roomModal.remove();
-      if (typeof loadGroupRooms === 'function') loadGroupRooms();
+    q("gp-feed").onclick = async (e) => {
+      const b = e.target.closest("[data-delp]");
+      if (!b) return;
+      const { error } = await sb
+        .from("group_posts")
+        .delete()
+        .eq("id", b.dataset.delp);
+      if (error) toast(t("err") + error.message);
+      loadPosts();
     };
+    loadPosts();
   };
-};
 
-window.loadGroupRooms = async function() {
-  const list = document.getElementById('group-rooms-list');
-  if (!list) return;
-  list.innerHTML = `<div class="empty">Loading...</div>`;
-  
-  const { data: rooms, error } = await sb.from('group_rooms').select('*').order('created_at', { ascending: false });
-  if (error || !rooms || rooms.length === 0) {
-    list.innerHTML = `<div class="empty">No rooms found.</div>`;
-    return;
+  // ---------- manage / leave ----------
+  async function openManage(room, admin, roomOverlay) {
+    const id = room.id,
+      isOwner = room.creator_id === currentUser.id;
+    const { data: ms } = await sb
+      .from("group_members")
+      .select("user_id,role")
+      .eq("group_id", id);
+    const nm = await names((ms || []).map((m) => m.user_id)),
+      admins = (ms || []).filter((m) => m.role === "admin").length;
+    const o = overlay(
+      "group-manage",
+      1300,
+      '<div style="max-width:520px;margin:0 auto;padding:20px"><div style="display:flex;justify-content:space-between;align-items:center"><h3>⚙️ ' +
+        esc(gx("manage")) +
+        '</h3><button id="mg-x" type="button" style="font-size:20px">✕</button></div>' +
+        (admin
+          ? '<div class="field" style="display:flex;gap:8px"><input id="mg-name" maxlength="60" value="' +
+            esc(room.name) +
+            '" style="flex:1;min-width:0"><button class="btn" id="mg-save" type="button" style="width:auto">' +
+            esc(gx("rename")) +
+            "</button></div>"
+          : "") +
+        "<h4>" +
+        esc(gx("members")) +
+        " (" +
+        (ms || []).length +
+        ')</h4><div id="mg-list">' +
+        (ms || [])
+          .map(
+            (m) =>
+              '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><span>' +
+              esc((nm[m.user_id] || {}).display_name || t("user")) +
+              ' <small class="muted">' +
+              esc(gx(m.role === "admin" ? "admin" : "member")) +
+              "</small></span><span>" +
+              (admin && m.user_id !== currentUser.id
+                ? (m.role !== "admin"
+                    ? '<button data-mk="' +
+                      esc(m.user_id) +
+                      '" type="button" class="btn ghost" style="width:auto;padding:4px 10px;font-size:12px">' +
+                      esc(gx("mkadmin")) +
+                      "</button> "
+                    : "") +
+                  '<button data-rm="' +
+                  esc(m.user_id) +
+                  '" type="button" class="btn danger" style="width:auto;padding:4px 10px;font-size:12px">' +
+                  esc(gx("remove")) +
+                  "</button>"
+                : "") +
+              "</span></div>"
+          )
+          .join("") +
+        "</div>" +
+        '<button class="btn danger" id="mg-leave" type="button" style="margin-top:18px">' +
+        esc(gx("leave")) +
+        "</button>" +
+        (isOwner
+          ? '<button class="btn danger" id="mg-del" type="button" style="margin-top:10px">' +
+            esc(gx("del")) +
+            "</button>"
+          : "") +
+        "</div>"
+    );
+    q("mg-x").onclick = () => o.remove();
+    if (admin)
+      q("mg-save").onclick = async () => {
+        const name = q("mg-name").value.trim();
+        if (!name) return;
+        const { error } = await sb
+          .from("group_rooms")
+          .update({ name })
+          .eq("id", id);
+        if (error) return toast(t("err") + error.message);
+        q("rm-title").textContent = name;
+        toast(t("saved"));
+      };
+    q("mg-list").onclick = async (e) => {
+      const rm = e.target.closest("[data-rm]"),
+        mk = e.target.closest("[data-mk]");
+      const r = rm
+        ? await sb
+            .from("group_members")
+            .delete()
+            .eq("group_id", id)
+            .eq("user_id", rm.dataset.rm)
+        : mk
+        ? await sb
+            .from("group_members")
+            .update({ role: "admin" })
+            .eq("group_id", id)
+            .eq("user_id", mk.dataset.mk)
+        : null;
+      if (!r) return;
+      if (r.error) return toast(t("err") + r.error.message);
+      o.remove();
+      openManage(room, admin, roomOverlay);
+    };
+    q("mg-leave").onclick = async () => {
+      if (admin && admins <= 1 && (ms || []).length > 1)
+        return toast(gx("admin_only"));
+      if (!confirm(gx("leave_q"))) return;
+      const { error } = await sb
+        .from("group_members")
+        .delete()
+        .eq("group_id", id)
+        .eq("user_id", currentUser.id);
+      if (error) return toast(t("err") + error.message);
+      o.remove();
+      roomOverlay.remove();
+      loadGroupRooms();
+    };
+    if (isOwner)
+      q("mg-del").onclick = async () => {
+        if (!confirm(gx("del_q"))) return;
+        for (const [tb, col] of [
+          ["group_posts", "group_id"],
+          ["group_members", "group_id"],
+          ["group_rooms", "id"],
+        ]) {
+          const { error } = await sb.from(tb).delete().eq(col, id);
+          if (error) return toast(t("err") + error.message);
+        }
+        o.remove();
+        roomOverlay.remove();
+        loadGroupRooms();
+      };
   }
-
-  let joinedSet = new Set();
-  if (currentUser) {
-    const { data: members } = await sb.from('group_members').select('group_id').eq('user_id', currentUser.id);
-    if (members) members.forEach(m => joinedSet.add(m.group_id));
-  }
-
-  list.innerHTML = rooms.map(room => {
-    const isJoined = joinedSet.has(room.id);
-    const btnText = isJoined ? 'Enter' : 'Join';
-    const action = isJoined ? `openActiveGroupRoom('${room.id}', '${esc(room.name)}')` : `joinGroupRoom('${room.id}', '${esc(room.name)}')`;
-    return `
-      <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px; margin-bottom:10px;">
-        <div><b>${esc(room.name)}</b></div>
-        <button class="btn" style="width:auto; padding:6px 14px;" onclick="${action}" type="button">${btnText}</button>
-      </div>
-    `;
-  }).join('');
-};
+})();
