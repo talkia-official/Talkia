@@ -26,7 +26,8 @@ window.openCreateGroupRoomModal = function() {
       const { data, error } = await sb.from('group_rooms').insert({ 
         name, 
         creator_id: currentUser.id, 
-        post_approval: false 
+        post_approval: false,
+        cover_url: ''
       }).select().single();
       if (error) throw error;
       
@@ -55,24 +56,41 @@ window.joinGroupRoom = async function(roomId, roomName) {
   }
 };
 
-// Active Group Room with Voice Changer, Post Approval & Manage System
-function openActiveGroupRoom(roomId, roomName) {
+// Active Group Room with Working Cover Photo, Manage Button & Full Posting System
+window.openActiveGroupRoom = async function(roomId, roomName) {
   let existingRoom = document.getElementById('active-room-modal');
   if (existingRoom) existingRoom.remove();
+
+  // Fetch latest room info from DB
+  let roomData = {};
+  try {
+    const { data } = await sb.from('group_rooms').select('*').eq('id', roomId).single();
+    if (data) roomData = data;
+  } catch (e) {}
+
+  const currentRoomName = roomData.name || roomName;
+  const coverBg = roomData.cover_url 
+    ? `url('${roomData.cover_url}') center/cover no-repeat` 
+    : 'linear-gradient(135deg, #2b3a55, #121826)';
 
   let roomModal = document.createElement('div');
   roomModal.id = 'active-room-modal';
   roomModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1200; display:flex; flex-direction:column; overflow-y:auto;';
   
   roomModal.innerHTML = `
-    <!-- Header / Cover Section with Back Button -->
-    <div style="position:relative; width:100%; height:160px; background:linear-gradient(135deg, #2b3a55, #121826);">
+    <!-- Header / Cover Section with Cover Upload & Back Button -->
+    <div id="room-cover-div" style="position:relative; width:100%; height:160px; background:${coverBg};">
       <button id="room-back-btn" style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.6); color:#fff; border:0; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;" title="Back">←</button>
+      
+      <label for="cover-upload-input" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.7); color:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px;">
+        📷 Change Cover
+      </label>
+      <input type="file" id="cover-upload-input" accept="image/*" style="display:none;">
     </div>
 
     <!-- Group Info Section -->
     <div style="padding:16px; background:#121826; border-bottom:1px solid #26314a;">
-      <h2 id="room-title-heading" style="margin:0 0 6px 0; color:#fff; font-size:22px;">${esc(roomName)}</h2>
+      <h2 id="room-title-heading" style="margin:0 0 6px 0; color:#fff; font-size:22px;">${esc(currentRoomName)}</h2>
       <div style="color:#8b97b3; font-size:13px; margin-bottom:14px;">Public group · Active member</div>
       
       <div style="display:flex; gap:10px;">
@@ -96,8 +114,27 @@ function openActiveGroupRoom(roomId, roomName) {
   
   document.body.appendChild(roomModal);
 
-  let recordedAudioBlob = null;
-  let selectedVoiceEffect = 'normal';
+  // Cover Photo Change Handler
+  document.getElementById('cover-upload-input').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    toast('Uploading cover photo...');
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Url = event.target.result;
+        await sb.from('group_rooms').update({ cover_url: base64Url }).eq('id', roomId);
+        document.getElementById('room-cover-div').style.background = `url('${base64Url}') center/cover no-repeat`;
+        toast('Cover photo updated successfully!');
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast('Error uploading cover: ' + err.message);
+    }
+  };
+
+  let recordedAudioBase64 = null;
+  let selectedPhotoBase64 = null;
 
   // Load Featured Tab Content (Post Creator + Group Feed)
   function loadFeaturedTab() {
@@ -110,12 +147,14 @@ function openActiveGroupRoom(roomId, roomName) {
           
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
             <div style="display:flex; gap:8px;">
-              <button id="attach-photo-btn" style="background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;" onclick="toast('Photo attachment ready')">📷 Photo</button>
+              <button id="attach-photo-btn" style="background:#1a2234; color:#fff; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;">📷 Photo</button>
+              <input type="file" id="post-photo-file" accept="image/*" style="display:none;">
+
               <button id="record-voice-btn" style="background:#1a2234; color:#e74c3c; border:1px solid #26314a; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px;">🎤 Voice Post</button>
             </div>
             <button id="submit-group-post" class="btn" style="padding:6px 18px; font-size:14px;">Post</button>
           </div>
-          <div id="voice-attachment-status" style="margin-top:8px; font-size:12px; color:#10b981;"></div>
+          <div id="post-attachment-status" style="margin-top:8px; font-size:12px; color:#10b981;"></div>
         </div>
 
         <!-- Group Posts Feed Container -->
@@ -126,6 +165,22 @@ function openActiveGroupRoom(roomId, roomName) {
     `;
 
     fetchGroupPosts(roomId);
+
+    // Photo Attachment Handler
+    document.getElementById('attach-photo-btn').onclick = () => {
+      document.getElementById('post-photo-file').click();
+    };
+
+    document.getElementById('post-photo-file').onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        selectedPhotoBase64 = event.target.result;
+        document.getElementById('post-attachment-status').innerText = `📷 Photo attached: ${file.name}`;
+      };
+      reader.readAsDataURL(file);
+    };
 
     // Voice Post Button Action (Opens Voice Changer Modal)
     document.getElementById('record-voice-btn').onclick = () => {
@@ -156,6 +211,7 @@ function openActiveGroupRoom(roomId, roomName) {
 
       let mediaRecorder;
       let audioChunks = [];
+      let currentEffect = 'normal';
 
       voiceModal.querySelectorAll('.v-effect-btn').forEach(btn => {
         btn.onclick = (e) => {
@@ -167,7 +223,7 @@ function openActiveGroupRoom(roomId, roomName) {
           e.target.style.background = '#26314a';
           e.target.style.color = '#fff';
           e.target.style.borderColor = '#3b82f6';
-          selectedVoiceEffect = e.target.getAttribute('data-effect');
+          currentEffect = e.target.getAttribute('data-effect');
         };
       });
 
@@ -182,10 +238,15 @@ function openActiveGroupRoom(roomId, roomName) {
           };
 
           mediaRecorder.onstop = () => {
-            recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            document.getElementById('voice-attachment-status').innerText = `🎤 Voice attached (${selectedVoiceEffect} effect)`;
-            voiceModal.remove();
-            toast('Voice recorded successfully!');
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              recordedAudioBase64 = reader.result;
+              document.getElementById('post-attachment-status').innerText = `🎤 Voice attached (${currentEffect} effect)`;
+              voiceModal.remove();
+              toast('Voice recorded successfully!');
+            };
+            reader.readAsDataURL(audioBlob);
           };
 
           mediaRecorder.start();
@@ -207,28 +268,33 @@ function openActiveGroupRoom(roomId, roomName) {
       document.getElementById('close-v-modal').onclick = () => voiceModal.remove();
     };
 
-    // Post Submit Action with Post Approval Check
+    // Post Submit Action
     document.getElementById('submit-group-post').onclick = async () => {
       const text = document.getElementById('group-post-text').value.trim();
-      if (!text && !recordedAudioBlob) { toast('Please write something or attach voice'); return; }
+      if (!text && !selectedPhotoBase64 && !recordedAudioBase64) {
+        toast('Please write something or attach photo/voice');
+        return;
+      }
       
       try {
-        // Check if group has post approval enabled
         const { data: roomData } = await sb.from('group_rooms').select('post_approval').eq('id', roomId).single();
         const needsApproval = roomData && roomData.post_approval;
 
         const { error } = await sb.from('group_posts').insert({
           group_id: roomId,
           user_id: currentUser.id,
-          content: text || '[Voice Post]',
+          content: text || '',
+          media_url: selectedPhotoBase64 || '',
+          audio_url: recordedAudioBase64 || '',
           status: needsApproval ? 'pending' : 'published',
           created_at: new Date()
         });
         if (error) throw error;
 
         document.getElementById('group-post-text').value = '';
-        recordedAudioBlob = null;
-        document.getElementById('voice-attachment-status').innerText = '';
+        selectedPhotoBase64 = null;
+        recordedAudioBase64 = null;
+        document.getElementById('post-attachment-status').innerText = '';
 
         if (needsApproval) {
           toast('Post submitted! Waiting for admin approval.');
@@ -259,7 +325,9 @@ function openActiveGroupRoom(roomId, roomName) {
             <span style="font-weight:600; color:#fff; font-size:14px;">Member</span>
             ${p.user_id === currentUser.id ? `<button onclick="deleteGroupPost('${p.id}', '${roomId}')" style="background:none; border:0; color:#e74c3c; cursor:pointer; font-size:12px;">Delete</button>` : ''}
           </div>
-          <p style="margin:0; color:#cbd5e1; font-size:14px; word-break:break-word;">${esc(p.content)}</p>
+          ${p.content ? `<p style="margin:0 0 10px 0; color:#cbd5e1; font-size:14px; word-break:break-word;">${esc(p.content)}</p>` : ''}
+          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:10px;">` : ''}
+          ${p.audio_url ? `<audio controls src="${p.audio_url}" style="width:100%; margin-top:5px;"></audio>` : ''}
         </div>
       `).join('');
     } catch (err) {
@@ -322,7 +390,7 @@ function openActiveGroupRoom(roomId, roomName) {
     document.getElementById('close-inv').onclick = () => inviteModal.remove();
   };
 
-  // Manage Button & Panel with Post Approval Settings & Pending Posts
+  // Manage Button & Panel Click Handler Fix
   document.getElementById('btn-manage-group').onclick = () => {
     let manageModal = document.createElement('div');
     manageModal.style.cssText = 'position:fixed; inset:0; background:#0a0d14; z-index:1300; display:flex; flex-direction:column; overflow-y:auto; padding:20px; color:#fff;';
@@ -378,9 +446,8 @@ function openActiveGroupRoom(roomId, roomName) {
           const action = e.currentTarget.getAttribute('data-action');
           
           if (action === 'settings') {
-            // Fetch current room settings
-            const { data: roomData } = await sb.from('group_rooms').select('*').eq('id', roomId).single();
-            const isApprovalOn = roomData && roomData.post_approval;
+            const { data: rData } = await sb.from('group_rooms').select('*').eq('id', roomId).single();
+            const isApprovalOn = rData && rData.post_approval;
 
             manageModal.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #26314a; padding-bottom:12px;">
@@ -389,7 +456,7 @@ function openActiveGroupRoom(roomId, roomName) {
               <div style="display:flex; flex-direction:column; gap:14px;">
                 <div>
                   <label style="color:#8b97b3; font-size:13px; display:block; margin-bottom:6px;">Group Name</label>
-                  <input type="text" id="update-group-name" value="${esc(roomName)}" style="width:100%; padding:10px; background:#1a2234; border:1px solid #26314a; border-radius:8px; color:#fff; outline:none;">
+                  <input type="text" id="update-group-name" value="${esc(currentRoomName)}" style="width:100%; padding:10px; background:#1a2234; border:1px solid #26314a; border-radius:8px; color:#fff; outline:none;">
                 </div>
                 <div>
                   <label style="color:#8b97b3; font-size:13px; display:block; margin-bottom:6px;">Post Approval (Admin must approve posts)</label>
@@ -435,7 +502,7 @@ function openActiveGroupRoom(roomId, roomName) {
               if (pendingPosts && pendingPosts.length > 0) {
                 pContainer.innerHTML = pendingPosts.map(p => `
                   <div style="background:#1a2234; padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #26314a;">
-                    <p style="margin:0 0 10px 0; color:#fff; font-size:14px;">${esc(p.content)}</p>
+                    <p style="margin:0 0 10px 0; color:#fff; font-size:14px;">${esc(p.content || '[Media/Voice Post]')}</p>
                     <div style="display:flex; gap:8px;">
                       <button onclick="approvePost('${p.id}', '${roomId}')" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Approve</button>
                       <button onclick="rejectPost('${p.id}', '${roomId}')" style="background:#e74c3c; color:#fff; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Decline</button>
@@ -495,7 +562,7 @@ function openActiveGroupRoom(roomId, roomName) {
     renderManageHome();
     document.body.appendChild(manageModal);
   };
-}
+};
 
 // Global Approve/Reject pending post handlers
 window.approvePost = async function(postId, gId) {
